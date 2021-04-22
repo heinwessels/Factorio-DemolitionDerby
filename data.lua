@@ -1,3 +1,5 @@
+require ("prototypes.effect")
+
 data:extend({
     util.merge{
         data.raw["item"]["stone-wall"],
