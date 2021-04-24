@@ -20,7 +20,7 @@ data:extend({
 data.raw["car"]["car"].resistances = {
     {
       type = "fire",
-      percent = 50
+      percent = 100
     },
     {
       type = "impact",
