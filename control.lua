@@ -16,13 +16,28 @@ end)
 
 script.on_event(defines.events.on_player_driving_changed_state,
     function(event)
-        -- Start a game when someone enters a vechicle
-        -- TODO Just not good enough yo
-        arena.create(nil)  -- TODO Contain area
-        arena.init(game.players)
-        arena.start()
+                
+        local player = game.get_player(event.player_index)
+        arena.add_player(player)
+
+        if not event.entity then
+            -- The player might have tried to climb out of his car.
+            -- Maybe prevent him!
+        end
     end
 )
+
+-- It is possible to define the name and table inside the call
+remote.add_interface("curvefever-interface", {
+    -- the values can be only primitive type or (nested) tables
+    create = function()
+        arena.create("test_arena", nil)  -- TODO Contain area
+    end,
+
+    start = function()
+        arena.start()
+    end,
+})
 
 -- TO USE DEBUGGER LOG
 -- require('__debugadapter__/debugadapter.lua')

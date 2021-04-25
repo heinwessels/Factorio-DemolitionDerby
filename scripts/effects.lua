@@ -37,6 +37,7 @@ function effects.apply_effects(arena, player)
 
         -- Did this effect time out?
         if game.tick > effect.tick_started + effect.ticks_to_live then
+            log("Removing "..effect_type.." from "..player.name)
             player_state.effects[effect_type] = nil    -- delete this entry in the effects table
         end
 
@@ -49,6 +50,7 @@ end
 function effects.add_effect(arena, player, effects)
     local player_state = arena.player_states[player.index]
     for effect_type, effect in pairs(effects) do
+        log("Adding "..effect_type.." to "..player.name)
         if player_state.effects[effect_type] then
             -- Player already has this effect applied. Extend the ticks_to_live
             effect.ticks_to_live = effect.ticks_to_live + player_state.effects[effect_type].ticks_to_live

@@ -34,7 +34,7 @@ data:extend({
         -- close_sound = sounds.machine_close,
         picture_safe =
         {
-            filename = "__base__/graphics/entity/land-mine/hr-land-mine.png",
+            filename = "__CurveFever__/graphics/entities/effect-beacon/hr-land-mine.png",
             priority = "medium",
             width = 64,
             height = 64,
@@ -42,7 +42,7 @@ data:extend({
         },
         picture_set =
         {
-            filename = "__base__/graphics/entity/land-mine/hr-land-mine.png",
+            filename = "__CurveFever__/graphics/entities/effect-beacon/hr-land-mine.png",
             priority = "medium",
             width = 64,
             height = 64,
@@ -50,13 +50,13 @@ data:extend({
         },
         picture_set_enemy =
         {
-            filename = "__base__/graphics/entity/land-mine/hr-land-mine.png",
+            filename = "__CurveFever__/graphics/entities/effect-beacon/hr-land-mine.png",
             priority = "medium",
             width = 64,
             height = 64,
             scale = 0.5
         },
-        trigger_radius = 2.5,
+        trigger_radius = 2,
         ammo_category = "landmine",
         action =
         {
