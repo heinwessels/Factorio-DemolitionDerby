@@ -16,7 +16,9 @@ end)
 
 script.on_event(defines.events.on_player_driving_changed_state,
     function(event)
-                
+
+        -- TODO This should check first if it was in the lobby
+        -- Remember, this event is fired for some effects too
         local player = game.get_player(event.player_index)
         arena.add_player(player)
 

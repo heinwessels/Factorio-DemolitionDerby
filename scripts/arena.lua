@@ -26,6 +26,12 @@ end
 
 -- Add player to arena to be played
 function arena.add_player(player)
+
+    if arena.player_states[player.index] then
+        log("Cannot add player "..player.name.." to arena "..arena.name.." again (Total: "..#arena.players..")")
+        return
+    end
+
     table.insert(arena.players, player)
     arena.create_player_state(arena, player)
 
@@ -136,7 +142,7 @@ function arena.hit_effect_event(event)
             })
         elseif effect_type == "tank" then
             effects.add_effect(arena, player, {
-                speed = {
+                tank = {
                     ticks_to_live = 3*60,
                     tick_started = game.tick,
                 },

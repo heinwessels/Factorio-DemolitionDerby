@@ -14,17 +14,26 @@ local effects = { }
 -- }
 
 -- Iterate through all effects currently on player and add them to the player
-function effects.apply_effects(arena, player)
-    local surface = player.surface
-    local vehicle = player.character.vehicle
-    local player_state = arena.player_states[player.index]
-
+function effects.apply_effects(arena, player)    
     -- For every effect on this player
+    local player_state = arena.player_states[player.index]
     for effect_type, effect in pairs(player_state.effects) do
 
+        local character = player.character
+        local surface = player.surface
+        local vehicle = player.character.vehicle        
+
+        -- Did this effect time out?
+        local timed_out = false
+        if game.tick > effect.tick_started + effect.ticks_to_live then
+            -- Keep track of it effects can stop correctly. Only removed
+            -- afterwards
+            timed_out = true
+        end
+
         if effect_type == "speed" then
-            vehicle.speed = vehicle.speed * (1 + effect.speed_modifier)            
-            
+            -- Increase the vehicle speed and spawn some flames
+            vehicle.speed = vehicle.speed * (1 + effect.speed_modifier)
             if game.tick % constants.effects.speed.fire_freq == 0 then
                 surface.create_entity{
                     name = "fire-flame",
@@ -32,14 +41,21 @@ function effects.apply_effects(arena, player)
                     position = player.position,
                 }
             end
-
-            if game.tick > effect.tick_started + effect.ticks_to_live then
-                player_state.effects["speed"] = nil
+            
+        elseif effect_type == "tank" then
+            -- Change to driving a tank instead of car
+            
+            if vehicle.name ~= "tank" then
+                -- Haven't swapped vehicles yet. Do it now.
+                effects.swap_vehicle(player, "tank")
+            elseif timed_out then
+                -- Timed out, swap back to normal vehicle
+                effects.swap_vehicle(player, "car")
             end
         end
 
         -- Did this effect time out?
-        if game.tick > effect.tick_started + effect.ticks_to_live then
+        if timed_out then
             log("Removing "..effect_type.." from "..player.name.." in arena: "..arena.name)
             player_state.effects[effect_type] = nil    -- delete this entry in the effects table
         end
@@ -68,6 +84,41 @@ end
 function effects.reset_effects(arena, player)
     local player_state = arena.player_states[player.index]
     player_state.effects = { }
+end
+
+-- Will remove the vehicle the player is currently driving,
+-- spawn the new vehicle and continue driving seemlessly.
+function effects.swap_vehicle(player, vehicle_name)
+    local character = player.character
+    local vehicle = character.vehicle
+    if not vehicle then
+        error("Player "..player.name.." isn't driving a vehicle to swap")
+    end
+
+    -- Remember what the vehicle is doing now
+    local speed = vehicle.speed
+    local position = vehicle.position
+    local orientation = vehicle.orientation
+
+    -- Get out of vehicle and destroy it
+    character.driving = false
+    vehicle.destroy{raise_destroy=false}
+
+    -- Create new vehicle, bring it to speed and such
+    -- and add character into it
+    local surface = player.surface
+    vehicle = surface.create_entity{
+        name = vehicle_name,
+        position = position,
+        force = player.force,
+        raise_built = false
+    }
+    if not vehicle then
+        error("Creating new vehicle ("..vehicle_name..") during swop for player "..player.name)
+    end
+    vehicle.speed = speed
+    vehicle.orientation = orientation
+    character.driving = true    -- TODO This means he can get into opponent cars?
 end
 
 return effects
