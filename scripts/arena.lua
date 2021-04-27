@@ -108,10 +108,12 @@ end
 -- arena, and apply it
 function arena.hit_effect_event(event)
     local surface = game.get_surface(event.surface_index)
-    local entity = event.source_entity
-
+    local beacon = event.source_entity
+    
+    if not string.sub(beacon.name, 1, 17) then return end
+    
     local vehicle_in_range = surface.find_entities_filtered{
-        position = entity.position,
+        position = beacon.position,
         radius = 6,
         name = "car",
         type = "car",
@@ -121,15 +123,25 @@ function arena.hit_effect_event(event)
     if vehicle_in_range then
         local vehicle = vehicle_in_range[1]
         player = vehicle.get_driver().player
+        local effect_type = string.sub(beacon.name, 19, -1)
         
-        -- Add the applicable effect        
-        effects.add_effect(arena, player, {
-            speed = {
-                speed_modifier = 0.5,
-                ticks_to_live = 3*60,
-                tick_started = game.tick,
-            },
-        })
+        -- Add the applicable effect
+        if effect_type == "speed" then
+            effects.add_effect(arena, player, {
+                speed = {
+                    speed_modifier = 0.5,
+                    ticks_to_live = 3*60,
+                    tick_started = game.tick,
+                },
+            })
+        elseif effect_type == "tank" then
+            effects.add_effect(arena, player, {
+                speed = {
+                    ticks_to_live = 3*60,
+                    tick_started = game.tick,
+                },
+            })
+        end
 
         -- TODO Handle other types
 

@@ -5,4 +5,9 @@ return {
         gap = 25,       -- Part of the duty cycle that should not be a trail
     },
     vehicle_speed = 0.3,
+    effects = {
+        speed = {
+            fire_freq = 5,  -- Every how many ticks should fire be spawned
+        },
+    },
 }
