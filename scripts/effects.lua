@@ -45,12 +45,12 @@ function effects.apply_effects(arena, player)
         elseif effect_type == "tank" then
             -- Change to driving a tank instead of car
             
-            if vehicle.name ~= "tank" then
+            if vehicle.name ~= "curvefever-tank" then
                 -- Haven't swapped vehicles yet. Do it now.
-                effects.swap_vehicle(player, "tank")
+                effects.swap_vehicle(player, "curvefever-tank")
             elseif timed_out then
                 -- Timed out, swap back to normal vehicle
-                effects.swap_vehicle(player, "car")
+                effects.swap_vehicle(player, "curvefever-car")
             end
         end
 
