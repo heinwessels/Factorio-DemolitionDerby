@@ -95,10 +95,14 @@ function effects.swap_vehicle(player, vehicle_name)
         error("Player "..player.name.." isn't driving a vehicle to swap")
     end
 
+    -- Saying we did it a little preemptively
+    log("Player "..player.name.." vechicle swopped from "..vehicle.name.." to "..vehicle_name)
+
     -- Remember what the vehicle is doing now
     local speed = vehicle.speed
     local position = vehicle.position
     local orientation = vehicle.orientation
+    local turning_direction = vehicle.riding_state.direction
 
     -- Get out of vehicle and destroy it
     character.driving = false
@@ -118,7 +122,11 @@ function effects.swap_vehicle(player, vehicle_name)
     end
     vehicle.speed = speed
     vehicle.orientation = orientation
-    character.driving = true    -- TODO This means he can get into opponent cars?
+    vehicle.riding_state = {
+        acceleration = 1,
+        direction = turning_direction,
+    }
+    character.driving = true    -- TODO Does this mean he can get into someone elses car?
 end
 
 return effects

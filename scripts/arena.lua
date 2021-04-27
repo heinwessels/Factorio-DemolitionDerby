@@ -121,8 +121,7 @@ function arena.hit_effect_event(event)
     local vehicle_in_range = surface.find_entities_filtered{
         position = beacon.position,
         radius = 6,
-        name = "car",
-        type = "car",
+        name = {"car", "tank"},
         limit = 1, -- TODO HANDLE MORE!
     }
     local player = nil
