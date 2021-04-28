@@ -43,6 +43,12 @@ function arena.start()
     for _, player in pairs(arena.players) do
         local player_state = arena.player_states[player.index]
         player_state.status = "playing"
+        effects.add_effect(arena, player, {
+            trail = {
+                -- Forever
+                ticks_to_live = nil,
+            },
+        })
     end
     arena.status = "playing"
     log("Started arena "..arena.name.." with "..#arena.players.." players")
@@ -76,9 +82,6 @@ function arena.update()
                 vehicle.speed = constants.vehicle_speed
                 -- TODO Ensure he is still in his car
 
-                -- Draw tail
-                local tail_position = arena.draw_tail(player)
-
                 -- Apply any effects
                 effects.apply_effects(arena, player)
 
@@ -87,27 +90,6 @@ function arena.update()
         end
     end
 end
-
--- Draws a tail behind the player
-function arena.draw_tail(player)
-    if game.tick % constants.trail.period < constants.trail.gap then return end
-    local surface = player.surface
-    local vehicle = player.character.vehicle
-    local orientation = vehicle.orientation * 2 * math.pi
-    local position = {
-        x = vehicle.position.x - constants.trail.offset*math.sin(orientation),
-        y = vehicle.position.y + constants.trail.offset*math.cos(orientation),
-    }
-    if not surface.find_entity("curvefever-trail", position) then 
-        surface.create_entity{
-            name = "curvefever-trail",
-            type = "wall",
-            position = position,
-            create_build_effect_smoke = true,
-        }
-    end    
-end
-
 
 -- This handler should be called if any effect beacon
 -- is hit. This function will decide if it's part of this

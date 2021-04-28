@@ -19,19 +19,37 @@ function effects.apply_effects(arena, player)
     local player_state = arena.player_states[player.index]
     for effect_type, effect in pairs(player_state.effects) do
 
-        local character = player.character
         local surface = player.surface
+        local character = player.character
         local vehicle = player.character.vehicle        
 
         -- Did this effect time out?
         local timed_out = false
-        if game.tick > effect.tick_started + effect.ticks_to_live then
+        if effect.ticks_to_live and game.tick > effect.tick_started + effect.ticks_to_live then
             -- Keep track of it effects can stop correctly. Only removed
             -- afterwards
             timed_out = true
         end
 
-        if effect_type == "speed" then
+        -- Apply the effects
+        if effect_type == "trail" then
+            -- Increase the vehicle speed and spawn some flames
+            if game.tick % constants.trail.period >= constants.trail.gap then
+                local orientation = vehicle.orientation * 2 * math.pi
+                local position = {
+                    x = vehicle.position.x - constants.trail.offset*math.sin(orientation),
+                    y = vehicle.position.y + constants.trail.offset*math.cos(orientation),
+                }
+                if not surface.find_entity("curvefever-trail", position) then 
+                    surface.create_entity{
+                        name = "curvefever-trail",
+                        type = "wall",
+                        position = position,
+                        create_build_effect_smoke = true,
+                    }
+                end
+            end
+        elseif effect_type == "speed" then
             -- Increase the vehicle speed and spawn some flames
             vehicle.speed = vehicle.speed * (1 + effect.speed_modifier)
             if game.tick % constants.effects.speed.fire_freq == 0 then
