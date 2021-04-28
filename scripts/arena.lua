@@ -98,9 +98,9 @@ function arena.draw_tail(player)
         x = vehicle.position.x - constants.trail.offset*math.sin(orientation),
         y = vehicle.position.y + constants.trail.offset*math.cos(orientation),
     }
-    if not surface.find_entity("curve-trail", position) then 
+    if not surface.find_entity("curvefever-trail", position) then 
         surface.create_entity{
-            name = "curve-trail",
+            name = "curvefever-trail",
             type = "wall",
             position = position,
             create_build_effect_smoke = true,
@@ -127,6 +127,10 @@ function arena.hit_effect_event(event)
     local player = nil
     if vehicle_in_range then
         local vehicle = vehicle_in_range[1]
+        if not vehicle then
+            log("Could not find vehicle that triggered effect beacon.")
+            return
+        end
         player = vehicle.get_driver().player
         local effect_type = string.sub(beacon.name, 19, -1)
         

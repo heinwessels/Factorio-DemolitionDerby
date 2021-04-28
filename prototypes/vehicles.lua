@@ -32,7 +32,6 @@ data:extend({
         }
     },
 
-
     ----------------------------------------------------------------------------------
     -- TANK
     ----------------------------------------------------------------------------------
@@ -50,6 +49,7 @@ data:extend({
             energy_source = {type = "void"},
             burner = nil,
             minable = {result = "curvefever-tank"},
+            max_health = 2000,
             resistances = {
                 {
                   type = "fire",
@@ -57,7 +57,7 @@ data:extend({
                 },
                 {
                   type = "impact",
-                  percent = 100,
+                  percent = 99,
                 },
             },
         }
