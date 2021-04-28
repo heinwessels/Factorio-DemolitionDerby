@@ -32,6 +32,8 @@ function effects.apply_effects(arena, player)
         end
 
         -- Apply the effects
+
+        ------------------------------------------------------------------------
         if effect_type == "trail" then
             -- Increase the vehicle speed and spawn some flames
             if game.tick % constants.trail.period >= constants.trail.gap then
@@ -49,20 +51,13 @@ function effects.apply_effects(arena, player)
                     }
                 end
             end
+        ------------------------------------------------------------------------
         elseif effect_type == "speed" then
             -- Increase the vehicle speed and spawn some flames
             vehicle.speed = vehicle.speed * (1 + effect.speed_modifier)
-            if game.tick % constants.effects.speed.fire_freq == 0 then
-                surface.create_entity{
-                    name = "fire-flame",
-                    type = "fire",
-                    position = player.position,
-                }
-            end
-            
+        ------------------------------------------------------------------------
         elseif effect_type == "tank" then
-            -- Change to driving a tank instead of car
-            
+            -- Change to driving a tank instead of car            
             if vehicle.name ~= "curvefever-tank" then
                 -- Haven't swapped vehicles yet. Do it now.
                 effects.swap_vehicle(player, "curvefever-tank")
@@ -70,7 +65,34 @@ function effects.apply_effects(arena, player)
                 -- Timed out, swap back to normal vehicle
                 effects.swap_vehicle(player, "curvefever-car")
             end
+        ------------------------------------------------------------------------
+        elseif effect_type == "fire" then
+            -- Throw down a slow-down sticker right on the player
+            if game.tick % constants.effects.speed.fire_freq == 0 then
+                surface.create_entity{
+                    name = "fire-flame",
+                    type = "fire",
+                    position = player.position,
+                }
+            end
+            ------------------------------------------------------------------------
+        elseif effect_type == "slowdown" then
+            -- Throw down a slow-down sticker right on the player
+            if not timed_out then
+                if not effects.vehicle_has_sticker(vehicle, "slowdown-sticker") then
+                    surface.create_entity{
+                        name = "slowdown-sticker",
+                        target = vehicle,
+                        target_type = "position",
+                        position = player.position,
+                    }
+                end
+            else
+                -- Remove the sticker when timed out
+                effects.vehicle_remove_sticker(vehicle, "slowdown-sticker")
+            end
         end
+        ------------------------------------------------------------------------
 
         -- Did this effect time out?
         if timed_out then
@@ -95,6 +117,7 @@ function effects.add_effect(arena, player, effects)
     
         -- Either way, overwrite the effect
         player_state.effects[effect_type] = util.copy(effect)
+        player_state.effects[effect_type].tick_started = game.tick
     end    
 end
 
@@ -133,7 +156,8 @@ function effects.swap_vehicle(player, vehicle_name)
         name = vehicle_name,
         position = position,
         force = player.force,
-        raise_built = false
+        raise_built = false,
+        create_build_effect_smoke = true,
     }
     if not vehicle then
         error("Creating new vehicle ("..vehicle_name..") during swop for player "..player.name)
@@ -145,6 +169,27 @@ function effects.swap_vehicle(player, vehicle_name)
         direction = turning_direction,
     }
     character.driving = true    -- TODO Does this mean he can get into someone elses car?
+end
+
+function effects.vehicle_has_sticker(vehicle, sticker_name)
+    if not vehicle.stickers then return false end
+    for _, sticker in pairs(vehicle.stickers) do
+        if sticker.name == sticker_name then
+            return true
+        end
+    end
+    return false
+end
+
+function effects.vehicle_remove_sticker(vehicle, sticker_name)
+    -- Fails silently
+    if not vehicle.stickers then return end
+    for index, sticker in pairs(vehicle.stickers) do
+        if sticker.name == sticker_name then            
+            sticker.destroy()
+            return
+        end
+    end
 end
 
 return effects

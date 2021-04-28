@@ -33,18 +33,18 @@ data:extend({
         {
             layers = {
                 {
-                    filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-back.png",
+                    filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-bad-not.png",
                     priority = "medium",
                     width = 64,
                     height = 64,
                 },
-            }  
+            }
         },
         picture_set =
         {
             layers = {
                 {
-                    filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-back.png",
+                    filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-bad-not.png",
                     priority = "medium",
                     width = 64,
                     height = 64,
@@ -55,7 +55,7 @@ data:extend({
         {
             layers = {
                 {
-                    filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-back.png",
+                    filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-bad-not.png",
                     priority = "medium",
                     width = 64,
                     height = 64,
@@ -85,7 +85,8 @@ data:extend({
 ----------------------------------------------------------------------------------
 -- The function used to create new effects
 ----------------------------------------------------------------------------------
-function create_effect_beacon(name, icon, picture)
+function create_effect_beacon(name, icon, picture, type)
+    -- type = "good" or "bad" or "bad-not-stripe" (will have a stripe overlay saying NOT)
     if string.match(name, "curvefever-") then error("`curvefever-` preposition added automatically.") end
     name = "curvefever-effect-"..name
     data:extend({
@@ -106,9 +107,47 @@ function create_effect_beacon(name, icon, picture)
         },
     })
 
-    table.insert(data.raw["land-mine"][name].picture_safe.layers, picture)
-    table.insert(data.raw["land-mine"][name].picture_set.layers, picture)
-    table.insert(data.raw["land-mine"][name].picture_set_enemy.layers, picture)
+    if type == "good" then
+        picture = {
+            layers = {
+                {
+                    filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-good.png",
+                    priority = "medium",
+                    width = 64,
+                    height = 64,
+                },
+                picture,
+            }
+        }
+    elseif type == "bad" then
+        picture = {
+            layers = {
+                {
+                    filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-bad.png",
+                    priority = "medium",
+                    width = 64,
+                    height = 64,
+                },
+                picture,
+            }
+        }
+    elseif type == "bad-not" then
+        picture = {
+            layers = {
+                picture,
+                {
+                    filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-bad-not.png",
+                    priority = "medium",
+                    width = 64,
+                    height = 64,
+                },                
+            }
+        }
+    end
+
+    data.raw["land-mine"][name].picture_safe = picture
+    data.raw["land-mine"][name].picture_set = picture
+    data.raw["land-mine"][name].picture_set_enemy = picture
 end
 
 ----------------------------------------------------------------------------------
@@ -122,7 +161,8 @@ create_effect_beacon(
         priority = "medium",
         width = 64,
         height = 64,
-    }
+    },
+    "good"
 )
 create_effect_beacon(
     "tank",
@@ -132,5 +172,17 @@ create_effect_beacon(
         priority = "medium",
         width = 64,
         height = 64,
-    }
+    },
+    "good"
+)
+create_effect_beacon(
+    "slowdown",
+    "__base__/graphics/icons/coin.png",
+    {
+        filename = "__base__/graphics/icons/slowdown-capsule.png",
+        priority = "medium",
+        width = 64,
+        height = 64,
+    },
+    "bad"
 )

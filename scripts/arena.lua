@@ -122,20 +122,28 @@ function arena.hit_effect_event(event)
                 speed = {
                     speed_modifier = 0.5,
                     ticks_to_live = 3*60,
-                    tick_started = game.tick,
+                },
+                fire = {
+                    ticks_to_live = 3*60,
                 },
             })
         elseif effect_type == "tank" then
             effects.add_effect(arena, player, {
                 tank = {
                     ticks_to_live = 3*60,
-                    tick_started = game.tick,
+                },
+            })
+        elseif effect_type == "slowdown" then
+            effects.add_effect(arena, player, {
+                slowdown = {
+                    ticks_to_live = 3*60,
+                },
+                speed = {
+                    speed_modifier = -0.5,
+                    ticks_to_live = 3*60,
                 },
             })
         end
-
-        -- TODO Handle other types
-
     end
 end
 
