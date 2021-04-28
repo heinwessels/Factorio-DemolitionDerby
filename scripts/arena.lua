@@ -44,7 +44,8 @@ function arena.start()
         local player_state = arena.player_states[player.index]
         player_state.status = "playing"
         effects.add_effect(arena, player, {
-            trail = {
+            {
+                type = "trail",
                 -- Forever
                 ticks_to_live = nil,
             },
@@ -119,27 +120,37 @@ function arena.hit_effect_event(event)
         -- Add the applicable effect
         if effect_type == "speed" then
             effects.add_effect(arena, player, {
-                speed = {
-                    speed_modifier = 0.5,
+                {
+                    type = "speed",
+                    speed_modifier = 1.8,
                     ticks_to_live = 3*60,
                 },
-                fire = {
+                {                    
+                    type = "fire",
                     ticks_to_live = 3*60,
                 },
             })
         elseif effect_type == "tank" then
             effects.add_effect(arena, player, {
-                tank = {
+                {
+                    type = "tank",
+                    ticks_to_live = 3*60,
+                },
+                {
+                    type = "speed",
+                    speed_modifier = 0.55,
                     ticks_to_live = 3*60,
                 },
             })
         elseif effect_type == "slowdown" then
             effects.add_effect(arena, player, {
-                slowdown = {
+                {
+                    type = "slowdown",
                     ticks_to_live = 3*60,
                 },
-                speed = {
-                    speed_modifier = -0.5,
+                {
+                    type = "speed",
+                    speed_modifier = 0.55,
                     ticks_to_live = 3*60,
                 },
             })

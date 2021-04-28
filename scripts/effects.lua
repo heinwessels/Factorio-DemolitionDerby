@@ -1,4 +1,5 @@
 local util = require("util")
+local curvefever_util = require("scripts.curvefever-util")
 local constants = require("scripts.constants")
 
 local effects = { }
@@ -14,14 +15,18 @@ local effects = { }
 -- }
 
 -- Iterate through all effects currently on player and add them to the player
-function effects.apply_effects(arena, player)    
+function effects.apply_effects(arena, player)
+
+    local surface = player.surface
+    local character = player.character    
+
     -- For every effect on this player
     local player_state = arena.player_states[player.index]
-    for effect_type, effect in pairs(player_state.effects) do
+    for effect_index, effect in pairs(player_state.effects) do
+        local effect_type = effect.type
 
-        local surface = player.surface
-        local character = player.character
-        local vehicle = player.character.vehicle        
+        -- Need to get the vehicle every iteration in case it's swopped
+        local vehicle = player.character.vehicle
 
         -- Did this effect time out?
         local timed_out = false
@@ -32,7 +37,6 @@ function effects.apply_effects(arena, player)
         end
 
         -- Apply the effects
-
         ------------------------------------------------------------------------
         if effect_type == "trail" then
             -- Increase the vehicle speed and spawn some flames
@@ -53,8 +57,8 @@ function effects.apply_effects(arena, player)
             end
         ------------------------------------------------------------------------
         elseif effect_type == "speed" then
-            -- Increase the vehicle speed and spawn some flames
-            vehicle.speed = vehicle.speed * (1 + effect.speed_modifier)
+            -- Modifies the vehicle speed 
+            vehicle.speed = vehicle.speed * effect.speed_modifier
         ------------------------------------------------------------------------
         elseif effect_type == "tank" then
             -- Change to driving a tank instead of car            
@@ -97,10 +101,12 @@ function effects.apply_effects(arena, player)
         -- Did this effect time out?
         if timed_out then
             log("Removing "..effect_type.." from "..player.name.." in arena: "..arena.name)
-            player_state.effects[effect_type] = nil    -- delete this entry in the effects table
+            player_state.effects[effect_index] = nil    -- Delete (remember to compact array afterwards)
         end
-
     end
+
+    -- Remove possible nils from effects array
+    curvefever_util.compact_array(player_state.effects)
 end
 
 -- Adds a table of effects to a player
@@ -108,16 +114,11 @@ end
 -- extend the ticks_to_live
 function effects.add_effect(arena, player, effects)
     local player_state = arena.player_states[player.index]
-    for effect_type, effect in pairs(effects) do
-        log("Adding "..effect_type.." to "..player.name.." in arena: "..arena.name)
-        if player_state.effects[effect_type] then
-            -- Player already has this effect applied. Extend the ticks_to_live
-            effect.ticks_to_live = effect.ticks_to_live + player_state.effects[effect_type].ticks_to_live
-        end
-    
-        -- Either way, overwrite the effect
-        player_state.effects[effect_type] = util.copy(effect)
-        player_state.effects[effect_type].tick_started = game.tick
+    for _, effect in pairs(effects) do
+        local effect_type = effect.type
+        effect.tick_started = game.tick        
+        table.insert(player_state.effects, util.copy(effect))
+        log("Adding "..effect_type.." effect to "..player.name.." in arena "..arena.name.." (total "..#player_state.effects..")")
     end    
 end
 
