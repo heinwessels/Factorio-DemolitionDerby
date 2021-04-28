@@ -186,3 +186,14 @@ create_effect_beacon(
     },
     "bad"
 )
+create_effect_beacon(
+    "no-trail",
+    "__base__/graphics/icons/coin.png",
+    {
+        filename = "__base__/graphics/icons/wall.png",
+        priority = "medium",
+        width = 64,
+        height = 64,
+    },
+    "bad-not"
+)

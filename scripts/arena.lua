@@ -45,9 +45,8 @@ function arena.start()
         player_state.status = "playing"
         effects.add_effect(arena, player, {
             {
-                type = "trail",
-                -- Forever
-                ticks_to_live = nil,
+                type = "trail",                
+                ticks_to_live = nil, -- Forever
             },
         })
     end
@@ -130,6 +129,13 @@ function arena.hit_effect_event(event)
                     ticks_to_live = 3*60,
                 },
             })
+        elseif effect_type == "no-trail" then
+                effects.add_effect(arena, player, {
+                    {
+                        type = "no-trail",
+                        ticks_to_live = 3*60,
+                    },
+                })
         elseif effect_type == "tank" then
             effects.add_effect(arena, player, {
                 {
@@ -153,6 +159,13 @@ function arena.hit_effect_event(event)
                     speed_modifier = 0.55,
                     ticks_to_live = 3*60,
                 },
+            })
+        elseif effect_type == "slowdown" then
+            effects.add_effect(arena, player, {
+                {
+                    type = "no-trail",
+                    ticks_to_live = 3*60,
+                },                
             })
         end
     end
