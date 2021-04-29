@@ -1,27 +1,45 @@
 local util = require("util")
 local effects = require("scripts.effects")
 local constants = require("scripts.constants")
+local builder = require("scripts.arena-builder")
 
 local arena = {
     name = "",
-
+    
     area = { },
+    surface = nil,
+    builder = builder.create(),
+
     players = { },
     player_states = { },    
     effects = { },  -- Current effects scattered in arena
 
+    -- Possible statusses
+    -- empty        -> Only defined, not built or ready
+    -- ready        -> Ready for a game to start (except importing players)
+    -- playing      -> currently has a game running
+    -- building     -> (Re)building map (done at creation or cleaning)
     status = "empty"
 }
 
 -- Set up a arena to be played at some point
 -- area     of the arena
-function arena.create(name, area)
+function arena.create(name, area, surface)
     arena.name = name
     arena.area = area
-    arena.status = "ready"
+    arena.surface = surface
     arena.players = { }
 
     log("Created arena "..arena.name)
+    
+    -- Now build the arena
+    arena.set_state(arena, "building")
+    builder.start(arena)
+end
+
+function arena.clean(arena)
+    arena.set_state(arena, "building")
+    builder.start(arena)
 end
 
 -- Add player to arena to be played
@@ -49,8 +67,8 @@ function arena.start()
             },
         })
     end
-    arena.status = "playing"
     log("Started arena "..arena.name.." with "..#arena.players.." players")
+    arena.set_state(arena, "playing")
 end
 
 function arena.create_player_state(arena, player)
@@ -63,28 +81,36 @@ function arena.create_player_state(arena, player)
 end
 
 -- Call this function every tick
-function arena.update()
+function arena.update(arena)
 
     -- TODO check game. Is all the players still there?
     -- Stuff like that.
+    if arena.state == "building" then
+        builder.iterate(arena)
+        if arena.builder.state == "idle" then
+            arena.set_state(arena, "ready")
+        end
+    end
 
-    for _, player in pairs(arena.players) do
-        if player.character then
-            -- Update for a specific player
-            
-            local vehicle = player.character.vehicle  
-            local player_state = arena.player_states[player.index]
+    if arena.state == "playing" then
+        for _, player in pairs(arena.players) do
+            if player.character then
+                -- Update for a specific player
+                
+                local vehicle = player.character.vehicle  
+                local player_state = arena.player_states[player.index]
 
-            if player_state.status == "playing" and vehicle then
+                if player_state.status == "playing" and vehicle then
 
-                -- Ensure player is still driving
-                vehicle.speed = constants.vehicle_speed
-                -- TODO Ensure he is still in his car
+                    -- Ensure player is still driving
+                    vehicle.speed = constants.vehicle_speed
+                    -- TODO Ensure he is still in his car
 
-                -- Apply any effects
-                effects.apply_effects(arena, player)
+                    -- Apply any effects
+                    effects.apply_effects(arena, player)
 
-                -- TODO Update score.
+                    -- TODO Update score.
+                end
             end
         end
     end
@@ -145,6 +171,11 @@ function arena.hit_effect_event(event)
             })
         end
     end
+end
+
+function arena.set_state(arena, state)
+    log("Setting arena <"..arena.name.."> state to <"..state..">")
+    arena.state = state
 end
 
 return arena

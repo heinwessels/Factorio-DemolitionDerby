@@ -2,7 +2,7 @@ local arena = require("scripts.arena")
 
 function ontick_event (event)
 
-    arena.update()
+    arena.update(arena)
 end
 script.on_event(defines.events.on_tick, ontick_event)
 
@@ -33,11 +33,19 @@ script.on_event(defines.events.on_player_driving_changed_state,
 remote.add_interface("curvefever-interface", {
     -- the values can be only primitive type or (nested) tables
     create = function()
-        arena.create("test_arena", nil)  -- TODO Contain area
+        arena.create(
+            "test_arena", 
+            {{-142.5, 48.8}, {309.5, 295.5}}, 
+            game.surfaces.nauvis
+        )
     end,
 
     start = function()
         arena.start()
+    end,
+
+    clean = function()
+        arena.clean()
     end,
 })
 
