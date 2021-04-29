@@ -44,8 +44,7 @@ function arena.start()
         local player_state = arena.player_states[player.index]
         player_state.status = "playing"
         effects.add_effect(arena, player, {
-            {
-                type = "trail",                
+            trail = {              
                 ticks_to_live = nil, -- Forever
             },
         })
@@ -117,53 +116,30 @@ function arena.hit_effect_event(event)
         local effect_type = string.sub(beacon.name, 19, -1)
         
         -- Add the applicable effect
-        if effect_type == "speed" then
+        if effect_type == "speed_up" then
             effects.add_effect(arena, player, {
-                {
-                    type = "speed",
+                speed_up = {
                     speed_modifier = 1.8,
                     ticks_to_live = 3*60,
                 },
-                {                    
-                    type = "fire",
-                    ticks_to_live = 3*60,
-                },
             })
-        elseif effect_type == "no-trail" then
-                effects.add_effect(arena, player, {
-                    {
-                        type = "no-trail",
-                        ticks_to_live = 3*60,
-                    },
-                })
         elseif effect_type == "tank" then
             effects.add_effect(arena, player, {
-                {
-                    type = "tank",
-                    ticks_to_live = 3*60,
-                },
-                {
-                    type = "speed",
+                tank = {
                     speed_modifier = 0.55,
                     ticks_to_live = 3*60,
                 },
             })
-        elseif effect_type == "slowdown" then
+        elseif effect_type == "slow_down" then
             effects.add_effect(arena, player, {
-                {
-                    type = "slowdown",
-                    ticks_to_live = 3*60,
-                },
-                {
-                    type = "speed",
+                slow_down = {
                     speed_modifier = 0.55,
                     ticks_to_live = 3*60,
                 },
             })
-        elseif effect_type == "slowdown" then
+        elseif effect_type == "no_trail" then
             effects.add_effect(arena, player, {
-                {
-                    type = "no-trail",
+                no_trail = {
                     ticks_to_live = 3*60,
                 },                
             })

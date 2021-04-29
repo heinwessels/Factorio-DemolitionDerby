@@ -154,7 +154,7 @@ end
 -- Now create the effect beacons we want
 ----------------------------------------------------------------------------------
 create_effect_beacon(
-    "speed",
+    "speed_up",
     "__base__/graphics/icons/coin.png",
     {
         filename = "__base__/graphics/icons/car.png",
@@ -176,7 +176,7 @@ create_effect_beacon(
     "good"
 )
 create_effect_beacon(
-    "slowdown",
+    "slow_down",
     "__base__/graphics/icons/coin.png",
     {
         filename = "__base__/graphics/icons/slowdown-capsule.png",
@@ -187,7 +187,7 @@ create_effect_beacon(
     "bad"
 )
 create_effect_beacon(
-    "no-trail",
+    "no_trail",
     "__base__/graphics/icons/coin.png",
     {
         filename = "__base__/graphics/icons/wall.png",

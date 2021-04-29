@@ -22,111 +22,102 @@ function effects.apply_effects(arena, player)
 
     -- For every effect on this player
     local player_state = arena.player_states[player.index]
-    for effect_index, effect in pairs(player_state.effects) do
-        if effect then
-            local effect_type = effect.type
+    for effect_type, effect in pairs(player_state.effects) do
 
-            -- Need to get the vehicle every iteration in case it's swopped
-            local vehicle = player.character.vehicle
+        -- Need to get the vehicle every iteration in case it's swopped
+        local vehicle = player.character.vehicle
 
-            -- Did this effect time out?
-            local timed_out = false
-            if effect.ticks_to_live and game.tick > effect.tick_started + effect.ticks_to_live then
-                -- Keep track of it effects can stop correctly. Only removed
-                -- afterwards
-                timed_out = true
-            end
+        -- Did this effect time out?
+        local timed_out = false
+        if effect.ticks_to_live and game.tick > effect.tick_started + effect.ticks_to_live then
+            -- Keep track of it effects can stop correctly. Only removed
+            -- afterwards
+            timed_out = true
+        end
 
-            -- Apply the effects
-            ------------------------------------------------------------------------
-            if effect_type == "trail" then
-                -- Default drawing of trail behind player
-                if game.tick % constants.trail.period >= constants.trail.gap then
-                    local orientation = vehicle.orientation * 2 * math.pi
-                    local position = {
-                        x = vehicle.position.x - constants.trail.offset*math.sin(orientation),
-                        y = vehicle.position.y + constants.trail.offset*math.cos(orientation),
+        -- Apply the effects
+        ------------------------------------------------------------------------
+        if effect_type == "trail" then
+            -- Default drawing of trail behind player
+            if game.tick % constants.trail.period >= constants.trail.gap then
+                local orientation = vehicle.orientation * 2 * math.pi
+                local position = {
+                    x = vehicle.position.x - constants.trail.offset*math.sin(orientation),
+                    y = vehicle.position.y + constants.trail.offset*math.cos(orientation),
+                }
+                if not surface.find_entity("curvefever-trail", position) then 
+                    surface.create_entity{
+                        name = "curvefever-trail",
+                        type = "wall",
+                        position = position,
+                        create_build_effect_smoke = true,
                     }
-                    if not surface.find_entity("curvefever-trail", position) then 
-                        surface.create_entity{
-                            name = "curvefever-trail",
-                            type = "wall",
-                            position = position,
-                            create_build_effect_smoke = true,
-                        }
-                    end
                 end
-            ------------------------------------------------------------------------
-            elseif effect_type == "speed" then
-                -- Modifies the vehicle speed 
+            end
+        ------------------------------------------------------------------------
+        elseif effect_type == "speed_up" then
+            -- Increase vehicle speed and spurt flames
+            vehicle.speed = vehicle.speed * effect.speed_modifier
+            if game.tick % constants.effects.speed.fire_freq == 0 then
+                surface.create_entity{
+                    name = "fire-flame",
+                    type = "fire",
+                    position = player.position,
+                }
+            end
+        ------------------------------------------------------------------------
+        elseif effect_type == "tank" then
+            -- Turn into tank and go slower
+            if not timed_out then
                 vehicle.speed = vehicle.speed * effect.speed_modifier
-            ------------------------------------------------------------------------
-            elseif effect_type == "tank" then
-                -- Change to driving a tank instead of car            
                 if vehicle.name ~= "curvefever-tank" then
                     -- Haven't swapped vehicles yet. Do it now.
                     effects.swap_vehicle(player, "curvefever-tank")
-                elseif timed_out then
-                    -- Timed out, swap back to normal vehicle
-                    effects.swap_vehicle(player, "curvefever-car")
                 end
-            ------------------------------------------------------------------------
-            elseif effect_type == "fire" then
-                -- Throw down a slow-down sticker right on the player
-                if game.tick % constants.effects.speed.fire_freq == 0 then
+            else
+                -- Timed out, swap back to normal vehicle
+                effects.swap_vehicle(player, "curvefever-car")
+            end
+        ------------------------------------------------------------------------            
+        elseif effect_type == "slow_down" then
+            -- Throw down a slow-down sticker right on the player and go slow
+            if not timed_out then
+                vehicle.speed = vehicle.speed * effect.speed_modifier
+                if not effects.vehicle_has_sticker(vehicle, "slowdown-sticker") then
                     surface.create_entity{
-                        name = "fire-flame",
-                        type = "fire",
+                        name = "slowdown-sticker",
+                        target = vehicle,
+                        target_type = "position",
                         position = player.position,
                     }
                 end
-            ------------------------------------------------------------------------
-            elseif effect_type == "slowdown" then
-                -- Throw down a slow-down sticker right on the player
-                if not timed_out then
-                    if not effects.vehicle_has_sticker(vehicle, "slowdown-sticker") then
-                        surface.create_entity{
-                            name = "slowdown-sticker",
-                            target = vehicle,
-                            target_type = "position",
-                            position = player.position,
-                        }
-                    end
-                else
-                    -- Remove the sticker when timed out
-                    effects.vehicle_remove_sticker(vehicle, "slowdown-sticker")
-                end
-            ------------------------------------------------------------------------
-            elseif effect_type == "no-trail" then
-                -- Stops player from drawing trail behind him
-                if not timed_out then
-                    local trail_effect_index = effects.has_effect(arena, player, "trail")
-                    if trail_effect_index then
-                        log("Removing trail effect from "..player.name.." in arena "..arena.name.." (total "..#player_state.effects..")")
-                        player_state.effects[trail_effect_index] = nil    -- Delete (remember to compact array afterwards)
-                    end
-                else
-                    -- On time-out give the player the trail effect again
-                    effects.add_effect(arena, player, {
-                        {
-                            type = "trail",                
-                            ticks_to_live = nil, -- Forever
-                        },
-                    })
-                end
+            else
+                -- Remove the sticker when timed out
+                effects.vehicle_remove_sticker(vehicle, "slowdown-sticker")
             end
-            ------------------------------------------------------------------------
+        ------------------------------------------------------------------------
+        elseif effect_type == "no_trail" then
+            -- Stops player from drawing trail behind him
+            if not timed_out then                
+                if player_state.effects["trail"] then
+                    effects.remove_effect(arena, player, "trail")
+                end
+            else
+                -- On time-out give the player the trail effect again
+                effects.add_effect(arena, player, {
+                    trail = {              
+                        ticks_to_live = nil, -- Forever
+                    },
+                })
+            end
+        end
+        ------------------------------------------------------------------------
 
-            -- Did this effect time out?
-            if timed_out then
-                log("Removing "..effect_type.." effect from "..player.name.." in arena "..arena.name.." (total "..#player_state.effects..")")
-                player_state.effects[effect_index] = nil    -- Delete (remember to compact array afterwards)
-            end
+        -- Did this effect time out?
+        if timed_out then
+            effects.remove_effect(arena, player, effect_type)
         end        
     end
-
-    -- Remove possible nils from effects array
-    curvefever_util.compact_array(player_state.effects)
 end
 
 -- Adds a table of effects to a player
@@ -134,24 +125,26 @@ end
 -- extend the ticks_to_live
 function effects.add_effect(arena, player, effects)
     local player_state = arena.player_states[player.index]
-    for _, effect in pairs(effects) do
-        local effect_type = effect.type
-        effect.tick_started = game.tick        
-        table.insert(player_state.effects, util.copy(effect))
-        log("Adding "..effect_type.." effect to "..player.name.." in arena "..arena.name.." (total "..#player_state.effects..")")
+    for effect_type, effect in pairs(effects) do
+        if player_state.effects[effect_type] then
+            -- Player already has this effect applied. Extend time
+            player_state.effects[effect_type].ticks_to_live = effect.ticks_to_live
+            log("Extending <"..effect_type.."> effect on <"..player.name.."> in arena <"..arena.name)
+        else
+            -- Player does not currently have this effect applied. Add it
+            effect.tick_started = game.tick
+            player_state.effects[effect_type] = effect
+            log("Adding <"..effect_type.."> effect on <"..player.name.."> to arena <"..arena.name)
+        end
     end    
 end
 
--- Checks if a player has some instance of a effect type
--- and returns the index of that effect
-function effects.has_effect(arena, player, effect_type)
+-- Removes a specific effect from a player if it's applied to him
+function effects.remove_effect(arena, player, effect_type)
     local player_state = arena.player_states[player.index]
-    for index, effect in pairs(player_state.effects) do
-        if effect.type == effect_type then
-            return index
-        end
-    end
-    return nil
+    if not player_state.effects[effect_type] then return end
+    log("Removing <"..effect_type.."> effect from "..player.name.." in arena <"..arena.name.."> (total "..#player_state.effects..")")
+    player_state.effects[effect_type] = nil    -- Delete
 end
 
 -- Removes all effects from a player
