@@ -1,8 +1,9 @@
-local arena = require("scripts.arena")
+local Arena = require("scripts.arena")
+
+local arena = { }
 
 function ontick_event (event)
-
-    arena.update(arena)
+    Arena.update(arena)
 end
 script.on_event(defines.events.on_tick, ontick_event)
 
@@ -11,7 +12,7 @@ script.on_event(defines.events.on_player_created, function (event)
 end)
 
 script.on_event(defines.events.on_script_trigger_effect, function (event)
-    arena.hit_effect_event(event)
+    Arena.hit_effect_event(event)
 end)
 
 script.on_event(defines.events.on_player_driving_changed_state,
@@ -20,7 +21,7 @@ script.on_event(defines.events.on_player_driving_changed_state,
         -- TODO This should check first if it was in the lobby
         -- Remember, this event is fired for some effects too
         local player = game.get_player(event.player_index)
-        arena.add_player(player)
+        Arena.add_player(player)
 
         if not event.entity then
             -- The player might have tried to climb out of his car.
@@ -33,19 +34,19 @@ script.on_event(defines.events.on_player_driving_changed_state,
 remote.add_interface("curvefever-interface", {
     -- the values can be only primitive type or (nested) tables
     create = function()
-        arena.create(
+        arena = Arena.create(
             "test_arena", 
-            {{-142.5, 48.8}, {309.5, 295.5}}, 
+            {{x=-142.5, y=48.8}, {x=309.5, y=295.5}}, 
             game.surfaces.nauvis
         )
     end,
 
     start = function()
-        arena.start()
+        Arena.start(arena)
     end,
 
     clean = function()
-        arena.clean()
+        Arena.clean(arena)
     end,
 })
 

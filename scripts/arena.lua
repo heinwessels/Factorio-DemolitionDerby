@@ -1,49 +1,62 @@
 local util = require("util")
 local effects = require("scripts.effects")
 local constants = require("scripts.constants")
-local builder = require("scripts.arena-builder")
+local Builder = require("scripts.builder")
+local curvefever_util = require("scripts.curvefever-util")
 
-local arena = {
-    name = "",
-    
-    area = { },
-    surface = nil,
-    builder = builder.create(),
-
-    players = { },
-    player_states = { },    
-    effects = { },  -- Current effects scattered in arena
-
-    -- Possible statusses
-    -- empty        -> Only defined, not built or ready
-    -- ready        -> Ready for a game to start (except importing players)
-    -- playing      -> currently has a game running
-    -- building     -> (Re)building map (done at creation or cleaning)
-    status = "empty"
-}
+local Arena = { }
 
 -- Set up a arena to be played at some point
 -- area     of the arena
-function arena.create(name, area, surface)
+function Arena.create(name, area, surface)
+    arena = {
+        name = "",
+        
+        surface = nil,
+        area = { },
+        starting_positions = { },   -- Each locatios includes a third entry orientation
+        builder = Builder.create(),
+    
+        max_players = 6,    -- Default
+        players = { },
+        player_states = { },    
+        effects = { },  -- Current effects scattered in arena
+    
+        -- Possible statusses
+        -- empty        -> Only defined, not built or ready
+        -- ready        -> Ready for a game to start (except importing players)
+        -- playing      -> currently has a game running
+        -- building     -> (Re)building map (done at creation or cleaning)
+        status = "empty"
+    }
+
+    -- TODO Add minimum allowed size
     arena.name = name
     arena.area = area
     arena.surface = surface
     arena.players = { }
 
-    log("Created arena "..arena.name)
+    if not arena.starting_positions or #arena.starting_positions==0 then
+        Arena.create_default_starting_locations(arena)
+    end
+
+    log("Created arena <"..arena.name.."> with area <"..curvefever_util.to_string(area)..">")
     
     -- Now build the arena
-    arena.set_state(arena, "building")
-    builder.start(arena)
+    Arena.set_state(arena, "building")
+    Builder.start(arena)
+
+
+    return arena
 end
 
-function arena.clean(arena)
-    arena.set_state(arena, "building")
-    builder.start(arena)
+function Arena.clean(arena)
+    Arena.set_state(arena, "building")
+    Builder.start(arena)
 end
 
 -- Add player to arena to be played
-function arena.add_player(player)
+function Arena.add_player(player)
 
     if arena.player_states[player.index] then
         log("Cannot add player "..player.name.." to arena "..arena.name.." again (Total: "..#arena.players..")")
@@ -51,13 +64,13 @@ function arena.add_player(player)
     end
 
     table.insert(arena.players, player)
-    arena.create_player_state(arena, player)
+    Arena.create_player_state(arena, player)
 
     log("Added player "..player.name.." to arena "..arena.name.." (Total: "..#arena.players..")")
 end
 
 -- Start the game for this arena
-function arena.start()
+function Arena.start()
     for _, player in pairs(arena.players) do
         local player_state = arena.player_states[player.index]
         player_state.status = "playing"
@@ -68,10 +81,10 @@ function arena.start()
         })
     end
     log("Started arena "..arena.name.." with "..#arena.players.." players")
-    arena.set_state(arena, "playing")
+    Arena.set_state(arena, "playing")
 end
 
-function arena.create_player_state(arena, player)
+function Arena.create_player_state(arena, player)
     arena.player_states[player.index] = {
         effects = { },      -- What effects are applied to this player?
         score = { },        -- Score of this player"
@@ -81,14 +94,14 @@ function arena.create_player_state(arena, player)
 end
 
 -- Call this function every tick
-function arena.update(arena)
+function Arena.update(arena)
 
     -- TODO check game. Is all the players still there?
     -- Stuff like that.
     if arena.state == "building" then
-        builder.iterate(arena)
+        Builder.iterate(arena)
         if arena.builder.state == "idle" then
-            arena.set_state(arena, "ready")
+            Arena.set_state(arena, "ready")
         end
     end
 
@@ -119,7 +132,7 @@ end
 -- This handler should be called if any effect beacon
 -- is hit. This function will decide if it's part of this
 -- arena, and apply it
-function arena.hit_effect_event(event)
+function Arena.hit_effect_event(event)
     local surface = game.get_surface(event.surface_index)
     local beacon = event.source_entity
     
@@ -173,9 +186,34 @@ function arena.hit_effect_event(event)
     end
 end
 
-function arena.set_state(arena, state)
+function Arena.create_default_starting_locations(arena)
+    -- Determines some default starting locations
+    -- Currently only places them in a grid.
+    -- TODO Rather make a cool circle thing
+    arena.starting_locations = { }
+    local spacing = 10
+    local middle = {
+        x=arena.area[1].x+(arena.area[2].x-arena.area[1].x)/2,
+        y=arena.area[1].y+(arena.area[2].y-arena.area[1].y)/2,
+    }    
+    local x = middle.x-spacing*((math.ceil(arena.max_players/2)-1)/2)
+    while #arena.starting_locations < arena.max_players do
+        local y = middle.y + spacing/2
+        local direction = defines.direction.south
+        if #arena.starting_locations % 2 ~= 0 then
+            y = middle.y - spacing/2
+            direction = defines.direction.north
+        else
+            -- Ready for next column
+            x = x + spacing -- This is our iterator
+        end
+        table.insert(arena.starting_locations, {x=x, y=y, direction=direction})
+    end
+end
+
+function Arena.set_state(arena, state)
     log("Setting arena <"..arena.name.."> state to <"..state..">")
     arena.state = state
 end
 
-return arena
+return Arena

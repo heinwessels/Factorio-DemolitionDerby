@@ -18,6 +18,7 @@ data:extend({
             energy_source = {type = "void"},
             burner = nil,
             minable = {result = "curvefever-car"},
+            max_health = 100,
             resistances = {
                 {
                   type = "fire",

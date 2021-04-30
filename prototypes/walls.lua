@@ -22,6 +22,32 @@ data:extend({
             name = "curvefever-border",
             minable = {result = "curvefever-border"},
             max_health = 100000000,
+            resistances = {
+                {
+                    type = "fire",
+                    percent = 100
+                },
+                {
+                    type = "impact",
+                    percent = 100,
+                },
+                {
+                    type = "explosion",
+                    percent = 100,
+                },
+                {
+                    type = "laser",
+                    percent = 100,
+                },
+                {
+                    type = "acid",
+                    percent = 100,
+                },
+                {
+                    type = "physical",
+                    percent = 100,
+                },
+            },
             attack_reaction =
             {
                 {
