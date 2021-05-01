@@ -25,6 +25,11 @@ data:extend({
                   percent = 100
                 },
                 {
+                    type = "acid",
+                    percent = 0,
+                    decrease = -5000  -- die instantly
+                },
+                {
                   type = "impact",
                   percent = 0,
                   decrease = -5000  -- die instantly
@@ -53,12 +58,16 @@ data:extend({
             max_health = 2000,
             resistances = {
                 {
-                  type = "fire",
-                  percent = 100
+                    type = "impact",
+                    percent = 99,
                 },
                 {
-                  type = "impact",
-                  percent = 99,
+                  type = "fire",
+                  percent = 100     -- immune
+                },
+                {
+                    type = "acid",
+                    percent = 100,  -- immune
                 },
             },
         }

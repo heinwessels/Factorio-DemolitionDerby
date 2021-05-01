@@ -110,6 +110,50 @@ function effects.apply_effects(arena, player)
                     },
                 })
             end
+        ------------------------------------------------------------------------
+        elseif effect_type == "worm" then
+            -- Stops player from drawing trail behind him
+            if not timed_out then
+                if effect.worm == nil then
+                    -- Worm not spawned yet
+
+                    -- First make sure player is far enough away
+                    local buffer = 2
+                    if (player.position.x > effect.position.x + buffer
+                            or player.position.x < effect.position.x - buffer) and
+                            (player.position.y > effect.position.y + buffer
+                            or player.position.y < effect.position.y - buffer)
+                    then
+                        -- Player is far enough away
+                        
+                        -- Destroy all walls in that area
+                        for _, wall in pairs(surface.find_entities_filtered{
+                            area = {
+                                {effect.position.x - buffer, effect.position.y - buffer},
+                                {effect.position.x + buffer, effect.position.y + buffer}
+                            },
+                            name = "curvefever-trail"
+                        }) do
+                            wall.die()
+                        end
+
+                        -- Add worm
+                        effect.worm = surface.create_entity{
+                            name = "behemoth-worm-turret",                        
+                            position = effect.position,
+                        }
+                        if effect.worm == nil then
+                            error("Could not spawn worm on arena <"..arena.name.."> for player <"..player.name.."> at location <"..curvefever_util.to_string(player.position)..">")
+                        end
+
+                    end
+                end
+            else
+                -- Timed out. Remove the worm
+                if effect.worm and effect.worm.valid then
+                    effect.worm.die()
+                end
+            end        
         end
         ------------------------------------------------------------------------
 
@@ -126,15 +170,16 @@ end
 function effects.add_effect(arena, player, effects)
     local player_state = arena.player_states[player.index]
     for effect_type, effect in pairs(effects) do
+        effect.position = player.position
         if player_state.effects[effect_type] then
             -- Player already has this effect applied. Extend time
             player_state.effects[effect_type].ticks_to_live = effect.ticks_to_live
-            log("Extending <"..effect_type.."> effect on <"..player.name.."> in arena <"..arena.name)
+            -- log("Extending <"..effect_type.."> effect on <"..player.name.."> in arena <"..arena.name)
         else
             -- Player does not currently have this effect applied. Add it
             effect.tick_started = game.tick
             player_state.effects[effect_type] = effect
-            log("Adding <"..effect_type.."> effect on <"..player.name.."> to arena <"..arena.name)
+            -- log("Adding <"..effect_type.."> effect on <"..player.name.."> to arena <"..arena.name)
         end
     end    
 end
@@ -143,7 +188,7 @@ end
 function effects.remove_effect(arena, player, effect_type)
     local player_state = arena.player_states[player.index]
     if not player_state.effects[effect_type] then return end
-    log("Removing <"..effect_type.."> effect from "..player.name.." in arena <"..arena.name.."> (total "..#player_state.effects..")")
+    -- log("Removing <"..effect_type.."> effect from "..player.name.." in arena <"..arena.name.."> (total "..#player_state.effects..")")
     player_state.effects[effect_type] = nil    -- Delete
 end
 
@@ -163,7 +208,7 @@ function effects.swap_vehicle(player, vehicle_name)
     end
 
     -- Saying we did it a little preemptively
-    log("Player "..player.name.." vechicle swopped from "..vehicle.name.." to "..vehicle_name)
+    -- log("Player "..player.name.." vechicle swopped from "..vehicle.name.." to "..vehicle_name)
 
     -- Remember what the vehicle is doing now
     local speed = vehicle.speed

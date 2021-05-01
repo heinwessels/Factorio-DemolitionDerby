@@ -1,3 +1,5 @@
+local size_modifier = 1.5
+
 ----------------------------------------------------------------------------------
 -- Create the base effect beacon on which all actual implementations will be based
 ----------------------------------------------------------------------------------
@@ -27,8 +29,8 @@ data:extend({
         max_health = 15,
         corpse = "land-mine-remnants",
         -- dying_explosion = "land-mine-explosion",
-        collision_box = {{-0.8,-0.8}, {0.8, 0.8}},
-        selection_box = {{-1, -1}, {1, 1}},        
+        collision_box = {{-size_modifier,-size_modifier}, {size_modifier, size_modifier}},
+        selection_box = {{-size_modifier, -size_modifier}, {size_modifier, size_modifier}},
         picture_safe =
         {
             layers = {
@@ -37,6 +39,7 @@ data:extend({
                     priority = "medium",
                     width = 64,
                     height = 64,
+                    scale = size_modifier,
                 },
             }
         },
@@ -48,6 +51,7 @@ data:extend({
                     priority = "medium",
                     width = 64,
                     height = 64,
+                    scale = size_modifier,
                 },
             }            
         },
@@ -59,6 +63,7 @@ data:extend({
                     priority = "medium",
                     width = 64,
                     height = 64,
+                    scale = size_modifier,
                 },
             }  
         },
@@ -115,6 +120,7 @@ function create_effect_beacon(name, icon, picture, type)
                     priority = "medium",
                     width = 64,
                     height = 64,
+                    scale = size_modifier,
                 },
                 picture,
             }
@@ -127,6 +133,7 @@ function create_effect_beacon(name, icon, picture, type)
                     priority = "medium",
                     width = 64,
                     height = 64,
+                    scale = size_modifier,
                 },
                 picture,
             }
@@ -140,6 +147,7 @@ function create_effect_beacon(name, icon, picture, type)
                     priority = "medium",
                     width = 64,
                     height = 64,
+                    scale = size_modifier,
                 },                
             }
         }
@@ -161,6 +169,7 @@ create_effect_beacon(
         priority = "medium",
         width = 64,
         height = 64,
+        scale = size_modifier,
     },
     "good"
 )
@@ -172,6 +181,7 @@ create_effect_beacon(
         priority = "medium",
         width = 64,
         height = 64,
+        scale = size_modifier,
     },
     "good"
 )
@@ -183,6 +193,7 @@ create_effect_beacon(
         priority = "medium",
         width = 64,
         height = 64,
+        scale = size_modifier,
     },
     "bad"
 )
@@ -194,6 +205,19 @@ create_effect_beacon(
         priority = "medium",
         width = 64,
         height = 64,
+        scale = size_modifier,
     },
     "bad-not"
+)
+create_effect_beacon(
+    "worm",
+    "__base__/graphics/icons/coin.png",
+    {
+        filename = "__base__/graphics/icons/behemoth-worm.png",
+        priority = "medium",
+        width = 64,
+        height = 64,
+        scale = size_modifier,
+    },
+    "bad"
 )

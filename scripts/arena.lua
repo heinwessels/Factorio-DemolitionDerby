@@ -169,6 +169,7 @@ function Arena.update_effect_beacons(arena)
             "tank",
             "slow_down",
             "no_trail",
+            "worm",
         }
         Arena.attempt_spawn_effect_beacon(
             arena,
@@ -232,27 +233,33 @@ function Arena.hit_effect_event(arena, event)
             effects.add_effect(arena, player, {
                 speed_up = {
                     speed_modifier = 1.8,
-                    ticks_to_live = 3*60,
+                    ticks_to_live = 5*60,
                 },
             })
         elseif effect_type == "tank" then
             effects.add_effect(arena, player, {
                 tank = {
                     speed_modifier = 0.55,
-                    ticks_to_live = 3*60,
+                    ticks_to_live = 5*60,
                 },
             })
         elseif effect_type == "slow_down" then
             effects.add_effect(arena, player, {
                 slow_down = {
                     speed_modifier = 0.55,
-                    ticks_to_live = 3*60,
+                    ticks_to_live = 5*60,
                 },
             })
         elseif effect_type == "no_trail" then
             effects.add_effect(arena, player, {
                 no_trail = {
-                    ticks_to_live = 3*60,
+                    ticks_to_live = 5*60,
+                },                
+            })
+        elseif effect_type == "worm" then
+            effects.add_effect(arena, player, {
+                worm = {
+                    ticks_to_live = 13*60,
                 },                
             })
         end
