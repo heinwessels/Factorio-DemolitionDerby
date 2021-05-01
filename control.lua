@@ -21,7 +21,7 @@ script.on_event(defines.events.on_tick, function (event)
     -----------------------------------------------------------------------
 
     for _, arena in pairs(arenas) do
-        Arena.update(arena)
+        Arena.update(arenas["test_arena"])
     end
 end)
 
@@ -30,7 +30,10 @@ script.on_event(defines.events.on_player_created, function (event)
 end)
 
 script.on_event(defines.events.on_script_trigger_effect, function (event)
-    Arena.hit_effect_event(event)
+    -- Send event to every arena
+    for _, arena in pairs(arenas) do
+        Arena.hit_effect_event(arena, event)
+    end
 end)
 
 script.on_event(defines.events.on_player_driving_changed_state,

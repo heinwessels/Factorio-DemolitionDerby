@@ -10,11 +10,13 @@ local Arena = { }
 -- area     of the arena
 function Arena.create(name, area, surface)
     arena = {
-        name = "",
+        name = name,
         
-        surface = nil,
-        area = { },
-        starting_positions = { },   -- Each locatios includes a third entry orientation
+        surface = surface,
+        area = area,
+        starting_positions = { },   -- Each location includes a third entry orientation
+        ideal_number_of_effect_beacons = curvefever_util.size_of_area(area) * constants.arena.effect_density,
+        effect_beacons = { },   -- Array of all effect beacons part of this arena (array of references)
         builder = Builder.create(),
     
         max_players = 6,    -- Default
@@ -31,22 +33,19 @@ function Arena.create(name, area, surface)
     }
 
     -- TODO Add minimum allowed size
-    arena.name = name
-    arena.area = area
-    arena.surface = surface
-    arena.players = { }
 
+
+    -- Create some starting locations if none was given
     if not arena.starting_positions or #arena.starting_positions==0 then
         Arena.create_default_starting_locations(arena)
     end
 
-    log("Created arena <"..arena.name.."> with area <"..curvefever_util.to_string(area)..">")
-    
     -- Now build the arena
     Arena.set_state(arena, "building")
     Builder.start(arena)
-
-
+    
+    -- Created!
+    log("Created arena <"..arena.name.."> with area <"..curvefever_util.to_string(area)..">")
     return arena
 end
 
@@ -71,6 +70,18 @@ end
 
 -- Start the game for this arena
 function Arena.start(arena)
+    if arena.state ~= "ready" then
+        log("Cannot start arena <"..arena.name.."> since it's not ready (state = "..arena.state..")")
+    end
+
+    if #arena.players == 0 then
+        log("Cannot start arena <"..arena.name.."> since it has no players")
+    end
+
+    -- Setup and update some variables
+    arena.ideal_number_of_effect_beacons = curvefever_util.size_of_area(arena.area) * constants.arena.effect_density
+
+    -- Setup players
     for _, player in pairs(arena.players) do
         local player_state = arena.player_states[player.index]
         player_state.status = "playing"
@@ -80,7 +91,24 @@ function Arena.start(arena)
             },
         })
     end
-    log("Started arena "..arena.name.." with "..#arena.players.." players")
+
+    -- Remove unused vehicles
+    local surface = arena.surface
+    for _, starting_position in pairs(arena.starting_locations) do
+        local vehicle = surface.find_entity(
+            "curvefever-car",
+            {starting_position.x, starting_position.y}
+        )
+        if not vehicle then
+            error("In arena <"..arena.name.."> there should be a vehicle at starting location <"..curvefever_util.to_string(starting_position)..">")
+        elseif not vehicle.get_driver() then
+            vehicle.destroy()
+        end
+    end
+
+    -- TODO Add triggers to remaining vehicles being destroyed
+
+    log("Started arena <"..arena.name.."> with "..#arena.players.." players")
     Arena.set_state(arena, "playing")
 end
 
@@ -106,6 +134,9 @@ function Arena.update(arena)
     end
 
     if arena.state == "playing" then
+
+        Arena.update_effect_beacons(arena)
+
         for _, player in pairs(arena.players) do
             if player.character then
                 -- Update for a specific player
@@ -129,13 +160,55 @@ function Arena.update(arena)
     end
 end
 
+-- Manages beacons. Is there enough? Can I spawn another one?
+function Arena.update_effect_beacons(arena)
+    if #arena.effect_beacons < arena.ideal_number_of_effect_beacons then
+        -- TODO Populate this automatically with weights
+        local effects_to_spawn = {
+            "speed_up",
+            "tank",
+            "slow_down",
+            "no_trail",
+        }
+        Arena.attempt_spawn_effect_beacon(
+            arena,
+            effects_to_spawn[math.random(#effects_to_spawn)]
+        )
+    end
+end
+
+-- Will attempt to spawn an effect beacon at a location
+-- Should always work though.
+-- Returns a reference to the beacon entity or nill
+function Arena.attempt_spawn_effect_beacon(arena, beacon_name)
+    local surface = arena.surface
+    for try = 1,10 do
+        local beacon = surface.create_entity{
+            name = "curvefever-effect-"..beacon_name,
+            position = {
+                x=math.random(arena.area[1].x+1, arena.area[2].x-1),
+                y=math.random(arena.area[1].y+1, arena.area[2].y-1)
+            },            
+            force = "enemy"
+        }
+        if beacon then
+            table.insert(arena.effect_beacons, beacon)
+            log("In arena <"..arena.name.."> created effect beacon <"..beacon_name..">. (Total of "..#arena.effect_beacons..")")
+            return beacon
+        end
+    end
+    return nil
+end
+
 -- This handler should be called if any effect beacon
 -- is hit. This function will decide if it's part of this
 -- arena, and apply it
-function Arena.hit_effect_event(event)
+function Arena.hit_effect_event(arena, event)
     local surface = game.get_surface(event.surface_index)
     local beacon = event.source_entity
     
+    -- TODO Ensure this beacon is inside this arena
+
     if not string.sub(beacon.name, 1, 17) then return end
     
     local vehicle_in_range = surface.find_entities_filtered{
@@ -191,7 +264,7 @@ function Arena.create_default_starting_locations(arena)
     -- Currently only places them in a grid.
     -- TODO Rather make a cool circle thing
     arena.starting_locations = { }
-    local spacing = 10
+    local spacing = constants.arena.starting_location_spacing
     local middle = {
         x=arena.area[1].x+(arena.area[2].x-arena.area[1].x)/2,
         y=arena.area[1].y+(arena.area[2].y-arena.area[1].y)/2,

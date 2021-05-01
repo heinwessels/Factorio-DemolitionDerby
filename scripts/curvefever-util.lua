@@ -9,6 +9,11 @@ function Util.compact_array(t)
     return ans
 end
 
+-- Returns the area of an area in tiles^2
+function Util.size_of_area(area)
+    return (area[2].x-area[1].x)*(area[2].y-area[1].y)
+end
+
 function Util.table_print (tt, done)
     local done = done or {}
     local indent = indent or 0

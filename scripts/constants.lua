@@ -10,4 +10,8 @@ return {
             fire_freq = 5,  -- Every how many ticks should fire be spawned
         },
     },
+    arena = {           -- Constants used in an arena
+        starting_location_spacing = 20,
+        effect_density = 1/(50*50),     -- effects per area in tiles
+    },
 }
