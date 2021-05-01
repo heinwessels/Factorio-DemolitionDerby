@@ -197,19 +197,22 @@ function effects.apply_effects(arena, player)
                             -- Valid biter spawn!
                             
                             -- Find an player to attack
-                            if #arena.players > 1 then
+                            if #arena.players > 0 then
                                 -- If you're the only player they will attack you! Haha!
 
                                 -- TODO choose closest player!
                                 local enemies = { }
                                 for _, enemy in pairs(arena.players) do
-                                    if enemy.index ~= player.index then
-                                        table.insert(enemies, enemy)
+                                    local enemy_state = arena.player_states[enemy.index]
+                                    if enemy_state.status == "playing" then
+                                        if enemy.index ~= player.index then                                        
+                                            table.insert(enemies, enemy)
+                                        end
                                     end
                                 end
                                 local enemy = enemies[math.random(#enemies)]
                                 local command = {
-                                    target= enemy, 
+                                    target= enemy.character.vehicle, 
                                     type = defines.command.attack, 
                                     distraction = defines.distraction.none
                                 }

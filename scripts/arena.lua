@@ -50,7 +50,14 @@ function Arena.create(name, area, surface)
 end
 
 function Arena.clean(arena)
+    -- Clear the state
     arena.effect_beacons = { } -- Builder will destroy them
+    for _, player in pairs(arena.players) do
+        local player_state = arena.player_states[player.index]
+        player_state.effects = { }
+    end
+
+    -- Rebuild the arena
     Arena.set_state(arena, "building")    
     Builder.start(arena)
 end
