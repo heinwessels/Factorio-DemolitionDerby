@@ -56,7 +56,7 @@ function Arena.clean(arena)
 end
 
 -- Add player to arena to be played
-function Arena.add_player(player)
+function Arena.add_player(arena, player)
 
     if arena.player_states[player.index] then
         log("Cannot add player "..player.name.." to arena "..arena.name.." again (Total: "..#arena.players..")")
@@ -70,7 +70,7 @@ function Arena.add_player(player)
 end
 
 -- Start the game for this arena
-function Arena.start()
+function Arena.start(arena)
     for _, player in pairs(arena.players) do
         local player_state = arena.player_states[player.index]
         player_state.status = "playing"
