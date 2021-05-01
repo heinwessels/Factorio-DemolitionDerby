@@ -9,6 +9,10 @@ return {
         speed = {
             fire_freq = 5,  -- Every how many ticks should fire be spawned
         },
+        biters = {
+            spacing = 4,
+            amount = 5,
+        }
     },
     arena = {           -- Constants used in an arena
         starting_location_spacing = 20,

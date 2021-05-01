@@ -50,7 +50,8 @@ function Arena.create(name, area, surface)
 end
 
 function Arena.clean(arena)
-    Arena.set_state(arena, "building")
+    arena.effect_beacons = { } -- Builder will destroy them
+    Arena.set_state(arena, "building")    
     Builder.start(arena)
 end
 
@@ -170,6 +171,7 @@ function Arena.update_effect_beacons(arena)
             "slow_down",
             "no_trail",
             "worm",
+            "biters",
         }
         Arena.attempt_spawn_effect_beacon(
             arena,
@@ -259,6 +261,12 @@ function Arena.hit_effect_event(arena, event)
         elseif effect_type == "worm" then
             effects.add_effect(arena, player, {
                 worm = {
+                    ticks_to_live = 13*60,
+                },                
+            })
+        elseif effect_type == "biters" then
+            effects.add_effect(arena, player, {
+                biters = {
                     ticks_to_live = 13*60,
                 },                
             })

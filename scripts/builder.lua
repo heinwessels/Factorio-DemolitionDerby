@@ -60,7 +60,8 @@ function Builder.iterate(arena)
                 "land-mine", 
                 "wall", 
                 "tree",
-                "unit"
+                "unit",
+                "turret",
             },
         }) do
             entity.destroy{raise_destroy=false}

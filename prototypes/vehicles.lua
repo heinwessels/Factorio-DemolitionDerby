@@ -34,6 +34,11 @@ data:extend({
                   percent = 0,
                   decrease = -5000  -- die instantly
                 },
+                {
+                    type = "physical",
+                    percent = 0,
+                    decrease = -5000  -- die instantly
+                },
             },
         }
     },
@@ -67,6 +72,10 @@ data:extend({
                 },
                 {
                     type = "acid",
+                    percent = 100,  -- immune
+                },
+                {
+                    type = "physical",
                     percent = 100,  -- immune
                 },
             },

@@ -23,6 +23,7 @@ function effects.apply_effects(arena, player)
     -- For every effect on this player
     local player_state = arena.player_states[player.index]
     for effect_type, effect in pairs(player_state.effects) do
+        local effect_constants = constants.effects[effect_type]
 
         -- Need to get the vehicle every iteration in case it's swopped
         local vehicle = player.character.vehicle
@@ -118,7 +119,7 @@ function effects.apply_effects(arena, player)
                     -- Worm not spawned yet
 
                     -- First make sure player is far enough away
-                    local buffer = 2
+                    local buffer = 1
                     if (player.position.x > effect.position.x + buffer
                             or player.position.x < effect.position.x - buffer) and
                             (player.position.y > effect.position.y + buffer
@@ -145,7 +146,6 @@ function effects.apply_effects(arena, player)
                         if effect.worm == nil then
                             error("Could not spawn worm on arena <"..arena.name.."> for player <"..player.name.."> at location <"..curvefever_util.to_string(player.position)..">")
                         end
-
                     end
                 end
             else
@@ -154,6 +154,79 @@ function effects.apply_effects(arena, player)
                     effect.worm.die()
                 end
             end        
+            ------------------------------------------------------------------------
+        elseif effect_type == "biters" then
+            -- Stops player from drawing trail behind him
+            if not timed_out then
+                if not effect.biters then effect.biters = { } end
+                if #effect.biters < effect_constants.amount then
+                    if curvefever_util.position_in_area(
+                        player.position,
+                        {
+                            {
+                                x=effect.position.x-effect_constants.spacing, 
+                                y=effect.position.y-effect_constants.spacing
+                            },
+                            {
+                                x=effect.position.x+effect_constants.spacing, 
+                                y=effect.position.y+effect_constants.spacing
+                            }
+                        }
+                    ) == false then
+                        -- Far enough away. 
+                        
+                        -- Is there a wall in the way?
+                        for _, wall in pairs(surface.find_entities_filtered{
+                            area = {
+                                {effect.position.x - 2, effect.position.y - 2},
+                                {effect.position.x + 2, effect.position.y + 2}
+                            },
+                            name = "curvefever-trail"
+                        }) do
+                            wall.die()
+                        end
+
+                        -- Spawn biter
+                        biter = surface.create_entity{
+                            name = "behemoth-biter",                        
+                            position = effect.position,
+                        }
+                        if biter == nil then                            
+                            error("Could not spawn biter on arena <"..arena.name.."> for player <"..player.name.."> at location <"..curvefever_util.to_string(effect.position)..">")
+                        else
+                            -- Valid biter spawn!
+                            
+                            -- Find an player to attack
+                            if #arena.players > 1 then
+                                -- If you're the only player they will attack you! Haha!
+
+                                -- TODO choose closest player!
+                                local enemies = { }
+                                for _, enemy in pairs(arena.players) do
+                                    if enemy.index ~= player.index then
+                                        table.insert(enemies, enemy)
+                                    end
+                                end
+                                local enemy = enemies[math.random(#enemies)]
+                                local command = {
+                                    target= enemy, 
+                                    type = defines.command.attack, 
+                                    distraction = defines.distraction.none
+                                }
+                                biter.set_command(command)
+                            end
+
+                            biter.speed = constants.vehicle_speed   -- As fast as a normal vehicle
+                            table.insert(effect.biters, biter)
+                            effect.position = player.position
+                        end
+                    end
+                end
+            else
+                for _, biter in pairs(effect.biters) do
+                    biter.die()
+                end
+            end
         end
         ------------------------------------------------------------------------
 

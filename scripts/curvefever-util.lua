@@ -14,6 +14,13 @@ function Util.size_of_area(area)
     return (area[2].x-area[1].x)*(area[2].y-area[1].y)
 end
 
+-- Is the position within the area?
+function Util.position_in_area(position, area)
+    return 
+        (position.x > area[1].x and position.x < area[2].x ) and
+        (position.y > area[1].y and position.y < area[2].y )
+end
+
 function Util.table_print (tt, done)
     local done = done or {}
     local indent = indent or 0

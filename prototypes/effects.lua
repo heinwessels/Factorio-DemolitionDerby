@@ -221,3 +221,15 @@ create_effect_beacon(
     },
     "bad"
 )
+create_effect_beacon(
+    "biters",
+    "__base__/graphics/icons/coin.png",
+    {
+        filename = "__base__/graphics/icons/behemoth-biter.png",
+        priority = "medium",
+        width = 64,
+        height = 64,
+        scale = size_modifier,
+    },
+    "good"
+)
