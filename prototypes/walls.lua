@@ -27,10 +27,10 @@ data:extend({
                     type = "fire",
                     percent = 100
                 },
-                {
-                    type = "impact",
-                    percent = 100,
-                },
+                -- {
+                --     type = "impact",
+                --     percent = 100,
+                -- },
                 {
                     type = "explosion",
                     percent = 100,

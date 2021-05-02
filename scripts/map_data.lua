@@ -41,9 +41,10 @@ return {
     lobbies = {
         achtung = {
             name = "achtung",
-            arenas = {
+            arena_names = {
                 "achtung",
             },
+            surface = "nauvis",
             area = {
                 left_top = {
                     x = 30,

@@ -24,7 +24,7 @@ script.on_event(defines.events.on_player_driving_changed_state,
     function (event) World.on_player_driving_changed_state(global.world, event) end
 )
 
--- -- It is possible to define the name and table inside the call
+-- It is possible to define the name and table inside the call
 remote.add_interface("curvefever-interface", {
     -- the values can be only primitive type or (nested) tables
     
@@ -37,7 +37,8 @@ remote.add_interface("curvefever-interface", {
     end,
 
     reset = function()
-        global.world = World.create(global.world)
+        global.world = World.reset(global.world)        
+        global.world = nil
     end
 })
 

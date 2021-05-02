@@ -119,19 +119,19 @@ function effects.apply_effects(arena, player)
                     -- Worm not spawned yet
 
                     -- First make sure player is far enough away
-                    local buffer = 1
-                    if (player.position.x > effect.position.x + buffer
-                            or player.position.x < effect.position.x - buffer) and
-                            (player.position.y > effect.position.y + buffer
-                            or player.position.y < effect.position.y - buffer)
+                    local spacing = effect_constants.spacing
+                    if (player.position.x > effect.position.x + spacing
+                            or player.position.x < effect.position.x - spacing) and
+                            (player.position.y > effect.position.y + spacing
+                            or player.position.y < effect.position.y - spacing)
                     then
                         -- Player is far enough away
                         
                         -- Destroy all walls in that area
                         for _, wall in pairs(surface.find_entities_filtered{
                             area = {
-                                {effect.position.x - buffer, effect.position.y - buffer},
-                                {effect.position.x + buffer, effect.position.y + buffer}
+                                {effect.position.x - spacing, effect.position.y - spacing},
+                                {effect.position.x + spacing, effect.position.y + spacing}
                             },
                             name = "curvefever-trail"
                         }) do
@@ -163,11 +163,11 @@ function effects.apply_effects(arena, player)
                     if curvefever_util.position_in_area(
                         player.position,
                         {
-                            {
+                            left_top = {
                                 x=effect.position.x-effect_constants.spacing, 
                                 y=effect.position.y-effect_constants.spacing
                             },
-                            {
+                            right_bottom = {
                                 x=effect.position.x+effect_constants.spacing, 
                                 y=effect.position.y+effect_constants.spacing
                             }
@@ -178,8 +178,8 @@ function effects.apply_effects(arena, player)
                         -- Is there a wall in the way?
                         for _, wall in pairs(surface.find_entities_filtered{
                             area = {
-                                {effect.position.x - 2, effect.position.y - 2},
-                                {effect.position.x + 2, effect.position.y + 2}
+                                left_top = {effect.position.x - 2, effect.position.y - 2},
+                                right_bottom = {effect.position.x + 2, effect.position.y + 2}
                             },
                             name = "curvefever-trail"
                         }) do
@@ -197,7 +197,7 @@ function effects.apply_effects(arena, player)
                             -- Valid biter spawn!
                             
                             -- Find an player to attack
-                            if #arena.players > 0 then
+                            if #arena.players > 1 then
                                 -- If you're the only player they will attack you! Haha!
 
                                 -- TODO choose closest player!
@@ -315,7 +315,7 @@ function effects.swap_vehicle(player, vehicle_name)
         acceleration = 1,
         direction = turning_direction,
     }
-    character.driving = true    -- TODO Does this mean he can get into someone elses car?
+    vehicle.set_driver(player)
 end
 
 function effects.vehicle_has_sticker(vehicle, sticker_name)

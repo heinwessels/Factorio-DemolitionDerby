@@ -67,7 +67,7 @@ data:extend({
                 },
             }  
         },
-        trigger_radius = 2,
+        trigger_radius = 2.5,
         ammo_category = "landmine",
         action =
         {

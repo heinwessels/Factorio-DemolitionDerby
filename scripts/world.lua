@@ -3,12 +3,15 @@ util = require("util")
 local Arena = require("scripts.arena")
 local Lobby = require("scripts.lobby")
 
+
 local World = { }
 
 function World.create(world, map_data)
     world = { }
     world.arenas = { }
     world.lobbies = { }
+    
+    
     world.spawn_location = map_data.spawn_location
 
     for _, lobby in pairs(map_data.lobbies) do
@@ -21,7 +24,6 @@ function World.create(world, map_data)
 end
 
 function World.reset(world)
-    world.create(world, map_data)
     
     -- Move all players to spawn
     for _, player in pairs(game.players) do
@@ -30,15 +32,17 @@ function World.reset(world)
 
     -- Clean all arenas
     for _, arena in pairs(world.arenas) do
-        Arena.clean(arena)
+        Arena.reset(arena)
     end
 
     -- Clean all lobbies
-    for _, lobby in pairs(world.lobby) do
-        Arena.clean(lobby)
+    for _, lobby in pairs(world.lobbies) do
+        Arena.reset(lobby)
     end
 
-    return world
+    -- Now destory the world
+    -- It will be created again in the next tick
+    return nil
 end
 
 function World.player_entered(event)
@@ -48,6 +52,10 @@ function World.player_entered(event)
 end
 
 function World.on_tick(world, event)
+    for _, lobby in pairs(world.lobbies) do
+        Lobby.update(lobby)
+    end
+
     for _, arena in pairs(world.arenas) do
         Arena.update(arena)
     end
@@ -59,12 +67,10 @@ function World.on_player_driving_changed_state(world, event)
     -- TODO THIS WILL HAVE TO BE VERY SMART
     ---------------------------------------
 
-    local player = game.get_player(event.player_index)        
-    Arena.add_player(world.arenas["achtung"], player)
 
     if not event.entity then
         -- The player might have tried to climb out of his car.
-        -- Maybe prevent him!
+        -- Prevent him!
     end
 end
 

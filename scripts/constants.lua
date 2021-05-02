@@ -9,13 +9,19 @@ return {
         speed = {
             fire_freq = 5,  -- Every how many ticks should fire be spawned
         },
+        worm = {
+            spacing = 2.5,
+        },
         biters = {
-            spacing = 4,
+            spacing = 2,
             amount = 5,
         }
     },
     arena = {           -- Constants used in an arena
         starting_location_spacing = 20,
         effect_density = 1/(50*50),     -- effects per area in tiles
+    },
+    lobby = {
+        countdown = 3*60,      -- How long does it countdown before start
     },
 }
