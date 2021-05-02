@@ -38,8 +38,8 @@ function Builder.iterate(arena)
         -- Just set things up.
         builder.iterator = 0        
         builder.build_area = {
-            {x=math.floor(area[1].x+1), y=math.floor(area[1].y+1)},
-            {x=math.ceil(area[2].x-1), y=math.ceil(area[2].y-1)}
+            left_top={x=math.floor(area.left_top.x+1), y=math.floor(area.left_top.y+1)},
+            right_bottom={x=math.ceil(area.right_bottom.x-1), y=math.ceil(area.right_bottom.y-1)}
         }
         Builder.set_state(arena, "cleaning")
     elseif builder.state == "cleaning" then
@@ -47,12 +47,12 @@ function Builder.iterate(arena)
         for _, entity in pairs(surface.find_entities_filtered{
             area = {
                 {
-                    x=builder.build_area[1].x+builder.iterator, 
-                    y=builder.build_area[1].y
+                    x=builder.build_area.left_top.x+builder.iterator, 
+                    y=builder.build_area.left_top.y
                 },
                 {
-                    x=builder.build_area[1].x+builder.iterator+1, 
-                    y=builder.build_area[2].y
+                    x=builder.build_area.left_top.x+builder.iterator+1, 
+                    y=builder.build_area.right_bottom.y
                 }
             },
             type = {
@@ -68,7 +68,7 @@ function Builder.iterate(arena)
         end
 
         builder.iterator = builder.iterator + 1
-        if builder.iterator >= (builder.build_area[2].x-builder.build_area[1].x) then
+        if builder.iterator >= (builder.build_area.right_bottom.x-builder.build_area.left_top.x) then
             Builder.set_state(arena, "building")
             builder.iterator = 0
         end

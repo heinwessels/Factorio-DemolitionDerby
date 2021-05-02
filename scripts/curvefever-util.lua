@@ -11,14 +11,14 @@ end
 
 -- Returns the area of an area in tiles^2
 function Util.size_of_area(area)
-    return (area[2].x-area[1].x)*(area[2].y-area[1].y)
+    return (area.right_bottom.x-area.left_top.x)*(area.right_bottom.y-area.left_top.y)
 end
 
 -- Is the position within the area?
 function Util.position_in_area(position, area)
     return 
-        (position.x > area[1].x and position.x < area[2].x ) and
-        (position.y > area[1].y and position.y < area[2].y )
+        (position.x > area.left_top.x and position.x < area.right_bottom.x ) and
+        (position.y > area.left_top.y and position.y < area.right_bottom.y )
 end
 
 function Util.table_print (tt, done)

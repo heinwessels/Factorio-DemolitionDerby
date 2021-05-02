@@ -1,78 +1,43 @@
+local World = require("scripts.world")
 local Arena = require("scripts.arena")
-
-local arenas = nil
+local map_data = require("scripts.map_data")
 
 -- Setup Handlers
-script.on_event(defines.events.on_tick, function (event)
+script.on_event(defines.events.on_tick, function (event) 
 
-    -- TODO This is a temporary hack. Remove it once
-    -- mod is stable.
-    -----------------------------------------------------------------------
-    if global.script_data == nil then        
-        if not global.script_data then
-            global.script_data = { 
-                arenas = { }
-            }
-        end
-        arenas = global.script_data.arenas
-    else
-        arenas = global.script_data.arenas
+    -- Have we set up what we want?
+    if global.world == nil then
+        global.world = { }
+        global.world = World.create(global.world, map_data)
     end
-    -----------------------------------------------------------------------
 
-    for _, arena in pairs(arenas) do
-        Arena.update(arenas["test_arena"])
-    end
+    -- Update this world!
+    World.on_tick(global.world, event) 
 end)
-
-script.on_event(defines.events.on_player_created, function (event)
-    -- TODO Set up player state here
-end)
-
-script.on_event(defines.events.on_script_trigger_effect, function (event)
-    -- Send event to every arena
-    for _, arena in pairs(arenas) do
-        Arena.hit_effect_event(arena, event)
-    end
-end)
-
+script.on_event(defines.events.on_player_created, 
+    function (event) World.player_entered(global.world, event) end
+)
+script.on_event(defines.events.on_script_trigger_effect, 
+    function (event) World.on_script_trigger_effect(global.world, event) end
+)
 script.on_event(defines.events.on_player_driving_changed_state,
-    function(event)
-
-        -- TODO This should check first if it was in the lobby
-        -- Remember, this event is fired for some effects too
-        local player = game.get_player(event.player_index)
-        Arena.add_player(arenas["test_arena"], player)
-
-        if not event.entity then
-            -- The player might have tried to climb out of his car.
-            -- Maybe prevent him!
-        end
-    end
+    function (event) World.on_player_driving_changed_state(global.world, event) end
 )
 
--- It is possible to define the name and table inside the call
+-- -- It is possible to define the name and table inside the call
 remote.add_interface("curvefever-interface", {
     -- the values can be only primitive type or (nested) tables
-    create = function()
-        name = "test_arena"
-        arenas[name] = Arena.create(
-            name, 
-            {{x=-142.5, y=48.8}, {x=309.5, y=295.5}}, 
-            game.surfaces.nauvis
-        )
-    end,
-
+    
     start = function()
-        Arena.start(arenas["test_arena"])
+        Arena.start(global.world.arenas["achtung"])
     end,
 
     clean = function()
-        Arena.clean(arenas["test_arena"])
+        Arena.clean(global.world.arenas["achtung"])
     end,
 
-    reset_all = function()
-        arenas = { }
+    reset = function()
+        global.world = World.create(global.world)
     end
 })
 

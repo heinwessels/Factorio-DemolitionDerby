@@ -8,33 +8,35 @@ local Arena = { }
 
 -- Set up a arena to be played at some point
 -- area     of the arena
-function Arena.create(name, area, surface)
-    arena = {
-        name = name,
+function Arena.create(arena)
+    if type(arena.surface) == "string" then
+        arena.surface = game.surfaces[arena.surface]
+    end
+    arena = util.merge{
+        {
+            name = name,        
+            surface = surface,
+            area = area,
+            starting_positions = { },   -- Each location includes a third entry orientation
+            ideal_number_of_effect_beacons = curvefever_util.size_of_area(arena.area) * constants.arena.effect_density,
+            effect_beacons = { },   -- Array of all effect beacons part of this arena (array of references)
+            builder = Builder.create(),
         
-        surface = surface,
-        area = area,
-        starting_positions = { },   -- Each location includes a third entry orientation
-        ideal_number_of_effect_beacons = curvefever_util.size_of_area(area) * constants.arena.effect_density,
-        effect_beacons = { },   -- Array of all effect beacons part of this arena (array of references)
-        builder = Builder.create(),
-    
-        max_players = 6,    -- Default
-        players = { },
-        player_states = { },    
-        effects = { },  -- Current effects scattered in arena
-    
-        -- Possible statusses
-        -- empty        -> Only defined, not built or ready
-        -- ready        -> Ready for a game to start (except importing players)
-        -- playing      -> currently has a game running
-        -- building     -> (Re)building map (done at creation or cleaning)
-        status = "empty"
+            max_players = 6,    -- Default
+            players = { },
+            player_states = { },    
+            effects = { },  -- Current effects scattered in arena
+        
+            -- Possible statusses
+            -- empty        -> Only defined, not built or ready
+            -- ready        -> Ready for a game to start (except importing players)
+            -- playing      -> currently has a game running
+            -- building     -> (Re)building map (done at creation or cleaning)
+            status = "empty"
+        },
+        arena
     }
-
-    -- TODO Add minimum allowed size
-
-
+    
     -- Create some starting locations if none was given
     if not arena.starting_positions or #arena.starting_positions==0 then
         Arena.create_default_starting_locations(arena)
@@ -65,6 +67,7 @@ end
 -- Add player to arena to be played
 function Arena.add_player(arena, player)
 
+    if not arena then return end
     if arena.player_states[player.index] then
         log("Cannot add player "..player.name.." to arena "..arena.name.." again (Total: "..#arena.players..")")
         return
@@ -196,8 +199,8 @@ function Arena.attempt_spawn_effect_beacon(arena, beacon_name)
         local beacon = surface.create_entity{
             name = "curvefever-effect-"..beacon_name,
             position = {
-                x=math.random(arena.area[1].x+1, arena.area[2].x-1),
-                y=math.random(arena.area[1].y+1, arena.area[2].y-1)
+                x=math.random(arena.area.left_top.x+1, arena.area.right_bottom.x-1),
+                y=math.random(arena.area.left_top.y+1, arena.area.right_bottom.y-1)
             },            
             force = "enemy"
         }
@@ -288,8 +291,8 @@ function Arena.create_default_starting_locations(arena)
     arena.starting_locations = { }
     local spacing = constants.arena.starting_location_spacing
     local middle = {
-        x=arena.area[1].x+(arena.area[2].x-arena.area[1].x)/2,
-        y=arena.area[1].y+(arena.area[2].y-arena.area[1].y)/2,
+        x=arena.area.left_top.x+(arena.area.right_bottom.x-arena.area.left_top.x)/2,
+        y=arena.area.left_top.y+(arena.area.right_bottom.y-arena.area.left_top.y)/2,
     }    
     local x = middle.x-spacing*((math.ceil(arena.max_players/2)-1)/2)
     while #arena.starting_locations < arena.max_players do
