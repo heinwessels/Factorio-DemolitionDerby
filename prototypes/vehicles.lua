@@ -21,8 +21,8 @@ data:extend({
             max_health = 100,
             resistances = {
                 {
-                  type = "fire",
-                  percent = 100
+                    type = "fire",
+                    percent = 100
                 },
                 {
                     type = "acid",
@@ -30,9 +30,9 @@ data:extend({
                     decrease = -5000  -- die instantly
                 },
                 {
-                  type = "impact",
-                  percent = 0,
-                  decrease = -5000  -- die instantly
+                    type = "impact",
+                    percent = 0,
+                    decrease = -5000  -- die instantly
                 },
                 {
                     type = "physical",
@@ -64,11 +64,11 @@ data:extend({
             resistances = {
                 {
                     type = "impact",
-                    percent = 99,
+                    percent = 50,   -- Need to crash through a few walls but die on border
                 },
                 {
-                  type = "fire",
-                  percent = 100     -- immune
+                    type = "fire",
+                    percent = 100     -- immune
                 },
                 {
                     type = "acid",

@@ -58,10 +58,18 @@ end
 
 -- Clean up so that we can play another game
 function Arena.clean(arena)
+    -- Remove all players from the arena
+    local spawn = global.world.spawn_location
+    for _, player in pairs(arena.players) do
+        player.character.driving = false    -- Get out!
+        player.teleport(spawn)
+    end
+
     -- Clear the state
     arena.effect_beacons = { } -- Builder will destroy them anyway
     arena.player_states = { }
     arena.players = { }
+
 
     -- Rebuild the arena
     Arena.set_status(arena, "building")    

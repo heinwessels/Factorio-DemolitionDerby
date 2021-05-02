@@ -45,9 +45,9 @@ function World.reset(world)
     return nil
 end
 
-function World.player_entered(event)
+function World.player_entered(world, event)
     -- Just make sure he goes to spawn.
-    local player = game.players[event.player_index ]
+    local player = game.get_player(event.player_index)
     player.teleport(world.spawn_location)
 end
 

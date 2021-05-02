@@ -74,6 +74,7 @@ function Lobby.update(lobby)
             Lobby.set_status(lobby, "countdown")
             lobby.countdown_start = game.tick
             game.print("Starting countdown to move to "..lobby.name.."!")
+            -- After the countdown we wil finalize the game
         end
 
     elseif lobby.status == "countdown" then
