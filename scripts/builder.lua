@@ -64,7 +64,9 @@ function Builder.iterate(arena)
                 "turret",
             },
         }) do
-            entity.destroy{raise_destroy=false}
+            if entity.name ~= "curvefever-border" then
+                entity.destroy{raise_destroy=false}
+            end
         end
 
         builder.iterator = builder.iterator + 1
@@ -80,7 +82,7 @@ function Builder.iterate(arena)
         local surface = arena.surface
         for _, position in pairs(arena.starting_locations) do            
             local vehicle = surface.create_entity{
-                name = "curvefever-car",
+                name = "curvefever-car-static",
                 position = {position.x, position.y},
                 direction = position.direction,
                 force = "player"

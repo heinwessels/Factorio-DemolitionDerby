@@ -1,5 +1,5 @@
 local util = require("util")
-local effects = require("scripts.effects")
+local Effects = require("scripts.effects")
 local constants = require("scripts.constants")
 local Builder = require("scripts.builder")
 local curvefever_util = require("scripts.curvefever-util")
@@ -12,10 +12,6 @@ function Arena.create(arena)
     if type(arena.surface) == "string" then
         arena.surface = game.surfaces[arena.surface]
     end
-    local vehicles = arena.surface.find_entities_filtered{
-        name = "curvefever-car",
-        area = arena.area
-    }
     arena = util.merge{
         {
             name = name,        
@@ -52,7 +48,7 @@ function Arena.create(arena)
     Builder.start(arena)
     
     -- Created!
-    log("Created arena <"..arena.name.."> with area <"..curvefever_util.to_string(area)..">")
+    log("Created arena <"..arena.name.."> with area <"..curvefever_util.to_string(arena.area)..">")
     return arena
 end
 
@@ -69,7 +65,6 @@ function Arena.clean(arena)
     arena.effect_beacons = { } -- Builder will destroy them anyway
     arena.player_states = { }
     arena.players = { }
-
 
     -- Rebuild the arena
     Arena.set_status(arena, "building")    
@@ -123,14 +118,20 @@ function Arena.start(arena)
     arena.ideal_number_of_effect_beacons = curvefever_util.size_of_area(arena.area) * constants.arena.effect_density
 
     -- Setup players
-    for _, player in pairs(arena.players) do
+    for index, player in pairs(arena.players) do
         local player_state = arena.player_states[player.index]
         player_state.status = "playing"
-        effects.add_effect(arena, player, {
+        Effects.add_effect(arena, player, {
             trail = {              
                 ticks_to_live = nil, -- Forever
             },
         })
+
+        -- Give them a real car (and not a static one)
+        arena.vehicles[index] = Effects.swap_vehicle(
+            player,
+            "curvefever-car"
+        )
     end
 
     -- Remove unused vehicles
@@ -168,7 +169,7 @@ function Arena.update(arena)
 
             -- There's new vehicles. Get references to it
             arena.vehicles = arena.surface.find_entities_filtered{
-                name = "curvefever-car",
+                name = "curvefever-car-static", --It's static until the game begins
                 area = arena.area   -- This is quite a large area
             }
         end
@@ -192,7 +193,7 @@ function Arena.update(arena)
                     vehicle.speed = constants.vehicle_speed
 
                     -- Apply any effects
-                    effects.apply_effects(arena, player)
+                    Effects.apply_effects(arena, player)
                 end
             end
         end
@@ -284,40 +285,40 @@ function Arena.hit_effect_event(arena, event)
         
         -- Add the applicable effect
         if effect_type == "speed_up" then
-            effects.add_effect(arena, player, {
+            Effects.add_effect(arena, player, {
                 speed_up = {
                     speed_modifier = 1.8,
                     ticks_to_live = 5*60,
                 },
             })
         elseif effect_type == "tank" then
-            effects.add_effect(arena, player, {
+            Effects.add_effect(arena, player, {
                 tank = {
                     speed_modifier = 0.55,
                     ticks_to_live = 5*60,
                 },
             })
         elseif effect_type == "slow_down" then
-            effects.add_effect(arena, player, {
+            Effects.add_effect(arena, player, {
                 slow_down = {
                     speed_modifier = 0.55,
                     ticks_to_live = 5*60,
                 },
             })
         elseif effect_type == "no_trail" then
-            effects.add_effect(arena, player, {
+            Effects.add_effect(arena, player, {
                 no_trail = {
                     ticks_to_live = 5*60,
                 },                
             })
         elseif effect_type == "worm" then
-            effects.add_effect(arena, player, {
+            Effects.add_effect(arena, player, {
                 worm = {
                     ticks_to_live = 13*60,
                 },                
             })
         elseif effect_type == "biters" then
-            effects.add_effect(arena, player, {
+            Effects.add_effect(arena, player, {
                 biters = {
                     ticks_to_live = 8*60,
                 },                

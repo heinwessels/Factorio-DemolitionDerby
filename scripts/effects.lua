@@ -2,7 +2,7 @@ local util = require("util")
 local curvefever_util = require("scripts.curvefever-util")
 local constants = require("scripts.constants")
 
-local effects = { }
+local Effects = { }
 -- This file contains no state. Only handles some effects
 -- This is an example of how effects look like minimally
 -- {
@@ -15,7 +15,7 @@ local effects = { }
 -- }
 
 -- Iterate through all effects currently on player and add them to the player
-function effects.apply_effects(arena, player)
+function Effects.apply_effects(arena, player)
 
     local surface = player.surface
     local character = player.character    
@@ -73,11 +73,11 @@ function effects.apply_effects(arena, player)
                 vehicle.speed = vehicle.speed * effect.speed_modifier
                 if vehicle.name ~= "curvefever-tank" then
                     -- Haven't swapped vehicles yet. Do it now.
-                    effects.swap_vehicle(player, "curvefever-tank")
+                    Effects.swap_vehicle(player, "curvefever-tank")
                 end
             else
                 -- Timed out, swap back to normal vehicle
-                effects.swap_vehicle(player, "curvefever-car")
+                Effects.swap_vehicle(player, "curvefever-car")
             end
         ------------------------------------------------------------------------            
         elseif effect_type == "slow_down" then
@@ -94,18 +94,18 @@ function effects.apply_effects(arena, player)
                 end
             else
                 -- Remove the sticker when timed out
-                effects.vehicle_remove_sticker(vehicle, "slowdown-sticker")
+                Effects.vehicle_remove_sticker(vehicle, "slowdown-sticker")
             end
         ------------------------------------------------------------------------
         elseif effect_type == "no_trail" then
             -- Stops player from drawing trail behind him
             if not timed_out then                
                 if player_state.effects["trail"] then
-                    effects.remove_effect(arena, player, "trail")
+                    Effects.remove_effect(arena, player, "trail")
                 end
             else
                 -- On time-out give the player the trail effect again
-                effects.add_effect(arena, player, {
+                Effects.add_effect(arena, player, {
                     trail = {              
                         ticks_to_live = nil, -- Forever
                     },
@@ -235,7 +235,7 @@ function effects.apply_effects(arena, player)
 
         -- Did this effect time out?
         if timed_out then
-            effects.remove_effect(arena, player, effect_type)
+            Effects.remove_effect(arena, player, effect_type)
         end        
     end
 end
@@ -243,7 +243,7 @@ end
 -- Adds a table of effects to a player
 -- If that effect is already given to the player, simply
 -- extend the ticks_to_live
-function effects.add_effect(arena, player, effects)
+function Effects.add_effect(arena, player, effects)
     local player_state = arena.player_states[player.index]
     for effect_type, effect in pairs(effects) do
         effect.position = player.position
@@ -261,7 +261,7 @@ function effects.add_effect(arena, player, effects)
 end
 
 -- Removes a specific effect from a player if it's applied to him
-function effects.remove_effect(arena, player, effect_type)
+function Effects.remove_effect(arena, player, effect_type)
     local player_state = arena.player_states[player.index]
     if not player_state.effects[effect_type] then return end
     -- log("Removing <"..effect_type.."> effect from "..player.name.." in arena <"..arena.name.."> (total "..#player_state.effects..")")
@@ -269,14 +269,14 @@ function effects.remove_effect(arena, player, effect_type)
 end
 
 -- Removes all effects from a player
-function effects.reset_effects(arena, player)
+function Effects.reset_effects(arena, player)
     local player_state = arena.player_states[player.index]
     player_state.effects = { }
 end
 
 -- Will remove the vehicle the player is currently driving,
 -- spawn the new vehicle and continue driving seemlessly.
-function effects.swap_vehicle(player, vehicle_name)
+function Effects.swap_vehicle(player, vehicle_name)
     local character = player.character
     local vehicle = character.vehicle
     if not vehicle then
@@ -316,9 +316,10 @@ function effects.swap_vehicle(player, vehicle_name)
         direction = turning_direction,
     }
     vehicle.set_driver(player)
+    return vehicle
 end
 
-function effects.vehicle_has_sticker(vehicle, sticker_name)
+function Effects.vehicle_has_sticker(vehicle, sticker_name)
     if not vehicle.stickers then return false end
     for _, sticker in pairs(vehicle.stickers) do
         if sticker.name == sticker_name then
@@ -328,7 +329,7 @@ function effects.vehicle_has_sticker(vehicle, sticker_name)
     return false
 end
 
-function effects.vehicle_remove_sticker(vehicle, sticker_name)
+function Effects.vehicle_remove_sticker(vehicle, sticker_name)
     -- Fails silently
     if not vehicle.stickers then return end
     for index, sticker in pairs(vehicle.stickers) do
@@ -339,4 +340,4 @@ function effects.vehicle_remove_sticker(vehicle, sticker_name)
     end
 end
 
-return effects
+return Effects

@@ -10,15 +10,18 @@ function World.create(world, map_data)
     world = { }
     world.arenas = { }
     world.lobbies = { }
-    world.enabled = true
-    
-    world.spawn_location = map_data.spawn_location
+    world.enabled = false
 
-    for _, lobby in pairs(map_data.lobbies) do
-        world.lobbies[lobby.name] = Lobby.create(lobby)
-    end
-    for _, arena in pairs(map_data.arenas) do
-        world.arenas[arena.name] = Arena.create(arena)
+    if map_data ~= nil then        
+        world.spawn_location = map_data.spawn_location
+        world.enabled = true
+
+        for _, lobby in pairs(map_data.lobbies) do
+            world.lobbies[lobby.name] = Lobby.create(lobby)
+        end
+        for _, arena in pairs(map_data.arenas) do
+            world.arenas[arena.name] = Arena.create(arena)
+        end
     end
     return world
 end
@@ -30,10 +33,10 @@ end
 
 function World.clean(world)
     for _, lobby in pairs(world.lobbies) do
-        world.lobbies[lobby.name] = Lobby.clean(lobby)
+        Lobby.clean(lobby)
     end
     for _, arena in pairs(world.arenas) do
-        world.arenas[arena.name] = Arena.clean(arena)
+        Arena.clean(arena)
     end
 end
 

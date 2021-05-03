@@ -36,6 +36,11 @@ remote.add_interface("curvefever-interface", {
         World.clean(global.world)
     end,
 
+    load = function(map_data_in)
+        if map_data_in == nil then map_data_in = map_data end
+        global.world = World.create(global.world, map_data_in)
+    end,
+
     reset = function()
         global.world = World.reset(global.world)        
         global.world = nil
