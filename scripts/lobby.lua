@@ -9,9 +9,13 @@ function Lobby.create(lobby)
         lobby.surface = game.surfaces[lobby.surface]
     end
     local vehicles = lobby.surface.find_entities_filtered{
-        name = "curvefever-car",
+        name = "curvefever-car-static",
         area = lobby.area
     }
+    local vehicle_positions = { }
+    for _, vehicle in pairs(vehicles) do
+        table.insert(vehicle_positions, vehicle.position)
+    end
     lobby = util.merge{
         {
             name = "",
@@ -28,6 +32,7 @@ function Lobby.create(lobby)
             target_arena_name = nil,    -- Where the game will be played when in wait
 
             vehicles = vehicles,     -- Array of vehicles in this lobby
+            vehicle_positions = vehicle_positions,     -- Position of each of the vehicles
             players = { },
 
             area = {left_top={}, right_top={}},
@@ -47,21 +52,18 @@ function Lobby.reset(lobby)
 end
 
 function Lobby.clean(lobby)
-
+    -- Should I reset car colours here?
 end
 
+-- This should be called every tick.
 function Lobby.update(lobby)
     
-    -- The vehicles in the lobby may not move
     if not lobby.vehicles then return end   -- Shouldn't do anything if there's no vehicles
-    for _, vehicle in pairs(lobby.vehicles) do
-        vehicle.speed = 0
-    end
     
     -- Is there enough players    
     if lobby.status == "ready" then
         local count_ready_players = 0
-        for _, vehicle in pairs(lobby.vehicles) do
+        for _, vehicle in pairs(lobby.vehicles) do            
             if vehicle.get_driver() ~= nil then
                 count_ready_players = count_ready_players + 1
             end

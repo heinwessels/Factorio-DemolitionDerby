@@ -42,7 +42,33 @@ data:extend({
             },
         }
     },
-
+})
+data:extend({
+    ----------------------------------------------------------------------------------
+    -- CAR THAT CANNOT DRIVE
+    ----------------------------------------------------------------------------------
+    util.merge{
+        data.raw["item-with-entity-data"]["curvefever-car"],
+        {
+            name = "curvefever-car-static",
+            place_result = "curvefever-car-static",
+        }
+    },
+    util.merge{
+        data.raw["car"]["curvefever-car"],
+        {
+            name = "curvefever-car-static",
+            minable = {result = "curvefever-car"},
+            
+            -- Energy source with no fuel and no power icon
+            energy_source = {
+                type = "burner",
+                render_no_power_icon = false,
+                effectivity = 1,        -- DUMMY
+                fuel_inventory_size = 1,-- DUMMY
+            },
+        }
+    },
     ----------------------------------------------------------------------------------
     -- TANK
     ----------------------------------------------------------------------------------

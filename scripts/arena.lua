@@ -159,8 +159,7 @@ end
 -- Call this function every tick
 function Arena.update(arena)
 
-    -- TODO check game. Is all the players still there?
-    -- Stuff like that.
+    ---------------------------------------------------
     if arena.status == "building" then
         Builder.iterate(arena)
         if arena.builder.state == "idle" then
@@ -173,9 +172,9 @@ function Arena.update(arena)
                 area = arena.area   -- This is quite a large area
             }
         end
-    end
-
-    if arena.status == "playing" then
+    
+    ---------------------------------------------------
+    elseif arena.status == "playing" then
 
         Arena.update_effect_beacons(arena)
 
@@ -197,6 +196,8 @@ function Arena.update(arena)
                 end
             end
         end
+        
+    ---------------------------------------------------
     end
 end
 

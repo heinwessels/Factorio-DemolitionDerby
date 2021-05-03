@@ -28,12 +28,12 @@ script.on_event(defines.events.on_player_driving_changed_state,
 remote.add_interface("curvefever-interface", {
     -- the values can be only primitive type or (nested) tables
     
-    start = function()
-        Arena.start(global.world.arenas["achtung"])
+    enable = function (enable)
+        World.enable(global.world, enable)
     end,
 
     clean = function()
-        Arena.clean(global.world.arenas["achtung"])
+        World.clean(global.world)
     end,
 
     reset = function()

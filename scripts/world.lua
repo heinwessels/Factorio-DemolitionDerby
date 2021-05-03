@@ -10,7 +10,7 @@ function World.create(world, map_data)
     world = { }
     world.arenas = { }
     world.lobbies = { }
-    
+    world.enabled = true
     
     world.spawn_location = map_data.spawn_location
 
@@ -21,6 +21,20 @@ function World.create(world, map_data)
         world.arenas[arena.name] = Arena.create(arena)
     end
     return world
+end
+
+function World.enable(world, enable)
+    if enable == nil then enable = true end
+    world.enabled = enable
+end
+
+function World.clean(world)
+    for _, lobby in pairs(world.lobbies) do
+        world.lobbies[lobby.name] = Lobby.clean(lobby)
+    end
+    for _, arena in pairs(world.arenas) do
+        world.arenas[arena.name] = Arena.clean(arena)
+    end
 end
 
 function World.reset(world)
@@ -52,8 +66,11 @@ function World.player_entered(world, event)
 end
 
 function World.on_tick(world, event)
-    for _, lobby in pairs(world.lobbies) do
-        Lobby.update(lobby)
+
+    if world.enabled == false then return end
+
+    for index, lobby in pairs(world.lobbies) do
+        Lobby.update(lobby, index)
     end
 
     for _, arena in pairs(world.arenas) do
