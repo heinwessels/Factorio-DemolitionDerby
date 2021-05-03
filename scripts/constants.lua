@@ -22,6 +22,6 @@ return {
         effect_density = 1/(50*50),     -- effects per area in tiles
     },
     lobby = {
-        countdown = 5*60,      -- How long does it countdown before start
+        countdown = 1*60,      -- How long does it countdown before start
     },
 }

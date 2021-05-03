@@ -25,8 +25,11 @@ function Arena.create(arena)
             max_players = 6,    -- Default
             players = { },
             player_states = { },    
-            vehicles = { },
             effects = { },  -- Current effects scattered in arena
+            
+            vehicles = { }, -- Vehicles in starting locations. As soon as a
+                            -- game starts this goes to { } and each player's
+                            -- vehicle is stored in his player_state
         
             -- Possible statusses
             -- empty        -> Only defined, not built or ready
@@ -56,8 +59,30 @@ end
 function Arena.clean(arena)
     -- Remove all players from the arena
     local spawn = global.world.spawn_location
+    local surface = player.surface
     for _, player in pairs(arena.players) do
-        player.character.driving = false    -- Get out!
+
+        if player.character and player.character.vehicle then
+            -- If player was in a car get him out
+            player.character.driving = false
+        end
+
+        if not player.character then
+            -- Player was spectating and don't have a character
+            -- Give his body back
+            local character = surface.create_entity{
+                name = "character",
+                position = player.position,
+                force = "player",
+            }
+            player.associate_character(character)
+            player.set_controller{
+                type = defines.controllers.character, 
+                character = character,                
+            }
+        end
+
+        -- Move him back to spawn
         player.teleport(spawn)
     end
 
@@ -128,19 +153,24 @@ function Arena.start(arena)
         })
 
         -- Give them a real car (and not a static one)
-        arena.vehicles[index] = Effects.swap_vehicle(
+        -- And store it in the state! We will remove
+        player_state.vehicle = Effects.swap_vehicle(
             player,
             "curvefever-car"
         )
     end
 
-    -- Remove unused vehicles
+    -- Remove unused vehicles that's left
     local surface = arena.surface
-    for _, vehicle in pairs(arena.vehicles) do        
-        if not vehicle.get_driver() then
+    for _, vehicle in pairs(arena.vehicles) do
+        if vehicle and vehicle.valid and not vehicle.get_driver() then
             vehicle.destroy()
         end
     end
+
+    -- Remove any references to the vehicles in the arena. Now we store them
+    -- In the player state
+    arena.vehicles = { }
 
     -- TODO Add triggers to remaining vehicles being destroyed
 
@@ -154,6 +184,7 @@ function Arena.create_player_state(arena, player)
         score = { },        -- Score of this player"
         status = "idle",    -- nothing has been done to this player
         player = player,    -- Reference to connected player
+        vehicle = nil,      -- Reference to players vehicle while playing
     }
 end
 
@@ -172,8 +203,8 @@ function Arena.update(arena)
                 name = "curvefever-car-static", --It's static until the game begins
                 area = arena.area   -- This is quite a large area
             }
-        end
-    
+        end    
+
     ---------------------------------------------------
     elseif arena.status == "playing" then
 
@@ -202,6 +233,22 @@ function Arena.update(arena)
     end
 end
 
+-- This function must be called when a player
+-- lost during a match. We will try to remove
+-- his character and make him an observer.
+function Arena.player_on_lost(arena, player)
+    local player_state = arena.player_states[player.index]
+
+    player_state.status = "lost"
+
+    -- Remove his character entity (the little man on the screen)
+    local character = player.character
+    player.disassociate_character(character)
+    player.set_controller{type = defines.controllers.spectator}
+    character.associated_player = nil
+    character.die() -- The body will remain there... nice
+end
+
 -- Ensure the player is still in his vehicle
 function Arena.ensure_players_are_driving(arena, player)
     local player_state = arena.player_states[player.index]
@@ -209,6 +256,35 @@ function Arena.ensure_players_are_driving(arena, player)
         -- Player needs to be in his car
         if not player.character.vehicle then
             player_state.vehicle.set_driver(player)
+        end
+    end
+end
+
+-- Player likely accidentally pressed enter while playing.
+-- Double check, and put him back in his car
+function Arena.player_driving_state_changed(arena, event)
+    local player = game.get_player(event.player_index)
+    local player_state = arena.player_states[player.index]
+    local entity = event.entity
+    
+    
+    if player_state.status == "playing" then
+        -- We only really care if player is playing
+        if player.character.driving == false then
+            -- This means he likely got OUT of his vehicle
+            if entity and player_state.vehicle == entity then
+                -- The player's car still exists. That means he simply tired to climb out.
+                -- Put him back into his vehicle and shame him.
+
+                player_state.vehicle.set_driver(player)
+                game.print(player.name.." tried to get out of his vehicle in the middle of the arena!")
+            
+            elseif not entity then
+                -- Player is not driving anymore and his entity doesn't exist.
+                -- This means he likely lost the match. This means we need to do
+                -- some stuff.
+                Arena.player_on_lost(arena, player)
+            end
         end
     end
 end

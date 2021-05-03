@@ -2,7 +2,7 @@ util = require("util")
 
 local Arena = require("scripts.arena")
 local Lobby = require("scripts.lobby")
-
+local curvefever_util = require("scripts.curvefever-util")
 
 local World = { }
 
@@ -81,12 +81,25 @@ function World.on_tick(world, event)
     end
 end
 
-function World.on_player_driving_changed_state(world, event)
-    
-    ---------------------------------------
-    -- TODO THIS WILL HAVE TO BE VERY SMART
-    ---------------------------------------
+-- Players like to climb out of their vehicles of get kicked out
+-- when their vehicle is destroyed. We must handle it correctly.
+-- Here we pass the event along to the appropriate arena or lobby
+-- We are checking the players and possibly the vehicle too 
+function World.on_player_driving_changed_state(world, event)    
+    if world.enabled == false then return end
 
+    local player = game.get_player(event.player_index)
+
+    -- Check if this player was playing in an arena
+    for _, arena in pairs(world.arenas) do
+        if arena.player_states[player.index] then
+            -- The player who got out of his car is in this arena
+            -- It's not possible for him to try climb in in an arena
+            -- hopefully.
+            Arena.player_driving_state_changed(arena, event)
+            return
+        end
+    end
 
     if not event.entity then
         -- The player might have tried to climb out of his car.

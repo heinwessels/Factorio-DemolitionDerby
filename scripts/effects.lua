@@ -26,7 +26,14 @@ function Effects.apply_effects(arena, player)
         local effect_constants = constants.effects[effect_type]
 
         -- Need to get the vehicle every iteration in case it's swopped
-        local vehicle = player.character.vehicle
+        local vehicle = player_state.vehicle
+        if vehicle ~= player.character.vehicle then
+            -- There's a mismatch in vehicles. Something went out of sync            
+            error([[
+                Vehicles out of sync for <]]..player.name..[[> in arena <]]..arena.name..[[>. 
+                Expects a <]]..vehicle.name.." but is driving a <"..player.character.vehicle.name..[[>.
+            ]])
+        end
 
         -- Did this effect time out?
         local timed_out = false
@@ -73,18 +80,18 @@ function Effects.apply_effects(arena, player)
                 vehicle.speed = vehicle.speed * effect.speed_modifier
                 if vehicle.name ~= "curvefever-tank" then
                     -- Haven't swapped vehicles yet. Do it now.
-                    Effects.swap_vehicle(player, "curvefever-tank")
+                    player_state.vehicle = Effects.swap_vehicle(player, "curvefever-tank")
                 end
             else
                 -- Timed out, swap back to normal vehicle
-                Effects.swap_vehicle(player, "curvefever-car")
+                player_state.vehicle = Effects.swap_vehicle(player, "curvefever-car")
             end
         ------------------------------------------------------------------------            
         elseif effect_type == "slow_down" then
             -- Throw down a slow-down sticker right on the player and go slow
             if not timed_out then
                 vehicle.speed = vehicle.speed * effect.speed_modifier
-                if not effects.vehicle_has_sticker(vehicle, "slowdown-sticker") then
+                if not Effects.vehicle_has_sticker(vehicle, "slowdown-sticker") then
                     surface.create_entity{
                         name = "slowdown-sticker",
                         target = vehicle,
