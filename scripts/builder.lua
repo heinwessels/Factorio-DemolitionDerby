@@ -62,8 +62,12 @@ function Builder.iterate(arena)
                 "tree",
                 "unit",
                 "turret",
+                "fire", -- This is for worm spit
             },
         }) do
+            if entity.type == "sticker" then
+                game.print("Found it!")
+            end
             if entity.name ~= "curvefever-border" then
                 entity.destroy{raise_destroy=false}
             end

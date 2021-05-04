@@ -1,4 +1,6 @@
 return {
+    single_player = true,  -- Debugging purposes, for I am but one person
+
     trail = {
         offset = 3,     -- Distance to draw behind the car
         period = 90,    -- Duty cycle period in ticks of drawing

@@ -59,7 +59,7 @@ end
 function Arena.clean(arena)
     -- Remove all players from the arena
     local spawn = global.world.spawn_location
-    local surface = player.surface
+    local surface = arena.surface
     for _, player in pairs(arena.players) do
 
         if player.character and player.character.vehicle then
@@ -172,8 +172,6 @@ function Arena.start(arena)
     -- In the player state
     arena.vehicles = { }
 
-    -- TODO Add triggers to remaining vehicles being destroyed
-
     log("Started arena <"..arena.name.."> with "..#arena.players.." players")
     Arena.set_status(arena, "playing")
 end
@@ -213,8 +211,6 @@ function Arena.update(arena)
         for _, player in pairs(arena.players) do
             if player.character then
                 -- Update for a specific player
-
-                Arena.ensure_players_are_driving(arena, player)
                 
                 local vehicle = player.character.vehicle  
                 local player_state = arena.player_states[player.index]
@@ -249,16 +245,16 @@ function Arena.player_on_lost(arena, player)
     character.die() -- The body will remain there... nice
 end
 
--- Ensure the player is still in his vehicle
-function Arena.ensure_players_are_driving(arena, player)
-    local player_state = arena.player_states[player.index]
-    if player_state == "playing" then
-        -- Player needs to be in his car
-        if not player.character.vehicle then
-            player_state.vehicle.set_driver(player)
-        end
-    end
-end
+-- -- Ensure the player is still in his vehicle
+-- function Arena.ensure_players_are_driving(arena, player)
+--     local player_state = arena.player_states[player.index]
+--     if player_state == "playing" then
+--         -- Player needs to be in his car
+--         if not player.character.vehicle then
+--             player_state.vehicle.set_driver(player)
+--         end
+--     end
+-- end
 
 -- Player likely accidentally pressed enter while playing.
 -- Double check, and put him back in his car

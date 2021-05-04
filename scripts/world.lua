@@ -64,8 +64,12 @@ end
 
 function World.player_entered(world, event)
     -- Just make sure he goes to spawn.
+    if not world then return end
     local player = game.get_player(event.player_index)
     player.teleport(world.spawn_location)
+    if not player.character then
+        error("Player entered without a character. You need to give him one.")
+    end
 end
 
 function World.on_tick(world, event)
