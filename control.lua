@@ -36,6 +36,8 @@ remote.add_interface("curvefever-interface", {
         World.clean(global.world)
     end,
 
+    -- TODO Add way to change constants. And change constants to config.
+
     load = function(map_data_in)
         if map_data_in == nil then map_data_in = map_data end
         global.world = World.create(global.world, map_data_in)

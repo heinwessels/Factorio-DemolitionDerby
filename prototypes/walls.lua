@@ -51,12 +51,15 @@ data:extend({
             attack_reaction =
             {
                 {
-                    -- how far the mirroring works
-                    range = 2,
-                    -- what kind of damage triggers the mirroring
-                    -- if not present then anything triggers the mirroring
-                    damage_type = "physical",
-                    -- caused damage will be multiplied by this and added to the subsequent damages
+                    -- Damage players that hit the wall immensly
+                    -- Using electricity because it sounds cool
+                    -- This means that tanks can be resistant to
+                    -- impacts, but still die at the border wall.
+
+                    -- TODO Get this to actually work!
+                    -- TODO Add some cool effects?
+                    range = 3,
+                    damage_type = "electric",
                     reaction_modifier = 100000000,
                     action =
                     {
@@ -65,10 +68,9 @@ data:extend({
                         {
                             type = "instant",
                             target_effects =
-                            {
+                            {                                
                                 type = "damage",
-                                -- always use at least 0.1 damage
-                                damage = {amount = 0.1, type = "physical"}
+                                damage = {amount = 1000000, type = "electric"}
                             }
                         }
                     },

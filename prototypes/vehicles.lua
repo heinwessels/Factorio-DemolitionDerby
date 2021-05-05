@@ -22,7 +22,7 @@ data:extend({
             resistances = {
                 {
                     type = "fire",
-                    percent = 100
+                    percent = 100       -- immune
                 },
                 {
                     type = "acid",
@@ -36,6 +36,11 @@ data:extend({
                 },
                 {
                     type = "physical",
+                    percent = 0,
+                    decrease = -5000  -- die instantly
+                },
+                {
+                    type = "electric",
                     percent = 0,
                     decrease = -5000  -- die instantly
                 },
@@ -89,8 +94,14 @@ data:extend({
             max_health = 2000,
             resistances = {
                 {
+                    type = "electric",
+                    percent = 0,
+                    decrease = -5000  -- die instantly on border wall
+                },
+                {
                     type = "impact",
-                    percent = 50,   -- Need to crash through a few walls but die on border
+                    -- percent = 100,   -- Imune
+                    percent = 50,       -- TODO Must still die when hit border until reaction is fixed
                 },
                 {
                     type = "fire",

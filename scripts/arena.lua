@@ -57,6 +57,8 @@ end
 
 -- Clean up so that we can play another game
 function Arena.clean(arena)
+    Arena.set_status(arena, "building")  
+
     -- Remove all players from the arena
     local spawn = global.world.spawn_location
     local surface = arena.surface
@@ -70,20 +72,11 @@ function Arena.clean(arena)
         if not player.character then
             -- Player was spectating and don't have a character
             -- Give his body back
-            local character = surface.create_entity{
-                name = "character",
-                position = player.position,
-                force = "player",
-            }
-            player.associate_character(character)
-            player.set_controller{
-                type = defines.controllers.character, 
-                character = character,                
-            }
+            curvefever_util.player_from_spectator(player)
         end
 
         -- Move him back to spawn
-        player.teleport(spawn)
+        player.teleport({spawn.x, spawn.y + player.index})
     end
 
     -- Clear the state
@@ -91,8 +84,7 @@ function Arena.clean(arena)
     arena.player_states = { }
     arena.players = { }
 
-    -- Rebuild the arena
-    Arena.set_status(arena, "building")    
+    -- Rebuild the arena      
     Builder.start(arena)
 end
 
@@ -151,6 +143,9 @@ function Arena.start(arena)
                 ticks_to_live = nil, -- Forever
             },
         })
+
+        -- Make sure player is in the correct force
+        player.force = "player"
 
         -- Give them a real car (and not a static one)
         -- And store it in the state! We will remove
@@ -236,44 +231,33 @@ function Arena.player_on_lost(arena, player)
     local player_state = arena.player_states[player.index]
 
     player_state.status = "lost"
+    log("Player <"..player.name.."> died on arena <"..arena.name..">")
 
     -- Remove his character entity (the little man on the screen)
-    local character = player.character
-    player.disassociate_character(character)
-    player.set_controller{type = defines.controllers.spectator}
-    character.associated_player = nil
+    local character = curvefever_util.player_to_spectator(player)
     character.die() -- The body will remain there... nice
 end
 
--- -- Ensure the player is still in his vehicle
--- function Arena.ensure_players_are_driving(arena, player)
---     local player_state = arena.player_states[player.index]
---     if player_state == "playing" then
---         -- Player needs to be in his car
---         if not player.character.vehicle then
---             player_state.vehicle.set_driver(player)
---         end
---     end
--- end
-
 -- Player likely accidentally pressed enter while playing.
--- Double check, and put him back in his car
+-- Double check, and put him back in his car. This is 
+-- also triggered when the player swops cars during an
+-- effect. 
 function Arena.player_driving_state_changed(arena, event)
     local player = game.get_player(event.player_index)
     local player_state = arena.player_states[player.index]
-    local entity = event.entity
-    
-    
-    if player_state.status == "playing" then
+    local entity = event.entity    
+        
+    if arena.status == "playing" and player_state.status == "playing" then
         -- We only really care if player is playing
+        -- AND if the arena is playing
         if player.character.driving == false then
             -- This means he likely got OUT of his vehicle
+            -- This could be because of the effect
             if entity and player_state.vehicle == entity then
-                -- The player's car still exists. That means he simply tired to climb out.
-                -- Put him back into his vehicle and shame him.
-
+                -- The player's car still exists. This means he tried
+                -- to climb out or swapped vehicles. Just make sure he
+                -- back in his vehicle.
                 player_state.vehicle.set_driver(player)
-                game.print(player.name.." tried to get out of his vehicle in the middle of the arena!")
             
             elseif not entity then
                 -- Player is not driving anymore and his entity doesn't exist.

@@ -21,6 +21,34 @@ function Util.position_in_area(position, area)
         (position.y > area.left_top.y and position.y < area.right_bottom.y )
 end
 
+-- Turn the player into a spectator.
+-- It will return a reference to the character
+-- that's left behind
+function Util.player_to_spectator(player)
+    local character = player.character
+    if not character then return end
+    player.disassociate_character(character)
+    player.set_controller{type = defines.controllers.spectator}
+    character.associated_player = nil
+    return character
+end
+
+-- This will give a player that's currently
+-- a spectator back his body.
+function Util.player_from_spectator(player)
+    if player.character then return end
+    local character = player.surface.create_entity{
+        name = "character",
+        position = player.position,
+        force = "player",
+    }
+    player.associate_character(character)
+    player.set_controller{
+        type = defines.controllers.character, 
+        character = character,                
+    }
+end
+
 function Util.table_print (tt, done)
     local done = done or {}
     local indent = indent or 0

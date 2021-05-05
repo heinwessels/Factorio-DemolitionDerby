@@ -2,6 +2,7 @@ util = require("util")
 
 local Arena = require("scripts.arena")
 local Lobby = require("scripts.lobby")
+local constants = require("scripts.constants")
 local curvefever_util = require("scripts.curvefever-util")
 
 local World = { }
@@ -68,8 +69,18 @@ function World.player_entered(world, event)
     local player = game.get_player(event.player_index)
     player.teleport(world.spawn_location)
     if not player.character then
-        error("Player entered without a character. You need to give him one.")
+        curvefever_util.player_from_spectator(player)
     end
+    player.character.driving = false    -- Ensure that he's not in a vehicle
+    player.force = "player"
+
+    -- Hide some GUI elements
+    if constants.single_player == false then
+        player.game_view_settings.show_controller_gui = false
+        player.game_view_settings.show_research_info = false
+        player.game_view_settings.show_side_menu = false
+    end
+
 end
 
 function World.on_tick(world, event)
