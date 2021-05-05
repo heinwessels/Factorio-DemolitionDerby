@@ -76,7 +76,7 @@ function Arena.clean(arena)
         end
 
         -- Move him back to spawn
-        player.teleport({spawn.x, spawn.y + player.index})
+        curvefever_util.teleport_safe(player, spawn)
     end
 
     -- Clear the state

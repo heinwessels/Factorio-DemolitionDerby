@@ -67,7 +67,7 @@ function World.player_entered(world, event)
     -- Just make sure he goes to spawn.
     if not world then return end
     local player = game.get_player(event.player_index)
-    player.teleport(world.spawn_location)
+    curvefever_util.teleport_safe(player, world.spawn_location)
     if not player.character then
         curvefever_util.player_from_spectator(player)
     end

@@ -58,8 +58,8 @@ data:extend({
 
                     -- TODO Get this to actually work!
                     -- TODO Add some cool effects?
-                    range = 3,
-                    damage_type = "electric",
+                    range = 2,
+                    -- damage_type = "impact",       -- Damage that triggers the reaction
                     reaction_modifier = 100000000,
                     action =
                     {

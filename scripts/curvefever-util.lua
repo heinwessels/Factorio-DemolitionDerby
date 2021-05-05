@@ -21,6 +21,52 @@ function Util.position_in_area(position, area)
         (position.y > area.left_top.y and position.y < area.right_bottom.y )
 end
 
+-- Is the position within the area?
+function Util.middle_of_area(area)
+    return {
+        x=(area.left_top.x + (area.right_bottom.x - area.left_top.x)/2),
+        y=(area.left_top.x + (area.right_bottom.x - area.left_top.x)/2)
+    }
+end
+
+-- When two players are teleported to exactly the same
+-- spot they will get stuck on top of another. This
+-- Will check if there's an player at position, and if not
+-- chose another spot around <position> of <size>.
+-- if <size> {x=?, y=?} is nil, then it defaults to <5, 5>
+-- TODO Make this smarter so that you spawn more naturally
+function Util.teleport_safe(player, position, size)
+    if not size then size = {x=5, y=5} end
+    local to_teleport = {
+        x = position.x - size.x/2,
+        y = position.y - size.y/2,
+    }
+    local step = 0.2
+    local surface = player.surface
+    local x_limit = position.x + size.x/2
+    local y_limit = position.y + size.y/2
+    while true do
+        local obstruction = surface.find_entity("character", to_teleport)
+        if not obstruction then
+            player.teleport(to_teleport)
+            return
+        end
+        to_teleport.x = to_teleport.x + step
+        if to_teleport.x > position.x + x_limit then
+            to_teleport.x = position.x - size.x/2
+            to_teleport.y = to_teleport.y + step
+            if to_teleport.x > position.x + x_limit then
+                -- Out of the valid area!
+                error([[
+                    Could not find a valid safe place to teleport player ]]..player.name..[[.
+                    Attempted to teleport to ]]..Util.to_string(position)..[[ 
+                    with size ]]..Util.to_string(size)..[[
+                ]])
+            end
+        end
+    end
+end
+
 -- Turn the player into a spectator.
 -- It will return a reference to the character
 -- that's left behind
@@ -49,7 +95,7 @@ function Util.player_from_spectator(player)
     }
 end
 
-function Util.table_print (tt, done)
+function Util._table_print (tt, done)
     local done = done or {}
     local indent = indent or 0
     if type(tt) == "table" then
@@ -82,7 +128,7 @@ function Util.to_string( tbl )
     if type(tbl) == "nil" then
         return tostring(nil)
     elseif type(tbl) == "table" then
-        return "{"..Util.table_print(tbl).."}"
+        return "{"..Util._table_print(tbl).."}"
     elseif type(tbl) == "string" then
         return tbl
     else
