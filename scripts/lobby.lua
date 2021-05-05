@@ -34,7 +34,8 @@ function Lobby.create(lobby)
             vehicles = vehicles,     -- Array of vehicles in this lobby
             vehicle_positions = vehicle_positions,     -- Position of each of the vehicles
             players = { },
-
+            
+            spawn_location = curvefever_util.middle_of_area(lobby.area),
             area = {left_top={}, right_top={}},
             gates = {
                 in_area = {left_top={}, right_top={}},
@@ -110,7 +111,7 @@ function Lobby.update(lobby)
         end
 
         -- Start the game!
-        Arena.start(arena)
+        Arena.start_round(arena, lobby)
         if arena.status ~= "playing" then
             log("Something went wrong starting arena <"..arena.name.."> from lobby <"..lobby.name..">")
         end

@@ -21,7 +21,9 @@ function Arena.create(arena)
             ideal_number_of_effect_beacons = curvefever_util.size_of_area(arena.area) * constants.arena.effect_density,
             effect_beacons = { },   -- Array of all effect beacons part of this arena (array of references)
             builder = Builder.create(),
-        
+            
+            lobby = nil,    -- (Optional) keep reference of lobby that added players. Not required
+
             max_players = 6,    -- Default
             players = { },
             player_states = { },    
@@ -34,9 +36,18 @@ function Arena.create(arena)
             -- Possible statusses
             -- empty        -> Only defined, not built or ready
             -- ready        -> Ready for players to be added to game
-            -- playing      -> currently has a game running
+            -- playing      -> Currently playing a round
+            -- post-wait    -> After the round there will be a second of something.
+            -- done         -> Done playing. Waiting for something to happen before clean
             -- building     -> (Re)building map (done at creation or cleaning)
-            status = "empty"
+            status = "empty",
+
+            -- Remembers some information about this round
+            round = {
+                tick_started = 0,       -- The tick when this round started
+                tick_ended = 0,       -- The tick when this round started
+                players_alive = 0,      -- Keep track of how many players alive while playing                
+            }
         },
         arena
     }
@@ -60,7 +71,10 @@ function Arena.clean(arena)
     Arena.set_status(arena, "building")  
 
     -- Remove all players from the arena
-    local spawn = global.world.spawn_location
+    local position = global.world.spawn_location
+    if arena.lobby then
+        position = arena.lobby.spawn_location
+    end
     local surface = arena.surface
     for _, player in pairs(arena.players) do
 
@@ -76,7 +90,7 @@ function Arena.clean(arena)
         end
 
         -- Move him back to spawn
-        curvefever_util.teleport_safe(player, spawn)
+        curvefever_util.teleport_safe(player, position)
     end
 
     -- Clear the state
@@ -122,7 +136,12 @@ function Arena.add_player(arena, player)
 end
 
 -- Start the game for this arena
-function Arena.start(arena)
+-- Players need to be in the arena in the cars already.
+-- TODO Let arena start do it rather. More robust.
+-- This will do some checks.
+-- <lobby> can be nil, but if it's there <arena> will remember
+-- and then teleport players back to the lobby instead of spawn
+function Arena.start_round(arena, lobby)
     if arena.status ~= "ready" then
         log("Cannot start arena <"..arena.name.."> since it's not ready (status = "..arena.status..")")
     end
@@ -133,6 +152,7 @@ function Arena.start(arena)
 
     -- Setup and update some variables
     arena.ideal_number_of_effect_beacons = curvefever_util.size_of_area(arena.area) * constants.arena.effect_density
+    arena.lobby = lobby
 
     -- Setup players
     for index, player in pairs(arena.players) do
@@ -168,7 +188,10 @@ function Arena.start(arena)
     arena.vehicles = { }
 
     log("Started arena <"..arena.name.."> with "..#arena.players.." players")
-    Arena.set_status(arena, "playing")
+    Arena.set_status(arena, "playing")    
+    arena.round.tick_started = game.tick
+    arena.round.tick_ended = 0
+    arena.round.players_alive = #arena.players
 end
 
 function Arena.create_player_state(arena, player)
@@ -201,8 +224,12 @@ function Arena.update(arena)
     ---------------------------------------------------
     elseif arena.status == "playing" then
 
+        -- Add more effect beacons if required
         Arena.update_effect_beacons(arena)
-
+        
+        -- Update player specific things
+        arena.round.players_alive = 0   -- Will count the amount now
+        local player_alive = nil
         for _, player in pairs(arena.players) do
             if player.character then
                 -- Update for a specific player
@@ -210,18 +237,65 @@ function Arena.update(arena)
                 local vehicle = player.character.vehicle  
                 local player_state = arena.player_states[player.index]
 
-                if player_state.status == "playing" and vehicle then
+                if player_state.status == "playing" or player_state.status == "lost" and vehicle then
                     
-                    vehicle.speed = constants.vehicle_speed
+                    if player_state.status == "playing" then
+                        -- This player is still playing
+                        arena.round.players_alive = arena.round.players_alive + 1
+                        player_alive = player -- If round end, this will contain the victor
+                        
+                        -- Force player to always be moving
+                        vehicle.speed = constants.vehicle_speed
+                    end
 
                     -- Apply any effects
+                    -- This should happen even if the player has 
+                    -- lost, so that his effects can timeout correctly
+                    -- (Like the bugs)
                     Effects.apply_effects(arena, player)
                 end
             end
         end
-        
+
+        -- Check if the round is over, etc.
+        local should_end = false
+        if constants.single_player == true and arena.round.players_alive == 0 then
+            should_end = true
+        elseif constants.single_player == false and arena.round.players_alive <= 1 then
+            should_end = true
+        end
+        if should_end then
+            -- The game is over!
+            arena.round.tick_ended = game.tick
+            if not player_alive then player_alive={name = "<NO PLAYER>"} end    -- TODO Hacky
+            log("Round over at <"..arena.name.."> after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. <"..player_alive.name.."> was the victor!")
+            game.print("On Arena "..arena.name.." - after "..(arena.round.tick_ended-arena.round.tick_started).." ticks -"..player_alive.name.." emerged victorious!")
+
+            -- TODO Show some victory thing
+            -- TODO Show score!
+            -- TODO Play nice sound
+
+            Arena.set_status(arena, "post-wait")
+        end
+    ---------------------------------------------------
+    elseif arena.status == "post-wait" then
+        -- This just a little cool down after the round ended
+        if game.tick > (arena.round.tick_ended + constants.round.post_wait) then            
+            Arena.end_round(arena)
+        end
     ---------------------------------------------------
     end
+end
+
+-- Handle things when a round ends.
+-- Players need to see scores
+-- And then be teleported back to arena
+-- Seperate fucntion so that it can be called remotely
+function Arena.end_round(arena)   
+        
+    -- Initiate clean of the arena
+    -- It will also remove all players
+    Arena.clean(arena)
 end
 
 -- This function must be called when a player

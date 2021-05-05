@@ -1,6 +1,9 @@
 return {
     single_player = true,  -- Debugging purposes, for I am but one person
-
+    round = {
+        pre_wait = 3*60,    -- After lobby added players, when should game start
+        post_wait = 3*60,   -- How long after a match ended should game start
+    },
     trail = {
         offset = 3,     -- Distance to draw behind the car
         period = 90,    -- Duty cycle period in ticks of drawing

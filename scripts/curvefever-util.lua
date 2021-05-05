@@ -25,7 +25,7 @@ end
 function Util.middle_of_area(area)
     return {
         x=(area.left_top.x + (area.right_bottom.x - area.left_top.x)/2),
-        y=(area.left_top.x + (area.right_bottom.x - area.left_top.x)/2)
+        y=(area.left_top.y + (area.right_bottom.y - area.left_top.y)/2)
     }
 end
 
@@ -41,7 +41,7 @@ function Util.teleport_safe(player, position, size)
         x = position.x - size.x/2,
         y = position.y - size.y/2,
     }
-    local step = 0.2
+    local step = 0.8
     local surface = player.surface
     local x_limit = position.x + size.x/2
     local y_limit = position.y + size.y/2
@@ -108,7 +108,7 @@ function Util._table_print (tt, done)
                 else
                     table.insert(sb, "{");
                 end
-                table.insert(sb, Util.table_print (value, indent + 2, done))
+                table.insert(sb, Util._table_print (value, indent + 2, done))
                 table.insert(sb, "}, ");
             elseif type(key) == "number"  then
                 table.insert(sb, string.format("\"%s\"", tostring(value)))

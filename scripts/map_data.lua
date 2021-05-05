@@ -48,11 +48,11 @@ return {
             area = {
                 left_top = {
                     x = 30,
-                    y = 10,
+                    y = 11,
                 },
                 right_bottom = {
                     x = 49,
-                    y = 31,
+                    y = 30,
                 },
             },
             gates = {
