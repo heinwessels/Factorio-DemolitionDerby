@@ -74,6 +74,7 @@ function Util.player_to_spectator(player)
     local character = player.character
     if not character then return end
     player.disassociate_character(character)
+    if not controller then controller = defines.controllers.spectator end
     player.set_controller{type = defines.controllers.spectator}
     character.associated_player = nil
     return character

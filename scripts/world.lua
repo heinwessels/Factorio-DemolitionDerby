@@ -4,6 +4,7 @@ local Arena = require("scripts.arena")
 local Lobby = require("scripts.lobby")
 local constants = require("scripts.constants")
 local curvefever_util = require("scripts.curvefever-util")
+local Splash = require("scripts.splash")
 
 local World = { }
 
@@ -16,6 +17,8 @@ function World.create(world, map_data)
     if map_data ~= nil then        
         world.spawn_location = map_data.spawn_location
         world.enabled = true
+        world.splash = map_data.splash
+        world.players_in_splash = {} -- Table with unit number as key, and tick started as value
 
         for _, lobby in pairs(map_data.lobbies) do
             world.lobbies[lobby.name] = Lobby.create(lobby)
@@ -66,25 +69,39 @@ end
 function World.player_entered(world, event)
     -- Just make sure he goes to spawn.
     if not world then return end
-    local player = game.get_player(event.player_index)
-    curvefever_util.teleport_safe(player, world.spawn_location)
+    local player = game.get_player(event.player_index)    
+    player.force = "player"
+
+    -- TODO What to do with day time?
+    player.surface.always_day=true
+
+    -- Make sure the player is at spawn and has a body
     if not player.character then
         curvefever_util.player_from_spectator(player)
+        player.character.driving = false    -- Ensure that he's not in a vehicle
     end
-    player.character.driving = false    -- Ensure that he's not in a vehicle
-    player.force = "player"
+    curvefever_util.teleport_safe(player, world.spawn_location)
+
+    -- Here is the splashy boi.
+    -- After it ends player will automatically be
+    -- at his character at spawn
+    if constants.splash.enabled and world.splash then
+        Splash.show(world, player)
+    end
 
     -- Hide some GUI elements
     if constants.single_player == false then
         player.game_view_settings.show_controller_gui = false
         player.game_view_settings.show_research_info = false
         player.game_view_settings.show_side_menu = false
+        player.game_view_settings.show_minimap = false         
     end
 
 end
 
 function World.on_tick(world, event)
 
+    -- The rest should only work if the world is active
     if world.enabled == false then return end
 
     for index, lobby in pairs(world.lobbies) do

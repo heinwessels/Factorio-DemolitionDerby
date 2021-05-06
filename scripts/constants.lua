@@ -1,5 +1,10 @@
 return {
     single_player = true,  -- Debugging purposes, for I am but one person
+    splash = {
+        enabled = true,
+        duration = 5*60,        -- Time splash should be shown
+        transition = 2*60,      -- Transition from splash to spawn
+    },
     round = {
         pre_wait = 3*60,    -- After lobby added players, when should game start
         post_wait = 3*60,   -- How long after a match ended should game start
