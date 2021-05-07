@@ -37,34 +37,34 @@ end
 -- TODO Make this smarter so that you spawn more naturally
 function Util.teleport_safe(player, position, size)
     if not size then size = {x=5, y=5} end
-    local to_teleport = {
-        x = position.x - size.x/2,
-        y = position.y - size.y/2,
-    }
-    local step = 0.8
     local surface = player.surface
-    local x_limit = position.x + size.x/2
-    local y_limit = position.y + size.y/2
-    while true do
-        local obstruction = surface.find_entity("character", to_teleport)
+
+    -- First try to spawn exactly at the desired location
+    local obstruction = surface.find_entity("character", position)
+    if not obstruction then
+        player.teleport(position)
+        return
+    end
+
+    -- If we're here it didn't work. Now try to spawn randomly 
+    -- at some location
+    local tries = 10
+    while tries > 0 do
+        local random_position = {
+            x = position.x + (math.random(0, size.x)-size.x/2),   -- Random location with 0.1 tile resolution
+            y = position.y + (math.random(0, size.y)-size.y/2),
+        }
+        obstruction = surface.find_entity("character", random_position)
         if not obstruction then
-            player.teleport(to_teleport)
+            player.teleport(random_position)
             return
         end
-        to_teleport.x = to_teleport.x + step
-        if to_teleport.x > position.x + x_limit then
-            to_teleport.x = position.x - size.x/2
-            to_teleport.y = to_teleport.y + step
-            if to_teleport.x > position.x + x_limit then
-                -- Out of the valid area!
-                error([[
-                    Could not find a valid safe place to teleport player ]]..player.name..[[.
-                    Attempted to teleport to ]]..Util.to_string(position)..[[ 
-                    with size ]]..Util.to_string(size)..[[
-                ]])
-            end
-        end
     end
+    error([[
+        Could not find a valid safe place to teleport player ]]..player.name..[[.
+        Attempted to teleport to ]]..Util.to_string(position)..[[ 
+        with size ]]..Util.to_string(size)..[[
+    ]])
 end
 
 -- Turn the player into a spectator.
