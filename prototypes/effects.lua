@@ -27,6 +27,8 @@ data:extend({
         minable = {mining_time = 0.5, result = "curvefever-effect-base"},
         mined_sound = { filename = "__core__/sound/deconstruct-small.ogg" },
         max_health = 15,
+        trigger_radius = 2.5,
+        timeout = 0,    -- Immediatelly active
         corpse = "land-mine-remnants",
         -- dying_explosion = "land-mine-explosion",
         collision_box = {{-size_modifier,-size_modifier}, {size_modifier, size_modifier}},
@@ -67,7 +69,7 @@ data:extend({
                 },
             }  
         },
-        trigger_radius = 2.5,
+        
         ammo_category = "landmine",
         action =
         {

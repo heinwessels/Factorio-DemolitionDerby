@@ -1,7 +1,7 @@
 -- There is coloured concrete in vanilla!
 -- https://factorio.com/blog/post/fff-335
 -- Here I just give them items so I can create a blueprint using them
--- It's for the splashy boi
+-- It's for the splashy boi. They will not be in the actual mod.
 
 local function create_coloured_concrete(colour)
     data:extend({

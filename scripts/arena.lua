@@ -359,6 +359,18 @@ function Arena.update_effect_beacons(arena)
             arena,
             effects_to_spawn[math.random(#effects_to_spawn)]
         )
+    else
+        -- The array is full. Make sure everything is still valid
+        local did_something = false
+        for index, effect in pairs(arena.effect_beacons) do
+            if not effect.valid then
+                did_someting = true
+                arena.effect_beacons[index]=nil
+            end
+        end
+        if did_something == true then
+            arena.effect_beacons = curvefever_util.compact_array(arena.effect_beacons)
+        end
     end
 end
 
@@ -418,7 +430,7 @@ function Arena.hit_effect_event(arena, event)
             Effects.add_effect(arena, player, {
                 speed_up = {
                     speed_modifier = 1.8,
-                    ticks_to_live = 5*60,
+                    ticks_to_live = 4*60,
                 },
             })
         elseif effect_type == "tank" then
@@ -448,10 +460,14 @@ function Arena.hit_effect_event(arena, event)
                 },                
             })
         elseif effect_type == "biters" then
+            local effect_constants = constants.effects[effect_type]
             Effects.add_effect(arena, player, {
                 biters = {
-                    ticks_to_live = 8*60,
-                },                
+                    ticks_to_live = effect_constants.ticks_to_live,
+                },
+                no_trail = {
+                    ticks_to_live = effect_constants.period * (effect_constants.max_biters + 1)
+                },
             })
         end
     end

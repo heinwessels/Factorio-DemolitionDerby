@@ -166,70 +166,62 @@ function Effects.apply_effects(arena, player)
             -- Stops player from drawing trail behind him
             if not timed_out then
                 if not effect.biters then effect.biters = { } end
-                if #effect.biters < effect_constants.amount then
-                    if curvefever_util.position_in_area(
-                        player.position,
-                        {
-                            left_top = {
-                                x=effect.position.x-effect_constants.spacing, 
-                                y=effect.position.y-effect_constants.spacing
-                            },
-                            right_bottom = {
-                                x=effect.position.x+effect_constants.spacing, 
-                                y=effect.position.y+effect_constants.spacing
-                            }
-                        }
-                    ) == false then
-                        -- Far enough away. 
+                if not effect.max_biters then effect.max_biters = effect_constants.max_biters end
+                if effect.extended == true then
+                    effect.extended = false    -- Clear flag
+                    effect.max_biters = effect.max_biters + effect_constants.max_biters
+                end
+                if not effect.last_spawn_time then effect.last_spawn_time = game.tick end
+                if #effect.biters < effect.max_biters
+                        and effect.last_spawn_time + effect_constants.period < game.tick then
+                    -- Enough time has passed
+                    effect.last_spawn_time = game.tick
+
+                    -- Determine where to spawn biter
+                    local orientation = vehicle.orientation * 2 * math.pi
+                    local position = {
+                        x = vehicle.position.x - effect_constants.offset*math.sin(orientation),
+                        y = vehicle.position.y + effect_constants.offset*math.cos(orientation),
+                    }
+                                        
+                    -- Is there a wall in the way? Destroy it!
+                    for _, wall in pairs(surface.find_entities_filtered{
+                        area = {
+                            left_top =      {x=position.x - 3, y=position.y - 3},
+                            right_bottom =  {x=position.x + 3, y=position.y + 3}
+                        },
+                        name = "curvefever-trail"
+                    }) do                        
+                        wall.die()
+                    end
+
+                    -- Spawn biter
+                    biter = surface.create_entity{
+                        name = "behemoth-biter",
+                        position = position,
+                    }
+                    if biter == nil then                            
+                        error("Could not spawn biter on arena <"..arena.name.."> for player <"..player.name.."> at location <"..curvefever_util.to_string(effect.position)..">")
+                    else
+                        -- Valid biter spawn!
                         
-                        -- Is there a wall in the way?
-                        for _, wall in pairs(surface.find_entities_filtered{
-                            area = {
-                                left_top = {effect.position.x - 2, effect.position.y - 2},
-                                right_bottom = {effect.position.x + 2, effect.position.y + 2}
-                            },
-                            name = "curvefever-trail"
-                        }) do
-                            wall.die()
-                        end
-
-                        -- Spawn biter
-                        biter = surface.create_entity{
-                            name = "behemoth-biter",                        
-                            position = effect.position,
-                        }
-                        if biter == nil then                            
-                            error("Could not spawn biter on arena <"..arena.name.."> for player <"..player.name.."> at location <"..curvefever_util.to_string(effect.position)..">")
+                        -- Find an player to attack
+                        local enemy = nil
+                        if #arena.players > 1 then
+                            -- TODO Chooses closest player
+                            enemy = Effects.find_random_enemy(arena, player)
                         else
-                            -- Valid biter spawn!
-                            
-                            -- Find an player to attack
-                            if #arena.players > 1 then
-                                -- If you're the only player they will attack you! Haha!
-
-                                -- TODO choose closest player!
-                                local enemies = { }
-                                for _, enemy in pairs(arena.players) do
-                                    local enemy_state = arena.player_states[enemy.index]
-                                    if enemy_state.status == "playing" then
-                                        if enemy.index ~= player.index then                                        
-                                            table.insert(enemies, enemy)
-                                        end
-                                    end
-                                end
-                                local enemy = enemies[math.random(#enemies)]
-                                local command = {
-                                    target= enemy.character.vehicle, 
-                                    type = defines.command.attack, 
-                                    distraction = defines.distraction.none
-                                }
-                                biter.set_command(command)
-                            end
-
-                            biter.speed = constants.vehicle_speed   -- As fast as a normal vehicle
-                            table.insert(effect.biters, biter)
-                            effect.position = player.position
-                        end
+                            -- If you're the only player they will attack you! Haha!
+                            enemy = player
+                        end                            
+                        local command = {
+                            target= enemy.character.vehicle, 
+                            type = defines.command.attack, 
+                            distraction = defines.distraction.none
+                        }
+                        biter.set_command(command)
+                        biter.speed = constants.vehicle_speed * effect_constants.speed_modifier
+                        table.insert(effect.biters, biter)
                     end
                 end
             else
@@ -253,14 +245,16 @@ end
 function Effects.add_effect(arena, player, effects)
     local player_state = arena.player_states[player.index]
     for effect_type, effect in pairs(effects) do
-        effect.position = player.position
+        effect.position = player.position        
         if player_state.effects[effect_type] then
-            -- Player already has this effect applied. Extend time
-            player_state.effects[effect_type].ticks_to_live = effect.ticks_to_live
-            -- log("Extending <"..effect_type.."> effect on <"..player.name.."> in arena <"..arena.name)
+            -- Player already has this effect applied. Extend time            
+            player_state.effects[effect_type].extended = true -- This will show an extension has been made
+            player_state.effects[effect_type].ticks_to_live = player_state.effects[effect_type].ticks_to_live + effect.ticks_to_live
         else
             -- Player does not currently have this effect applied. Add it
             effect.tick_started = game.tick
+            effect.extended = false
+            effect.fresh = true
             player_state.effects[effect_type] = effect
             -- log("Adding <"..effect_type.."> effect on <"..player.name.."> to arena <"..arena.name)
         end
@@ -279,6 +273,22 @@ end
 function Effects.reset_effects(arena, player)
     local player_state = arena.player_states[player.index]
     player_state.effects = { }
+end
+
+-- Finds a random enemy in the arena that is not the player
+function Effects.find_random_enemy(arena, player)
+    local enemies = { }
+    for _, enemy in pairs(arena.players) do
+        local enemy_state = arena.player_states[enemy.index]
+        if enemy_state.status == "playing" then
+            if enemy ~= player then                                        
+                table.insert(enemies, enemy)
+            end
+        end
+    end
+    if #enemies == 0 then return nil end
+    if #enemies == 1 then return enemies[1] end
+    return enemies[math.random(#enemies)]
 end
 
 -- Will remove the vehicle the player is currently driving,

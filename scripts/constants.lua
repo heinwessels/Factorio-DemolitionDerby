@@ -23,8 +23,11 @@ return {
             spacing = 2.5,
         },
         biters = {
-            spacing = 2,
-            amount = 5,
+            ticks_to_live = 8*60,
+            max_biters = 5,    -- Maximum amount of biters that may be released
+            period = 0.25*60,    -- Every how long should a biter be released
+            offset = 4,         -- How far behind vehicle should they spawn
+            speed_modifier = 0.9,   -- Relative to player speed
         }
     },
     arena = {           -- Constants used in an arena
