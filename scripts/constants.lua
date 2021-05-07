@@ -1,7 +1,7 @@
 return {
     single_player = true,  -- Debugging purposes, for I am but one person
     splash = {
-        enabled = true,
+        enabled = false,
         duration = 5*60,        -- Time splash should be shown
         transition = 2*60,      -- Transition from splash to spawn
     },

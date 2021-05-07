@@ -37,6 +37,7 @@ remote.add_interface("curvefever-interface", {
     end,
 
     -- TODO Add way to change constants. And change constants to config.
+    -- Config stored in global. Can be reset to defaults
 
     load = function(map_data_in)
         if map_data_in == nil then map_data_in = map_data end
