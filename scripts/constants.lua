@@ -21,6 +21,7 @@ return {
         },
         worm = {
             spacing = 2.5,
+            ticks_to_live = 13*60,
         },
         biters = {
             ticks_to_live = 8*60,

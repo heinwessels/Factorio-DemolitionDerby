@@ -348,12 +348,12 @@ function Arena.update_effect_beacons(arena)
     if #arena.effect_beacons < arena.ideal_number_of_effect_beacons then
         -- TODO Populate this automatically with weights
         local effects_to_spawn = {
-            "speed_up",
-            "tank",
-            "slow_down",
-            "no_trail",
+            -- "speed_up",
+            -- "tank",
+            -- "slow_down",
+            -- "no_trail",
             "worm",
-            "biters",
+            -- "biters",
         }
         Arena.attempt_spawn_effect_beacon(
             arena,
@@ -454,9 +454,10 @@ function Arena.hit_effect_event(arena, event)
                 },                
             })
         elseif effect_type == "worm" then
+            local effect_constants = constants.effects[effect_type]
             Effects.add_effect(arena, player, {
                 worm = {
-                    ticks_to_live = 13*60,
+                    ticks_to_live = effect_constants.ticks_to_live,
                 },                
             })
         elseif effect_type == "biters" then

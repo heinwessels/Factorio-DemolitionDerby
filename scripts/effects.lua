@@ -122,23 +122,51 @@ function Effects.apply_effects(arena, player)
         elseif effect_type == "worm" then
             -- Stops player from drawing trail behind him
             if not timed_out then
-                if effect.worm == nil then
-                    -- Worm not spawned yet
+                if not effect.worms_positions_to_spawn then
+                    effect.worms_positions_to_spawn = { }
+                end
+                if not effect.worms then effect.worms = { } end
+                if effect.extended == true or effect.fresh == true then
+                    -- Should always add a worm if this is triggered.
+                    -- Line it up here. We will spawn it in the next gap
+                    table.insert(effect.worms_positions_to_spawn, effect.position)
+                end
+                
+                -- First loop through existing worms and see if some should die
+                -- (Only because there can be multiple)
+                local did_something = false
+                for index, worm_instance in pairs(effect.worms) do
+                    if worm_instance.time + effect_constants.ticks_to_live
+                            < game.tick then
+                        -- We can delete destroy this worm
+                        worm_instance.worm.die()
+                        effect.worms[index] = nil
+                    end
+                end
+                if did_something == true then
+                    effect.worms = curvefever_util.compact_array(effect.worms)
+                end
 
+                -- Should we try and spawn a worm?
+                did_something = false
+                for index, position in pairs(effect.worms_positions_to_spawn) do
                     -- First make sure player is far enough away
                     local spacing = effect_constants.spacing
-                    if (player.position.x > effect.position.x + spacing
-                            or player.position.x < effect.position.x - spacing) and
-                            (player.position.y > effect.position.y + spacing
-                            or player.position.y < effect.position.y - spacing)
-                    then
+                    if curvefever_util.position_in_area(
+                        player.position,
+                        {
+                            left_top = {x = position.x - 2*spacing, y= position.y - 2*spacing},
+                            right_bottom = {x = position.x + 2*spacing, y= position.y + 2*spacing}
+                        }
+                    ) == false then
                         -- Player is far enough away
                         
                         -- Destroy all walls in that area
+                        log("Destorying around position "..curvefever_util.to_string(position))
                         for _, wall in pairs(surface.find_entities_filtered{
                             area = {
-                                {effect.position.x - spacing, effect.position.y - spacing},
-                                {effect.position.x + spacing, effect.position.y + spacing}
+                                {position.x - spacing, position.y - spacing},
+                                {position.x + spacing, position.y + spacing}
                             },
                             name = "curvefever-trail"
                         }) do
@@ -146,19 +174,38 @@ function Effects.apply_effects(arena, player)
                         end
 
                         -- Add worm
-                        effect.worm = surface.create_entity{
+                        log("Spawned at "..curvefever_util.to_string(position))
+                        local worm = surface.create_entity{
                             name = "behemoth-worm-turret",                        
-                            position = effect.position,
+                            position = position,
                         }
-                        if effect.worm == nil then
+                        if worm == nil then
                             error("Could not spawn worm on arena <"..arena.name.."> for player <"..player.name.."> at location <"..curvefever_util.to_string(player.position)..">")
+                        else
+                            -- Remember when we spawned this worm so that we can kill it at the correct time
+                            table.insert(effect.worms,{
+                                worm = worm,
+                                time = game.tick
+                            })
+
+                            -- Now make sure we don't spawn a hord of worms!
+                            effect.worms_positions_to_spawn[index]=nil
+                            did_something = true
                         end
                     end
                 end
+                if did_something == true then
+                    effect.worms_positions_to_spawn = 
+                            curvefever_util.compact_array(effect.worms_positions_to_spawn)
+                end
             else
-                -- Timed out. Remove the worm
-                if effect.worm and effect.worm.valid then
-                    effect.worm.die()
+                -- Worms should ideally be destoryed already by this point,
+                -- but it might happen that it wasn't. Here we just make dsure 
+                -- it's all cleaned up.
+                for _, worm in pairs(effect.worms) do
+                    if worm.valid then
+                        worm.die()
+                    end
                 end
             end        
             ------------------------------------------------------------------------
@@ -167,8 +214,7 @@ function Effects.apply_effects(arena, player)
             if not timed_out then
                 if not effect.biters then effect.biters = { } end
                 if not effect.max_biters then effect.max_biters = effect_constants.max_biters end
-                if effect.extended == true then
-                    effect.extended = false    -- Clear flag
+                if effect.extended == true then                    
                     effect.max_biters = effect.max_biters + effect_constants.max_biters
                 end
                 if not effect.last_spawn_time then effect.last_spawn_time = game.tick end
@@ -231,6 +277,8 @@ function Effects.apply_effects(arena, player)
         ------------------------------------------------------------------------
 
         -- Did this effect time out?
+        effect.fresh = false
+        effect.extended = false
         if timed_out then
             Effects.remove_effect(arena, player, effect_type)
         end        
@@ -247,6 +295,7 @@ function Effects.add_effect(arena, player, effects)
         if player_state.effects[effect_type] then
             -- Player already has this effect applied. Extend time            
             player_state.effects[effect_type].extended = true -- This will show an extension has been made
+            player_state.effects[effect_type].position = effect.position
             player_state.effects[effect_type].ticks_to_live = player_state.effects[effect_type].ticks_to_live + effect.ticks_to_live
         else
             -- Player does not currently have this effect applied. Add it
