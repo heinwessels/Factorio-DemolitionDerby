@@ -207,13 +207,11 @@ function Effects.apply_effects(arena, player)
                         
                         -- Find an player to attack
                         local enemy = nil
-                        if #arena.players > 1 then
+                        if #arena.players > 0 then
                             -- TODO Chooses closest player
                             enemy = Effects.find_random_enemy(arena, player)
-                        else
-                            -- If you're the only player they will attack you! Haha!
-                            enemy = player
-                        end                            
+                        end                        
+                        if not enemy then enemy = player end -- If you're the only player they will attack you! Haha!
                         local command = {
                             target= enemy.character.vehicle, 
                             type = defines.command.attack, 

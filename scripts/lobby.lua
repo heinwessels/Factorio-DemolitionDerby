@@ -108,14 +108,14 @@ function Lobby.update(lobby)
             for _, player in pairs(lobby.players) do
                 Arena.add_player(arena, player)
             end
-        end
 
-        -- Start the game!
-        Arena.start_round(arena, lobby)
-        if arena.status ~= "playing" then
-            log("Something went wrong starting arena <"..arena.name.."> from lobby <"..lobby.name..">")
-        end
-        Lobby.set_status(lobby, "busy")
+             -- Start the game!
+            Arena.start_round(arena, lobby)
+            if arena.status ~= "playing" then
+                log("Something went wrong starting arena <"..arena.name.."> from lobby <"..lobby.name..">")
+            end
+            Lobby.set_status(lobby, "busy")
+        end       
     
     elseif lobby.status == "busy" then
         local arena = global.world.arenas[lobby.target_arena_name]
