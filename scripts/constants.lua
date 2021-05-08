@@ -1,7 +1,7 @@
 return {
     single_player = true,  -- Debugging purposes, for I am but one person
     splash = {
-        enabled = false,
+        enabled = true,
         duration = 5*60,        -- Time splash should be shown
         transition = 2*60,      -- Transition from splash to spawn
     },
@@ -36,6 +36,6 @@ return {
         effect_density = 1/(50*50),     -- effects per area in tiles
     },
     lobby = {
-        countdown = 1*60,      -- How long does it countdown before start
+        countdown = 5*60,      -- How long does it countdown before start
     },
 }

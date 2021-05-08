@@ -81,6 +81,7 @@ for _, colour in pairs({
     "lab-white",
     "water-shallow",
     "water-mud",
+    "out-of-map",
 }) do
     create_item_for_tile(colour)
 end
