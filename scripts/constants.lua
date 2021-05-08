@@ -33,7 +33,7 @@ return {
     },
     arena = {           -- Constants used in an arena
         starting_location_spacing = 20,
-        effect_density = 1/(50*50),     -- effects per area in tiles
+        effect_density = 1/(45*45),     -- effects per area in tiles
     },
     lobby = {
         countdown = 5*60,      -- How long does it countdown before start

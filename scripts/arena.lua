@@ -348,12 +348,12 @@ function Arena.update_effect_beacons(arena)
     if #arena.effect_beacons < arena.ideal_number_of_effect_beacons then
         -- TODO Populate this automatically with weights
         local effects_to_spawn = {
-            -- "speed_up",
-            -- "tank",
-            -- "slow_down",
-            -- "no_trail",
+            "speed_up",
+            "tank",
+            "slow_down",
+            "no_trail",
             "worm",
-            -- "biters",
+            "biters",
         }
         Arena.attempt_spawn_effect_beacon(
             arena,
