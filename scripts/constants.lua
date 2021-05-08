@@ -1,5 +1,5 @@
 return {
-    single_player = true,  -- Debugging purposes, for I am but one person
+    single_player = false,  -- Debugging purposes, for I am but one person
     splash = {
         enabled = true,
         duration = 5*60,        -- Time splash should be shown
