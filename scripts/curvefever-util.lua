@@ -31,10 +31,9 @@ end
 
 -- When two players are teleported to exactly the same
 -- spot they will get stuck on top of another. This
--- Will check if there's an player at position, and if not
--- chose another spot around <position> of <size>.
--- if <size> {x=?, y=?} is nil, then it defaults to <5, 5>
--- TODO Make this smarter so that you spawn more naturally
+-- Will first try to spawn at the correct location.
+-- If this doesn't work it will try to spawn randomly
+-- in the area of <size> around player
 function Util.teleport_safe(player, position, size)
     if not size then size = {x=5, y=5} end
     local surface = player.surface
