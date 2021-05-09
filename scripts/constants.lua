@@ -1,21 +1,36 @@
 return {
-    single_player = false,  -- Debugging purposes, for I am but one person
+    single_player = true,  -- Debugging purposes, for I am but one person
     splash = {
-        enabled = true,
+        enabled = false,
         duration = 5*60,        -- Time splash should be shown
         transition = 2*60,      -- Transition from splash to spawn
     },
-    round = {
-        pre_wait = 3*60,    -- After lobby added players, when should game start
-        post_wait = 3*60,   -- How long after a match ended should game start
+    lobby = {
+        timing = {
+            countdown = 2*60,      -- Time buffer from when arena is booked, and new players can jump in
+            ["post-transition"] = 1.5*60,   -- Transition period from arena back to lobby
+        }        
     },
-    trail = {
-        offset = 3,     -- Distance to draw behind the car
-        period = 90,    -- Duty cycle period in ticks of drawing
-        gap = 25,       -- Part of the duty cycle that should not be a trail
+    round = {        
     },
+    arena = {           -- Constants used in an arena
+        starting_location_spacing = 20,
+        effect_density = 1/(45*45),     -- effects per area in tiles
+        start_zoom = 0.5,
+        
+        timing = {
+            ["transition-pre"] = 1.5*60,   -- Cutscene from lobby to arena
+            ["countdown"] = 3*60,
+            ["post-wait"] = 1*60,   -- Little period after the round ended            
+        }
+    },    
     vehicle_speed = 0.3,
     effects = {
+        trail = {
+            offset = 3,     -- Distance to draw behind the car
+            period = 90,    -- Duty cycle period in ticks of drawing
+            gap = 25,       -- Part of the duty cycle that should not be a trail
+        },
         speed = {
             fire_freq = 5,  -- Every how many ticks should fire be spawned
         },
@@ -30,12 +45,5 @@ return {
             offset = 4,         -- How far behind vehicle should they spawn
             speed_modifier = 0.9,   -- Relative to player speed
         }
-    },
-    arena = {           -- Constants used in an arena
-        starting_location_spacing = 20,
-        effect_density = 1/(45*45),     -- effects per area in tiles
-    },
-    lobby = {
-        countdown = 5*60,      -- How long does it countdown before start
     },
 }

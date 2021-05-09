@@ -1,6 +1,7 @@
 local curvefever_util = require("scripts.curvefever-util")
 local constants = require("scripts.constants")
 local Arena = require("scripts.arena")
+local Cutscene = require("scripts.cutscene")
 
 local Lobby = { }
 
@@ -79,13 +80,13 @@ function Lobby.update(lobby)
             game.print("Starting countdown to move to "..lobby.name.."!")
             -- After the countdown we wil finalize the game
         end
-
+    ---------------------------------------------------
     elseif lobby.status == "countdown" then
         local diff = game.tick - lobby.countdown_start        
         if diff % 60 == 0 then
-            game.print(((constants.lobby.countdown-diff)/60) .. "...")
+            game.print(((constants.lobby.timing.countdown-diff)/60) .. "...")
         end
-        if diff > constants.lobby.countdown then            
+        if diff > constants.lobby.timing.countdown then            
 
             -- Finalize players and target arena            
             lobby.target_arena_name = lobby.arena_names[math.random(#lobby.arena_names)]
@@ -99,34 +100,60 @@ function Lobby.update(lobby)
             -- Now we will wait for the arena to be ready
             Lobby.set_status(lobby, "waiting")
         end    
-
-    elseif lobby.status == "waiting" then        
+    ---------------------------------------------------
+    elseif lobby.status == "waiting" then
+        -- Waiting for a arena to be ready to send the players too   
         local arena = global.world.arenas[lobby.target_arena_name]
         if arena.status == "ready" then
             -- Arena is ready! Add players to the arena.
-            -- This will teleport them into the cars
-            for _, player in pairs(lobby.players) do
-                Arena.add_player(arena, player)
+            -- This will teleport them into the cars in the arena
+            for _, player in pairs(lobby.players) do                
+                local position = player.position    -- Remember where player was
+                
+                Arena.add_player(arena, player)     -- This will teleport them
+
+                -- Add a cutscene from the player position in the lobby
+                -- to where they are in the arena now
+                Cutscene.transition_to{
+                    player=player,
+                    start_position=position,
+                    duration=constants.arena.timing["transition-pre"],
+                    end_zoom=constants.arena.start_zoom,
+                }
             end
 
              -- Start the game!
             Arena.start_round(arena, lobby)
-            if arena.status ~= "playing" then
+            if arena.status ~= "transition-pre" then
+                -- TODO THe player should have a transition here
                 log("Something went wrong starting arena <"..arena.name.."> from lobby <"..lobby.name..">")
             end
             Lobby.set_status(lobby, "busy")
         end       
-    
+    ---------------------------------------------------
     elseif lobby.status == "busy" then
         local arena = global.world.arenas[lobby.target_arena_name]
-        if arena.status ~= "playing" then
+        if arena.status ~= "playing" and arena.status ~= "post-wait"then
+            -- Wait for round to finish, and the little post-wait.
+            -- After that we will be receiving the players.
+            Lobby.set_status(lobby, "receiving-players")
+        end    
+    ---------------------------------------------------
+    elseif lobby.status == "receiving-players" then
+        -- The round finished. Lobby has received the players
+        -- but we need to wait for the cutscene to end
+        if game.tick > (lobby.status_start_tick + constants.lobby.timing["post-transition"]) then
+            -- Cutscene is done. 
+            -- We are ready for a new new game to start
             Lobby.set_status(lobby, "ready")
         end
+    ---------------------------------------------------
     end
 end
 
 function Lobby.set_status(lobby, status)
     log("Setting lobby <"..lobby.name.."> state to <"..status..">")
+    lobby.status_start_tick = game.tick
     lobby.status = status
 end
 

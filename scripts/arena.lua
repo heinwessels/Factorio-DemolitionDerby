@@ -3,6 +3,7 @@ local Effects = require("scripts.effects")
 local constants = require("scripts.constants")
 local Builder = require("scripts.builder")
 local curvefever_util = require("scripts.curvefever-util")
+local Cutscene = require("scripts.cutscene")
 
 local Arena = { }
 
@@ -36,11 +37,15 @@ function Arena.create(arena)
             -- Possible statusses
             -- empty        -> Only defined, not built or ready
             -- ready        -> Ready for players to be added to game
+            -- waiting-for-players -> Lobby has booked this arena, and is waiting for players
+            -- transition-pre  -> Players are moved. Waiting for cutscene to finish
+            -- countdown     -> 3, 2, 1, START!
             -- playing      -> Currently playing a round
-            -- post-wait    -> After the round there will be a second of something.
+            -- post-wait    -> After the round there will be a whilte of nothing.
             -- done         -> Done playing. Waiting for something to happen before clean
             -- building     -> (Re)building map (done at creation or cleaning)
             status = "empty",
+            status_start_tick = 0,   -- The tick the status started
 
             -- Remembers some information about this round
             round = {
@@ -69,29 +74,6 @@ end
 -- Clean up so that we can play another game
 function Arena.clean(arena)
     Arena.set_status(arena, "building")  
-
-    -- Remove all players from the arena
-    local position = global.world.spawn_location
-    if arena.lobby then
-        position = arena.lobby.spawn_location
-    end
-    local surface = arena.surface
-    for _, player in pairs(arena.players) do
-
-        if player.character and player.character.vehicle then
-            -- If player was in a car get him out
-            player.character.driving = false
-        end
-
-        if not player.character then
-            -- Player was spectating and don't have a character
-            -- Give his body back
-            curvefever_util.player_from_spectator(player)
-        end
-
-        -- Move him back to spawn
-        curvefever_util.teleport_safe(player, position)
-    end
 
     -- Clear the state
     arena.effect_beacons = { } -- Builder will destroy them anyway
@@ -135,7 +117,8 @@ function Arena.add_player(arena, player)
     log("Added player "..player.name.." to arena "..arena.name.." (Total: "..#arena.players..")")
 end
 
--- Start the game for this arena
+-- Start the game for this arena (as it looks from the outside)
+-- In arena it will still go through 2 waiting periods before actually starting
 -- Players need to be in the arena in the cars already.
 -- TODO Let arena start do it rather. More robust.
 -- This will do some checks.
@@ -166,32 +149,17 @@ function Arena.start_round(arena, lobby)
 
         -- Make sure player is in the correct force
         player.force = "player"
-
-        -- Give them a real car (and not a static one)
-        -- And store it in the state! We will remove
-        player_state.vehicle = Effects.swap_vehicle(
-            player,
-            "curvefever-car"
-        )
     end
 
-    -- Remove unused vehicles that's left
+    -- Remove unused vehicles
     local surface = arena.surface
     for _, vehicle in pairs(arena.vehicles) do
         if vehicle and vehicle.valid and not vehicle.get_driver() then
             vehicle.destroy()
         end
     end
-
-    -- Remove any references to the vehicles in the arena. Now we store them
-    -- In the player state
-    arena.vehicles = { }
-
-    log("Started arena <"..arena.name.."> with "..#arena.players.." players")
-    Arena.set_status(arena, "playing")    
-    arena.round.tick_started = game.tick
-    arena.round.tick_ended = 0
-    arena.round.players_alive = #arena.players
+   
+    Arena.set_status(arena, "transition-pre")
 end
 
 function Arena.create_player_state(arena, player)
@@ -219,8 +187,56 @@ function Arena.update(arena)
                 name = "curvefever-car-static", --It's static until the game begins
                 area = arena.area   -- This is quite a large area
             }
-        end    
+        end
+    
+    ---------------------------------------------------
+    elseif arena.status == "ready" then
+        -- Just idling. Waiting for lobby to book us.
+    
+    ---------------------------------------------------
+    elseif arena.status == "waiting-for-players" then
+        -- We are booked. Waiting for lobby to transfer
+        -- the players.
+    
+    ---------------------------------------------------
+    elseif arena.status == "transition-pre" then
+        -- Players were teleported to arena.
+        -- Now wait for cutscene to finish
+        if arena.status_start_tick + constants.arena.timing["transition-pre"] < game.tick then
+            -- The transition should be done.
+            Arena.set_status(arena, "countdown")
+        end
+    ---------------------------------------------------
+    elseif arena.status == "countdown" then
+        -- Now we need to display a count down for the player
+        if arena.status_start_tick + constants.arena.timing["countdown"] < game.tick then
+            -- COUNTDOWN FINISHED! ACTUAL START!
 
+            for _, player in pairs(arena.players) do
+                local player_state = arena.player_states[player.index]
+
+                -- Players are still in the fake cars
+                -- Give them a real car (and not a static one)
+                -- And store it in the state! We will remove
+                player_state.vehicle = Effects.swap_vehicle(
+                    player,
+                    "curvefever-car"
+                )
+            end
+
+            
+            -- Remove any references to the vehicles in the arena. Now we store them
+            -- In the player state. (Easier when swopping vechiles as effects)
+            arena.vehicles = { }
+
+            arena.round.tick_started = game.tick
+            arena.round.tick_ended = 0
+            arena.round.players_alive = #arena.players
+
+            Arena.set_status(arena, "playing")            
+            log("Started arena <"..arena.name.."> with "..#arena.players.." players")
+            game.print("Round in Arena: "..arena.name.." started!")
+        end
     ---------------------------------------------------
     elseif arena.status == "playing" then
 
@@ -269,7 +285,7 @@ function Arena.update(arena)
             arena.round.tick_ended = game.tick
             if not player_alive then player_alive={name = "<NO PLAYER>"} end    -- TODO Hacky
             log("Round over at <"..arena.name.."> after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. <"..player_alive.name.."> was the victor!")
-            game.print("On Arena "..arena.name.." - after "..(arena.round.tick_ended-arena.round.tick_started).." ticks -"..player_alive.name.." emerged victorious!")
+            game.print("On Arena "..arena.name.." the player "..player_alive.name.." emerged victorious after "..curvefever_util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds!")
 
             -- TODO Show some victory thing
             -- TODO Show score!
@@ -280,7 +296,7 @@ function Arena.update(arena)
     ---------------------------------------------------
     elseif arena.status == "post-wait" then
         -- This just a little cool down after the round ended
-        if game.tick > (arena.round.tick_ended + constants.round.post_wait) then            
+        if game.tick > (arena.round.tick_ended + constants.arena.timing["post-wait"]) then
             Arena.end_round(arena)
         end
     ---------------------------------------------------
@@ -292,7 +308,39 @@ end
 -- And then be teleported back to arena
 -- Seperate fucntion so that it can be called remotely
 function Arena.end_round(arena)   
-        
+    
+    -- Remove all players from the arena
+    local surface = arena.surface
+    for _, player in pairs(arena.players) do
+
+        if player.character and player.character.vehicle then
+            -- If player was in a car get him out
+            player.character.driving = false
+        end
+
+        if not player.character then
+            -- Player was spectating and don't have a character
+            -- Give his body back.
+            curvefever_util.player_from_spectator(player)
+        end
+
+        -- Move him back to spawn or the the lobby
+        local old_position = player.position        
+        if arena.lobby then
+            curvefever_util.teleport_safe(player, arena.lobby.spawn_location)
+        else
+            curvefever_util.teleport_safe(player, global.world.spawn_location)
+        end
+
+        -- Create a cutscene to transition the player
+        Cutscene.transition_to{
+            player=player,
+            start_position=old_position,
+            duration=constants.arena.timing["transition-pre"],
+            end_zoom=1,
+        }
+    end
+
     -- Initiate clean of the arena
     -- It will also remove all players
     Arena.clean(arena)
@@ -502,6 +550,7 @@ end
 
 function Arena.set_status(arena, status)
     log("Setting arena <"..arena.name.."> status to <"..status..">")
+    arena.status_start_tick = game.tick
     arena.status = status
 end
 

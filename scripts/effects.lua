@@ -47,11 +47,11 @@ function Effects.apply_effects(arena, player)
         ------------------------------------------------------------------------
         if effect_type == "trail" then
             -- Default drawing of trail behind player
-            if game.tick % constants.trail.period >= constants.trail.gap then
+            if game.tick % effect_constants.period >= effect_constants.gap then
                 local orientation = vehicle.orientation * 2 * math.pi
                 local position = {
-                    x = vehicle.position.x - constants.trail.offset*math.sin(orientation),
-                    y = vehicle.position.y + constants.trail.offset*math.cos(orientation),
+                    x = vehicle.position.x - effect_constants.offset*math.sin(orientation),
+                    y = vehicle.position.y + effect_constants.offset*math.cos(orientation),
                 }
                 if not surface.find_entity("curvefever-trail", position) then 
                     surface.create_entity{
@@ -375,6 +375,8 @@ function Effects.swap_vehicle(player, vehicle_name)
     end
     vehicle.speed = speed
     vehicle.orientation = orientation
+    local acceleration = 0
+    if speed > 0 then acceleration = 1 end
     vehicle.riding_state = {
         acceleration = 1,
         direction = turning_direction,
