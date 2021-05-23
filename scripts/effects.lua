@@ -249,6 +249,9 @@ function Effects.apply_effects(arena, player)
                     else
                         -- Valid biter spawn!
                         
+                        -- Point him in the direction of the vechile
+                        biter.orientation = vehicle.orientation 
+
                         -- Find an player to attack
                         local enemy = nil
                         if #arena.players > 0 then
