@@ -11,7 +11,11 @@ return {
             ["post-transition"] = 1.5*60,   -- Transition period from arena back to lobby
 
             portal_cutscene = 0.5*60,        -- Duration of cutscene. Nill to disable
-        }        
+        },
+        frequency = {
+            portals = 15,           -- Check portal every <n> ticks
+            players_ready = 30,           -- Check portal every <n> ticks
+        },
     },
     round = {        
     },

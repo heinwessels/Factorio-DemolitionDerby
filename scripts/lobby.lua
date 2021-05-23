@@ -72,7 +72,9 @@ end
 function Lobby.update(lobby)
 
     -- Check the gate for players coming in and out
-    Lobby.check_portals(lobby)
+    if game.tick % constants.lobby.frequency.portals == 0 then
+        Lobby.check_portals(lobby)
+    end
 
     -- Update the main lobby state machine
     Lobby.state_machine(lobby)
@@ -123,13 +125,15 @@ function Lobby.state_machine(lobby)
     if lobby.status == "ready" then
 
         -- See if all players in the lobby are in their cars
-        local count_ready_players = Lobby.count_ready_players(lobby)
-        if count_ready_players > 0 and count_ready_players == #lobby.players then
-            -- Can start the count down!
-            Lobby.set_status(lobby, "countdown")
-            lobby.countdown_start = game.tick
-            game.print("Starting countdown to move to "..lobby.name.."!")
-            -- After the countdown we wil finalize the game
+        if game.tick % constants.lobby.frequency.players_ready == 0 then
+            local count_ready_players = Lobby.count_ready_players(lobby)
+            if count_ready_players > 0 and count_ready_players == #lobby.players then
+                -- Can start the count down!
+                Lobby.set_status(lobby, "countdown")
+                lobby.countdown_start = game.tick
+                game.print("Starting countdown to move to "..lobby.name.."!")
+                -- After the countdown we wil finalize the game
+            end
         end
     ---------------------------------------------------
     elseif lobby.status == "countdown" then

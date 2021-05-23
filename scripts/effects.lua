@@ -87,13 +87,6 @@ function Effects.apply_effects(arena, player)
 
         -- Need to get the vehicle every iteration in case it's swopped
         local vehicle = player_state.vehicle
-        if vehicle ~= player.character.vehicle then
-            -- There's a mismatch in vehicles. Something went out of sync            
-            error([[
-                Vehicles out of sync for <]]..player.name..[[> in arena <]]..arena.name..[[>. 
-                Expects a <]]..vehicle.name.." but is driving a <"..player.character.vehicle.name..[[>.
-            ]])
-        end
 
         -- Did this effect time out?
         local timed_out = false
