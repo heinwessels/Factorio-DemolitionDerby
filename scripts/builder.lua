@@ -22,7 +22,7 @@ function Builder.start(arena)
     if builder.state == "idle" then
         Builder.set_state(arena, "starting")
     else
-        log("Could not start builder on arena <"..arena.name.."> because it's not idle (state=<"..builder.state..">")
+        Builder.log(arena, "Could not start builder on arena <"..arena.name.."> because it's not idle (state=<"..builder.state..">")
     end
 end
 
@@ -102,8 +102,12 @@ end
 
 -- Set the state of a builder
 function Builder.set_state(arena, state)
-    log("Setting builder state for arena <"..arena.name.."> to <"..state..">")
+    Builder.log(arena, "Setting builder state for arena <"..arena.name.."> to <"..state..">")
     arena.builder.state = state
+end
+
+function Builder.log(arena, msg)
+    log("Builder <"..arena.name..">: "..msg)
 end
 
 return Builder

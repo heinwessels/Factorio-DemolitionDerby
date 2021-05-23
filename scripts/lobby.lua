@@ -38,7 +38,7 @@ function Lobby.create(lobby)
             
             players = { },
             player_states = { },                -- Specific to lobby!
-            gate_cache = { },               -- A way to keep track of the gate
+            max_players = { },
             
             spawn_location = util.middle_of_area(lobby.area),
             area = {left_top={}, right_top={}},
@@ -59,7 +59,13 @@ function Lobby.reset(lobby)
 end
 
 function Lobby.clean(lobby)
-    -- Should I reset car colours here?
+    -- Should I reset car colours here? No. It's kinda nice.
+    
+    lobby.players = { }
+    lobby.player_states = { }    
+    for _, portal in pairs(lobby.portals) do
+        Portal.flush_cache(portal)
+    end
 end
 
 -- This should be called every tick.
@@ -72,22 +78,45 @@ function Lobby.update(lobby)
     Lobby.state_machine(lobby)
 end
 
+-- Add player to lobby. The player will stay in this lobby,
+-- even while playing a arena. The scoring system will
+-- be stored per lobby
+function Lobby.add_player(lobby, player)
+    if #lobby.players < lobby.max_players then
+        if not lobby.player_states[player.index] then
+            table.insert(lobby.players, player)
+            lobby.player_states[player.index] = { }
+            Lobby.log(lobby, "Adding player <"..player.name..">. (Number of players: "..#lobby.players..")")
+        else
+            Lobby.log(lobby, "Cannot add player <"..player.name.."> again. (Number of players: "..#lobby.players..")")
+        end
+    else
+        Lobby.log(lobby, "Cannot add player <"..player.name..">. Lobby is full.")
+    end
+end
+
+function Lobby.remove_player(lobby, player)
+    for index, player_in_lobby in pairs(lobby.players) do
+        if player.index == player_in_lobby.index then
+            Lobby.log(lobby, "Removing player <"..player.name..">.")
+            lobby.player_states[player.index] = nil
+            table.remove(lobby.players, index)
+            return
+        end
+    end
+    Lobby.log(lobby, "Could not remove player <"..player.name..">. Not found")
+end
+
 function Lobby.state_machine(lobby)
     if not lobby.vehicles then return end   -- Shouldn't do anything if there's no vehicles
     
-    -- Is there enough players    
+    ---------------------------------------------------    
     if lobby.status == "ready" then
-        local count_ready_players = 0
-        for _, vehicle in pairs(lobby.vehicles) do            
-            if vehicle.get_driver() ~= nil then
-                count_ready_players = count_ready_players + 1
-            end
-        end
-        if count_ready_players >= 1 then
+
+        -- See if all players in the lobby are in their cars
+        local count_ready_players = Lobby.count_ready_players(lobby)
+        if count_ready_players > 0 and count_ready_players == #lobby.players then
             -- Can start the count down!
-
-            -- TODO This should be better
-
             Lobby.set_status(lobby, "countdown")
             lobby.countdown_start = game.tick
             game.print("Starting countdown to move to "..lobby.name.."!")
@@ -95,54 +124,68 @@ function Lobby.state_machine(lobby)
         end
     ---------------------------------------------------
     elseif lobby.status == "countdown" then
-        local diff = game.tick - lobby.countdown_start        
-        if diff % 60 == 0 then
-            game.print(((constants.lobby.timing.countdown-diff)/60) .. "...")
-        end
-        if diff > constants.lobby.timing.countdown then            
 
-            -- Finalize players and target arena            
-            lobby.target_arena_name = lobby.arena_names[math.random(#lobby.arena_names)]
-            lobby.players = { }
-            for _, vehicle in pairs(lobby.vehicles) do
-                local character = vehicle.get_driver()
-                if character then
-                    table.insert(lobby.players, character.player)
-                end
+        -- First check all the players are still in their cars
+        -- TODO Do this with events rather
+        if Lobby.count_ready_players(lobby) == #lobby.players then
+
+            local diff = game.tick - lobby.countdown_start        
+            if diff % 60 == 0 then
+                game.print(((constants.lobby.timing.countdown-diff)/60) .. "...")
             end
-            -- Now we will wait for the arena to be ready
-            Lobby.set_status(lobby, "waiting")
-        end    
+            if diff > constants.lobby.timing.countdown then
+
+                -- Choose a target arena randomly
+                lobby.target_arena_name = lobby.arena_names[math.random(#lobby.arena_names)]
+                Lobby.log(lobby, "Set target arena to <"..lobby.target_arena_name..">")
+                
+                -- Now we will wait for the arena to be ready
+                Lobby.set_status(lobby, "waiting")
+            end    
+        else
+            -- Some player climbed out of their car. Stop countdown
+            game.print("Countdown stopped for "..lobby.name.."! All players not ready")
+            Lobby.set_status(lobby, "ready")
+        end
     ---------------------------------------------------
     elseif lobby.status == "waiting" then
-        -- Waiting for a arena to be ready to send the players too   
-        local arena = global.world.arenas[lobby.target_arena_name]
-        if arena.status == "ready" then
-            -- Arena is ready! Add players to the arena.
-            -- This will teleport them into the cars in the arena
-            for _, player in pairs(lobby.players) do                
-                local position = player.position    -- Remember where player was
-                
-                Arena.add_player(arena, player)     -- This will teleport them
 
-                -- Add a cutscene from the player position in the lobby
-                -- to where they are in the arena now
-                Cutscene.transition_to{
-                    player=player,
-                    start_position=position,
-                    duration=constants.arena.timing["transition-pre"],
-                    end_zoom=constants.arena.start_zoom,
-                }
-            end
+        if Lobby.count_ready_players(lobby) == #lobby.players then
 
-             -- Start the game!
-            Arena.start_round(arena, lobby)
-            if arena.status ~= "transition-pre" then
-                -- TODO THe player should have a transition here
-                log("Something went wrong starting arena <"..arena.name.."> from lobby <"..lobby.name..">")
+            -- Waiting for a arena to be ready to send the players too   
+            local arena = global.world.arenas[lobby.target_arena_name]
+            if arena.status == "ready" then
+                -- Arena is ready! Add and teleport players to the arena.
+
+                -- This will teleport them into the cars in the arena
+                for _, player in pairs(lobby.players) do                
+                    local position = player.position    -- Remember where player was
+                    
+                    Arena.add_player(arena, player)     -- This will teleport them
+
+                    -- Add a cutscene from the player position in the lobby
+                    -- to where they are in the arena now
+                    Cutscene.transition_to{
+                        player=player,
+                        start_position=position,
+                        duration=constants.arena.timing["transition-pre"],
+                        end_zoom=constants.arena.start_zoom,
+                    }
+                end
+
+                -- Start the game!
+                Arena.start_round(arena, lobby)
+                if arena.status ~= "transition-pre" then
+                    -- TODO THe player should have a transition here
+                    Lobby.log(lobby, "Something went wrong starting arena <"..arena.name..">.")
+                end
+                Lobby.set_status(lobby, "busy")
             end
-            Lobby.set_status(lobby, "busy")
-        end       
+        else
+            -- Some player climbed out of their car. Stop countdown
+            game.print("Countdown stopped for "..lobby.name.."! All players not ready")
+            Lobby.set_status(lobby, "ready")
+        end
     ---------------------------------------------------
     elseif lobby.status == "busy" then
         local arena = global.world.arenas[lobby.target_arena_name]
@@ -181,14 +224,19 @@ function Lobby.check_portals(lobby)
     for _, player in pairs(players) do
         if not Portal.player_in_cache(outside_portal, player) then
             -- This is the first time the player is in the area
-            -- Teleport him!
-            Portal.teleport_to(inside_portal, player)            
 
-            -- Make sure he isn't instantly teleported back
-            Portal.add_player_to_cache(inside_portal, player)
+            -- This player is trying to get in
+            if #lobby.players < lobby.max_players then
+                -- There is still space in this lobby for player
+                -- Teleport him!
+                Portal.teleport_to(inside_portal, player)            
 
-            -- Remove him from this list
-            players[_] = nil
+                -- Make sure he isn't instantly teleported back
+                Portal.add_player_to_cache(inside_portal, player)
+
+                -- Add him to lobby
+                Lobby.add_player(lobby, player)
+            end
         end
     end
 
@@ -198,23 +246,43 @@ function Lobby.check_portals(lobby)
     for _, player in pairs(players) do
         if not Portal.player_in_cache(inside_portal, player) then            
             -- This is the first time the player is in the area
+
+            -- This player wants to leave the lobby!
+
             -- Teleport him!
             Portal.teleport_to(outside_portal, player)            
 
             -- Make sure he isn't instantly teleported back
             Portal.add_player_to_cache(outside_portal, player)
 
-            -- Remove him from this list
-            players[_] = nil
+            -- Remove him from the lobby
+            Lobby.remove_player(lobby, player)
         end
     end
 
 end
 
+-- Count the ready players (players in cars)
+function Lobby.count_ready_players(lobby)
+    local count_ready_players = 0
+    for _, vehicle in pairs(lobby.vehicles) do            
+        if vehicle.get_driver() ~= nil then
+            -- TODO Check if this player is in out list.
+            -- If not, kick him from lobby!
+            count_ready_players = count_ready_players + 1
+        end
+    end
+    return count_ready_players
+end
+
 function Lobby.set_status(lobby, status)
-    log("Setting lobby <"..lobby.name.."> state to <"..status..">")
+    Lobby.log(lobby, "Setting state to <"..status..">")
     lobby.status_start_tick = game.tick
     lobby.status = status
+end
+
+function Lobby.log(lobby, msg)
+    log("Lobby <"..lobby.name..">: "..msg)
 end
 
 return Lobby

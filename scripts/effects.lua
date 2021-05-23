@@ -162,7 +162,6 @@ function Effects.apply_effects(arena, player)
                         -- Player is far enough away
                         
                         -- Destroy all walls in that area
-                        log("Destorying around position "..curvefever_util.to_string(position))
                         for _, wall in pairs(surface.find_entities_filtered{
                             area = {
                                 {position.x - spacing, position.y - spacing},
@@ -174,7 +173,6 @@ function Effects.apply_effects(arena, player)
                         end
 
                         -- Add worm
-                        log("Spawned at "..curvefever_util.to_string(position))
                         local worm = surface.create_entity{
                             name = "behemoth-worm-turret",                        
                             position = position,

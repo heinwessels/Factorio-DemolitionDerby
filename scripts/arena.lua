@@ -67,7 +67,7 @@ function Arena.create(arena)
     Builder.start(arena)
     
     -- Created!
-    log("Created arena <"..arena.name.."> with area <"..curvefever_util.to_string(arena.area)..">")
+    Arena.log(arena, "Created arena <"..arena.name.."> with area <"..curvefever_util.to_string(arena.area)..">")
     return arena
 end
 
@@ -98,7 +98,7 @@ function Arena.add_player(arena, player)
     
     -- Check if this player was already added
     if arena.player_states[player.index] then
-        log("Cannot add player "..player.name.." to arena "..arena.name.." again (Total: "..#arena.players..")")
+        Arena.log(arena, "Cannot add player "..player.name.." to arena "..arena.name.." again (Total: "..#arena.players..")")
         return
     end
     
@@ -114,7 +114,7 @@ function Arena.add_player(arena, player)
 
     -- TODO Create handles for destroying of vehicles
 
-    log("Added player "..player.name.." to arena "..arena.name.." (Total: "..#arena.players..")")
+    Arena.log(arena, "Added player "..player.name.." to arena "..arena.name.." (Total: "..#arena.players..")")
 end
 
 -- Start the game for this arena (as it looks from the outside)
@@ -126,11 +126,11 @@ end
 -- and then teleport players back to the lobby instead of spawn
 function Arena.start_round(arena, lobby)
     if arena.status ~= "ready" then
-        log("Cannot start arena <"..arena.name.."> since it's not ready (status = "..arena.status..")")
+        Arena.log(arena, "Cannot start arena <"..arena.name.."> since it's not ready (status = "..arena.status..")")
     end
 
     if #arena.players == 0 then
-        log("Cannot start arena <"..arena.name.."> since it has no players")
+        Arena.log(arena, "Cannot start arena <"..arena.name.."> since it has no players")
     end
 
     -- Setup and update some variables
@@ -234,7 +234,7 @@ function Arena.update(arena)
             arena.round.players_alive = #arena.players
 
             Arena.set_status(arena, "playing")            
-            log("Started arena <"..arena.name.."> with "..#arena.players.." players")
+            Arena.log(arena, "Started arena <"..arena.name.."> with "..#arena.players.." players")
             game.print("Round in Arena: "..arena.name.." started!")
         end
     ---------------------------------------------------
@@ -284,7 +284,7 @@ function Arena.update(arena)
             -- The game is over!
             arena.round.tick_ended = game.tick
             if not player_alive then player_alive={name = "<NO PLAYER>"} end    -- TODO Hacky
-            log("Round over at <"..arena.name.."> after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. <"..player_alive.name.."> was the victor!")
+            Arena.log(arena, "Round over at <"..arena.name.."> after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. <"..player_alive.name.."> was the victor!")
             game.print("On Arena "..arena.name.." the player "..player_alive.name.." emerged victorious after "..curvefever_util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds!")
 
             -- TODO Show some victory thing
@@ -353,7 +353,7 @@ function Arena.player_on_lost(arena, player)
     local player_state = arena.player_states[player.index]
 
     player_state.status = "lost"
-    log("Player <"..player.name.."> died on arena <"..arena.name..">")
+    Arena.log(arena, "Player <"..player.name.."> died on arena <"..arena.name..">")
 
     -- Remove his character entity (the little man on the screen)
     local character = curvefever_util.player_to_spectator(player)
@@ -439,7 +439,7 @@ function Arena.attempt_spawn_effect_beacon(arena, beacon_name)
         }
         if beacon then
             table.insert(arena.effect_beacons, beacon)
-            -- log("In arena <"..arena.name.."> created effect beacon <"..beacon_name..">. (Total of "..#arena.effect_beacons..")")
+            -- Arena.log(arena, "In arena <"..arena.name.."> created effect beacon <"..beacon_name..">. (Total of "..#arena.effect_beacons..")")
             return beacon
         end
     end
@@ -467,7 +467,7 @@ function Arena.hit_effect_event(arena, event)
     if vehicle_in_range then
         local vehicle = vehicle_in_range[1]
         if not vehicle then
-            log("Could not find vehicle that triggered effect beacon.")
+            Arena.log(arena, "Could not find vehicle that triggered effect beacon.")
             return
         end
         player = vehicle.get_driver().player
@@ -549,9 +549,13 @@ function Arena.create_default_starting_locations(arena)
 end
 
 function Arena.set_status(arena, status)
-    log("Setting arena <"..arena.name.."> status to <"..status..">")
+    Arena.log(arena, "Setting arena <"..arena.name.."> status to <"..status..">")
     arena.status_start_tick = game.tick
     arena.status = status
+end
+
+function Arena.log(arena, msg)
+    log("Arena <"..arena.name..">: "..msg)
 end
 
 return Arena

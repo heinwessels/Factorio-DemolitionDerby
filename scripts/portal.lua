@@ -39,9 +39,13 @@ function Portal.teleport_to(portal, player, duration)
     end
 end
 
+function Portal.flush_cache(portal)
+    lobby.cache = { }
+end
+
 function Portal.refresh_cache(portal, players)
     if not players then    
-        portal.cache = { }
+        Portal.flush_cache(portal)
         return
     end
     for index, entry in pairs(portal.cache) do        
