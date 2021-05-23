@@ -11,7 +11,6 @@ local Cutscene = { }
 -- end_zoom:        CANNOT BE NIL
 -- duration:        in ticks. Cannot be nil
 function Cutscene.transition_to(tbl)
-    if not tbl.end_zoom then error("Cutscene need end_zoom") end
     if not tbl.duration then error("Cutscene need duration") end
     local position = tbl.end_position
     if not position then position = tbl.player.position end

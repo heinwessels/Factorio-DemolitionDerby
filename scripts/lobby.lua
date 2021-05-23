@@ -1,6 +1,7 @@
-local curvefever_util = require("scripts.curvefever-util")
+local util = require("scripts.curvefever-util")
 local constants = require("scripts.constants")
 local Arena = require("scripts.arena")
+local Portal = require("scripts.portal")
 local Cutscene = require("scripts.cutscene")
 
 local Lobby = { }
@@ -34,17 +35,21 @@ function Lobby.create(lobby)
 
             vehicles = vehicles,     -- Array of vehicles in this lobby
             vehicle_positions = vehicle_positions,     -- Position of each of the vehicles
-            players = { },
             
-            spawn_location = curvefever_util.middle_of_area(lobby.area),
+            players = { },
+            player_states = { },                -- Specific to lobby!
+            gate_cache = { },               -- A way to keep track of the gate
+            
+            spawn_location = util.middle_of_area(lobby.area),
             area = {left_top={}, right_top={}},
-            gates = {
-                in_area = {left_top={}, right_top={}},
-                out_area = {left_top={}, right_top={}},
-            }
+            portals = { }
         },
         lobby
-    }    
+    }
+    for _, portal in pairs(lobby.portals) do 
+        portal.surface = lobby.surface
+        portal.cache = { }
+    end
     return lobby
 end
 
@@ -59,7 +64,15 @@ end
 
 -- This should be called every tick.
 function Lobby.update(lobby)
-    
+
+    -- Check the gate for players coming in and out
+    Lobby.check_portals(lobby)
+
+    -- Update the main lobby state machine
+    Lobby.state_machine(lobby)
+end
+
+function Lobby.state_machine(lobby)
     if not lobby.vehicles then return end   -- Shouldn't do anything if there's no vehicles
     
     -- Is there enough players    
@@ -149,6 +162,53 @@ function Lobby.update(lobby)
         end
     ---------------------------------------------------
     end
+end
+
+-- Check for players coming in and out of the gate.
+-- This is too make sure there's never more than the
+-- max amount of players in the lobby.
+-- There is a gate, but it won't be used.
+function Lobby.check_portals(lobby)    
+    
+    local inside_portal = lobby.portals.inside
+    local outside_portal = lobby.portals.outside
+    if not inside_portal or not outside_portal then return end
+
+    -- Handle outside portal
+    
+    local players = Portal.players_in_range(outside_portal)
+    Portal.refresh_cache(outside_portal, players)
+    for _, player in pairs(players) do
+        if not Portal.player_in_cache(outside_portal, player) then
+            -- This is the first time the player is in the area
+            -- Teleport him!
+            Portal.teleport_to(inside_portal, player)            
+
+            -- Make sure he isn't instantly teleported back
+            Portal.add_player_to_cache(inside_portal, player)
+
+            -- Remove him from this list
+            players[_] = nil
+        end
+    end
+
+    -- Handle inside portal
+    players = Portal.players_in_range(inside_portal)
+    Portal.refresh_cache(inside_portal, players)
+    for _, player in pairs(players) do
+        if not Portal.player_in_cache(inside_portal, player) then            
+            -- This is the first time the player is in the area
+            -- Teleport him!
+            Portal.teleport_to(outside_portal, player)            
+
+            -- Make sure he isn't instantly teleported back
+            Portal.add_player_to_cache(outside_portal, player)
+
+            -- Remove him from this list
+            players[_] = nil
+        end
+    end
+
 end
 
 function Lobby.set_status(lobby, status)

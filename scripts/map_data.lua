@@ -39,8 +39,8 @@ return {
         }),
     },
     lobbies = {
-        achtung = {
-            name = "achtung",
+        ["red-lobby"] = {
+            name = "red-lobby",
             arena_names = {
                 "achtung",
             },
@@ -55,28 +55,20 @@ return {
                     y = 30,
                 },
             },
-            gates = {
-                in_area = {
-                    left_top = {
-                        x = 28.5,
-                        y = 18.5,
-                    },
-                    right_bottom = {
-                        x = 28.5,
-                        y = 22.5,
+            portals = {
+                inside = {
+                    area = {
+                        left_top = { x = 23, y = 19 },
+                        right_bottom = { x = 26, y = 22}
+                    }
+                },
+                outside = {
+                    area = {
+                        left_top = { x = 12, y = 19 },
+                        right_bottom = { x = 15, y = 22}
                     },
                 },
-                out_area = {
-                    left_top = {
-                        x = 30.5,
-                        y = 18.5,
-                    },
-                    right_bottom = {
-                        x = 30.5,
-                        y = 22.5,
-                    },
-                },
-            }
+            } 
         },
     },
     spawn_location = {x=7.5, y=-5.5},

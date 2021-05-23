@@ -27,7 +27,7 @@ function Arena.create(arena)
 
             max_players = 6,    -- Default
             players = { },
-            player_states = { },    
+            player_states = { },
             effects = { },  -- Current effects scattered in arena
             
             vehicles = { }, -- Vehicles in starting locations. As soon as a

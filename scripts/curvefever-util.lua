@@ -1,4 +1,8 @@
+local Factorio_util = require("util")
+
 Util = { }
+
+function Util.merge(tables) return Factorio_util.merge(tables) end
 
 -- Remove all nils from an array
 function Util.compact_array(t)

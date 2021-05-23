@@ -9,6 +9,8 @@ return {
         timing = {
             countdown = 2*60,      -- Time buffer from when arena is booked, and new players can jump in
             ["post-transition"] = 1.5*60,   -- Transition period from arena back to lobby
+
+            portal_cutscene = 0.5*60,        -- Duration of cutscene. Nill to disable
         }        
     },
     round = {        
