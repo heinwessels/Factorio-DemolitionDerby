@@ -1,5 +1,4 @@
-local util = require("util")
-local curvefever_util = require("scripts.curvefever-util")
+local util = require("scripts.curvefever-util")
 local constants = require("scripts.constants")
 
 local Effects = { }
@@ -13,6 +12,67 @@ local Effects = { }
 --          tick_started = game.tick    -- Mandatory
 --      },
 -- }
+
+-- Manages beacons. Is there enough? Can I spawn another one?
+function Effects.update_effect_beacons(arena)
+    if #arena.effect_beacons < arena.ideal_number_of_effect_beacons then
+        -- TODO Populate this automatically with weights
+        local effects_to_spawn = {
+            "speed_up-player",
+            "speed_up-enemy",
+            "tank-player",
+            "tank-enemy",
+            "slow_down-player",
+            "slow_down-enemy",
+            "no_trail-player",
+            "no_trail-enemy",
+            "worm-player",
+            "worm-enemy",
+            "biters-player",
+            "biters-enemy",
+        }
+        Effects.attempt_spawn_effect_beacon(
+            arena,
+            effects_to_spawn[math.random(#effects_to_spawn)]
+        )
+    else
+        -- The array is full. Make sure everything is still valid
+        local did_something = false
+        for index, effect in pairs(arena.effect_beacons) do
+            if not effect.valid then
+                did_someting = true
+                arena.effect_beacons[index]=nil
+            end
+        end
+        if did_something == true then
+            arena.effect_beacons = util.compact_array(arena.effect_beacons)
+        end
+    end
+end
+
+-- Will attempt to spawn an effect beacon at a location
+-- Should always work though.
+-- Returns a reference to the beacon entity or nill
+function Effects.attempt_spawn_effect_beacon(arena, beacon_name)
+    local surface = arena.surface
+    local spacing = 5
+    for try = 1,10 do
+        local beacon = surface.create_entity{
+            name = "curvefever-effect-"..beacon_name,
+            position = {
+                x=math.random(arena.area.left_top.x+spacing, arena.area.right_bottom.x-spacing),
+                y=math.random(arena.area.left_top.y+spacing, arena.area.right_bottom.y-spacing)
+            },            
+            force = "enemy" -- We need it to explode when player touches it
+        }
+        if beacon then
+            table.insert(arena.effect_beacons, beacon)
+            -- Effects.log(arena, "In arena <"..arena.name.."> created effect beacon <"..beacon_name..">. (Total of "..#arena.effect_beacons..")")
+            return beacon
+        end
+    end
+    return nil
+end
 
 -- Iterate through all effects currently on player and add them to the player
 function Effects.apply_effects(arena, player)
@@ -144,7 +204,7 @@ function Effects.apply_effects(arena, player)
                     end
                 end
                 if did_something == true then
-                    effect.worms = curvefever_util.compact_array(effect.worms)
+                    effect.worms = util.compact_array(effect.worms)
                 end
 
                 -- Should we try and spawn a worm?
@@ -152,7 +212,7 @@ function Effects.apply_effects(arena, player)
                 for index, position in pairs(effect.worms_positions_to_spawn) do
                     -- First make sure player is far enough away
                     local spacing = effect_constants.spacing
-                    if curvefever_util.position_in_area(
+                    if util.position_in_area(
                         player.position,
                         {
                             left_top = {x = position.x - 2*spacing, y= position.y - 2*spacing},
@@ -178,7 +238,7 @@ function Effects.apply_effects(arena, player)
                             position = position,
                         }
                         if worm == nil then
-                            error("Could not spawn worm on arena <"..arena.name.."> for player <"..player.name.."> at location <"..curvefever_util.to_string(player.position)..">")
+                            error("Could not spawn worm on arena <"..arena.name.."> for player <"..player.name.."> at location <"..util.to_string(player.position)..">")
                         else
                             -- Remember when we spawned this worm so that we can kill it at the correct time
                             table.insert(effect.worms,{
@@ -194,7 +254,7 @@ function Effects.apply_effects(arena, player)
                 end
                 if did_something == true then
                     effect.worms_positions_to_spawn = 
-                            curvefever_util.compact_array(effect.worms_positions_to_spawn)
+                            util.compact_array(effect.worms_positions_to_spawn)
                 end
             else
                 -- Worms should ideally be destoryed already by this point,
@@ -245,7 +305,7 @@ function Effects.apply_effects(arena, player)
                         position = position,
                     }
                     if biter == nil then                            
-                        error("Could not spawn biter on arena <"..arena.name.."> for player <"..player.name.."> at location <"..curvefever_util.to_string(effect.position)..">")
+                        error("Could not spawn biter on arena <"..arena.name.."> for player <"..player.name.."> at location <"..util.to_string(effect.position)..">")
                     else
                         -- Valid biter spawn!
                         
@@ -286,6 +346,84 @@ function Effects.apply_effects(arena, player)
     end
 end
 
+-- This handler should be called if any effect beacon
+-- is hit. This function will decide if it's part of this
+-- arena, and apply it
+function Effects.hit_effect_event(arena, beacon)
+    local surface = beacon.surface
+    
+    local vehicle_in_range = surface.find_entities_filtered{
+        position = beacon.position,
+        radius = 6,
+        name = {"curvefever-car", "curvefever-tank"},
+        limit = 1, -- TODO HANDLE MORE!
+    }
+    local player = nil
+    if vehicle_in_range then
+        local vehicle = vehicle_in_range[1]
+        if not vehicle then
+            Effects.log(arena, "Could not find vehicle that triggered effect beacon.")
+            return
+        end
+        player = vehicle.get_driver().player
+        local last_dash = util.string_find_last(beacon.name, "-")
+        local effect_type = string.sub(beacon.name, 19, last_dash-1)
+        local target_str = string.sub(beacon.name, last_dash+1, -1)
+        if target_str == "enemy" then
+            target = Effects.find_random_enemy(arena, player) or player
+        else
+            target = player
+        end
+        
+        -- Add the applicable effect
+        if effect_type == "speed_up" then
+            Effects.add_effect(arena, target, {
+                speed_up = {
+                    speed_modifier = 1.8,
+                    ticks_to_live = 4*60,
+                },
+            })
+        elseif effect_type == "tank" then
+            Effects.add_effect(arena, target, {
+                tank = {
+                    speed_modifier = 0.55,
+                    ticks_to_live = 5*60,
+                },
+            })
+        elseif effect_type == "slow_down" then
+            Effects.add_effect(arena, target, {
+                slow_down = {
+                    speed_modifier = 0.55,
+                    ticks_to_live = 5*60,
+                },
+            })
+        elseif effect_type == "no_trail" then
+            Effects.add_effect(arena, target, {
+                no_trail = {
+                    ticks_to_live = 5*60,
+                },                
+            })
+        elseif effect_type == "worm" then
+            local effect_constants = constants.effects[effect_type]
+            Effects.add_effect(arena, target, {
+                worm = {
+                    ticks_to_live = effect_constants.ticks_to_live,
+                },                
+            })
+        elseif effect_type == "biters" then
+            local effect_constants = constants.effects[effect_type]
+            Effects.add_effect(arena, target, {
+                biters = {
+                    ticks_to_live = effect_constants.ticks_to_live,
+                },
+                no_trail = {
+                    ticks_to_live = effect_constants.period * (effect_constants.max_biters + 1)
+                },
+            })
+        end
+    end
+end
+
 -- Adds a table of effects to a player
 -- If that effect is already given to the player, simply
 -- extend the ticks_to_live
@@ -304,7 +442,7 @@ function Effects.add_effect(arena, player, effects)
             effect.extended = false
             effect.fresh = true
             player_state.effects[effect_type] = effect
-            -- log("Adding <"..effect_type.."> effect on <"..player.name.."> to arena <"..arena.name)
+            -- Effects.log(arena, "Adding <"..effect_type.."> effect on <"..player.name.."> to arena <"..arena.name)
         end
     end    
 end
@@ -313,7 +451,7 @@ end
 function Effects.remove_effect(arena, player, effect_type)
     local player_state = arena.player_states[player.index]
     if not player_state.effects[effect_type] then return end
-    -- log("Removing <"..effect_type.."> effect from "..player.name.." in arena <"..arena.name.."> (total "..#player_state.effects..")")
+    -- Effects.log(arena, "Removing <"..effect_type.."> effect from "..player.name.." in arena <"..arena.name.."> (total "..#player_state.effects..")")
     player_state.effects[effect_type] = nil    -- Delete
 end
 
@@ -324,6 +462,7 @@ function Effects.reset_effects(arena, player)
 end
 
 -- Finds a random enemy in the arena that is not the player
+-- If there's no other players the it will return nil
 function Effects.find_random_enemy(arena, player)
     local enemies = { }
     for _, enemy in pairs(arena.players) do
@@ -405,6 +544,10 @@ function Effects.vehicle_remove_sticker(vehicle, sticker_name)
             return
         end
     end
+end
+
+function Effects.log(arena, msg)
+    log("Arena Effects <"..arena.name..">: "..msg)
 end
 
 return Effects

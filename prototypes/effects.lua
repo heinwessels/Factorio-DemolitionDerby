@@ -1,3 +1,5 @@
+local util = require("scripts.curvefever-util")
+
 local size_modifier = 1.5
 
 ----------------------------------------------------------------------------------
@@ -29,47 +31,30 @@ data:extend({
         max_health = 15,
         trigger_radius = 2.5,
         timeout = 0,    -- Immediatelly active
-        corpse = "land-mine-remnants",
-        -- dying_explosion = "land-mine-explosion",
+        corpse = nil,   -- Nothing is left when beacon activated
         collision_box = {{-size_modifier,-size_modifier}, {size_modifier, size_modifier}},
         selection_box = {{-size_modifier, -size_modifier}, {size_modifier, size_modifier}},
-        picture_safe =
-        {
-            layers = {
-                {
-                    filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-bad-not.png",
-                    priority = "medium",
-                    width = 64,
-                    height = 64,
-                    scale = size_modifier,
-                },
-            }
+        picture_safe = {
+            filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-player.png",
+            priority = "medium",
+            width = 64,
+            height = 64,
+            scale = size_modifier,
         },
-        picture_set =
-        {
-            layers = {
-                {
-                    filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-bad-not.png",
-                    priority = "medium",
-                    width = 64,
-                    height = 64,
-                    scale = size_modifier,
-                },
-            }            
+        picture_set = {
+            filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-player.png",
+            priority = "medium",
+            width = 64,
+            height = 64,
+            scale = size_modifier,
         },
-        picture_set_enemy =
-        {
-            layers = {
-                {
-                    filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-bad-not.png",
-                    priority = "medium",
-                    width = 64,
-                    height = 64,
-                    scale = size_modifier,
-                },
-            }  
+        picture_set_enemy = {
+            filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-player.png",
+            priority = "medium",
+            width = 64,
+            height = 64,
+            scale = size_modifier,
         },
-        
         ammo_category = "landmine",
         action =
         {
@@ -92,17 +77,17 @@ data:extend({
 ----------------------------------------------------------------------------------
 -- The function used to create new effects
 ----------------------------------------------------------------------------------
-function create_effect_beacon(name, icon, picture, type)
+local function create_effect_beacon(config)
     -- type = "good" or "bad" or "bad-not-stripe" (will have a stripe overlay saying NOT)
-    if string.match(name, "curvefever-") then error("`curvefever-` preposition added automatically.") end
-    name = "curvefever-effect-"..name
+    if string.match(config.name, "curvefever-") then error("`curvefever-` preposition added automatically.") end
+    local name = "curvefever-effect-"..config.name.."-"..config.target
     data:extend({
         util.merge{
             data.raw["item"]["curvefever-effect-base"],
             {
                 name = name,
                 place_result = name,
-                icon = icon,
+                icon = config.icon,
             }
         },
         util.merge{
@@ -114,45 +99,31 @@ function create_effect_beacon(name, icon, picture, type)
         },
     })
 
-    if type == "good" then
-        picture = {
-            layers = {
-                {
-                    filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-good.png",
-                    priority = "medium",
-                    width = 64,
-                    height = 64,
-                    scale = size_modifier,
-                },
-                picture,
-            }
+    local picture = { layers = { } }
+
+    table.insert(picture.layers, 
+        {
+            filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-"..config.target..".png",
+            priority = "medium",
+            width = 64,
+            height = 64,
+            scale = size_modifier,
         }
-    elseif type == "bad" then
-        picture = {
-            layers = {
-                {
-                    filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-bad.png",
-                    priority = "medium",
-                    width = 64,
-                    height = 64,
-                    scale = size_modifier,
-                },
-                picture,
+    )
+
+    table.insert(picture.layers, config.picture)
+
+    if not config.overlay then config.overlay = { } end
+    for _, overlay in pairs(config.overlay) do
+        table.insert(picture.layers, 
+            {
+                filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-overlay-"..overlay..".png",
+                priority = "medium",
+                width = 64,
+                height = 64,
+                scale = size_modifier,
             }
-        }
-    elseif type == "bad-not" then
-        picture = {
-            layers = {
-                picture,
-                {
-                    filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-bad-not.png",
-                    priority = "medium",
-                    width = 64,
-                    height = 64,
-                    scale = size_modifier,
-                },                
-            }
-        }
+        )
     end
 
     data.raw["land-mine"][name].picture_safe = picture
@@ -160,78 +131,84 @@ function create_effect_beacon(name, icon, picture, type)
     data.raw["land-mine"][name].picture_set_enemy = picture
 end
 
+-- Create this effect beacon for player and enemy
+local function create_effect_beacon_for_both(config)
+    config.target = "player"
+    create_effect_beacon(config)
+    config.target = "enemy"
+    create_effect_beacon(config)
+end
+
 ----------------------------------------------------------------------------------
 -- Now create the effect beacons we want
 ----------------------------------------------------------------------------------
-create_effect_beacon(
-    "speed_up",
-    "__base__/graphics/icons/coin.png",
-    {
+
+
+create_effect_beacon_for_both{
+    name = "speed_up",
+    icon = "__base__/graphics/icons/coin.png",
+    picture = {
         filename = "__base__/graphics/icons/car.png",
         priority = "medium",
         width = 64,
         height = 64,
         scale = size_modifier,
-    },
-    "good"
-)
-create_effect_beacon(
-    "tank",
-    "__base__/graphics/icons/coin.png",
-    {
+    },    
+    type = "good",
+}
+create_effect_beacon_for_both{
+    name = "tank",
+    icon = "__base__/graphics/icons/coin.png",
+    picture = {
         filename = "__base__/graphics/icons/tank.png",
         priority = "medium",
         width = 64,
         height = 64,
         scale = size_modifier,
-    },
-    "good"
-)
-create_effect_beacon(
-    "slow_down",
-    "__base__/graphics/icons/coin.png",
-    {
+    }
+}
+create_effect_beacon_for_both{
+    name = "slow_down",
+    icon = "__base__/graphics/icons/coin.png",
+    picture = {
         filename = "__base__/graphics/icons/slowdown-capsule.png",
         priority = "medium",
         width = 64,
         height = 64,
         scale = size_modifier,
     },
-    "bad"
-)
-create_effect_beacon(
-    "no_trail",
-    "__base__/graphics/icons/coin.png",
-    {
+}
+create_effect_beacon_for_both{
+    name = "no_trail",
+    icon = "__base__/graphics/icons/coin.png",
+    picture = {
         filename = "__base__/graphics/icons/wall.png",
         priority = "medium",
         width = 64,
         height = 64,
-        scale = size_modifier,
+        scale = size_modifier * 0.9,
     },
-    "bad-not"
-)
-create_effect_beacon(
-    "worm",
-    "__base__/graphics/icons/coin.png",
-    {
+    overlay = {"not"},
+}
+create_effect_beacon_for_both{
+    name = "worm",
+    icon = "__base__/graphics/icons/coin.png",
+    picture = {
         filename = "__base__/graphics/icons/behemoth-worm.png",
         priority = "medium",
         width = 64,
         height = 64,
         scale = size_modifier,
-    },
-    "bad"
-)
-create_effect_beacon(
-    "biters",
-    "__base__/graphics/icons/coin.png",
-    {
+    }
+}
+create_effect_beacon_for_both{
+    name = "biters",
+    icon = "__base__/graphics/icons/coin.png",
+    picture = {
         filename = "__base__/graphics/icons/behemoth-biter.png",
         priority = "medium",
         width = 64,
         height = 64,
         scale = size_modifier,
-    },
-    "good"
-)
+    }
+}

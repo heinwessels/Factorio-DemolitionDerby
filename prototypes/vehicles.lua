@@ -17,6 +17,7 @@ data:extend({
             name = "curvefever-car",
             energy_source = {type = "void"},
             burner = nil,
+            sound_no_fuel = nil,    -- We will never have fuel
             minable = {result = "curvefever-car"},
             max_health = 100,
             resistances = {

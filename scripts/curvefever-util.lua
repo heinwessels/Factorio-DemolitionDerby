@@ -148,4 +148,10 @@ function Util.round(num, numDecimalPlaces)
     return math.floor(num + 0.5)
 end
 
+function Util.string_find_last(haystack, needle)
+    -- https://stackoverflow.com/a/20460403
+    local i=haystack:match(".*"..needle.."()")
+    if i==nil then return nil else return i-1 end
+end
+
 return Util

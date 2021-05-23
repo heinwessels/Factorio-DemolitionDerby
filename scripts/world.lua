@@ -166,7 +166,7 @@ end
 
 function World.on_script_trigger_effect(world, event)
     for _, arena in pairs(world.arenas) do
-        Arena.hit_effect_event(arena, event)
+        if Arena.hit_effect_event(arena, event) then return end
     end
 end
 
