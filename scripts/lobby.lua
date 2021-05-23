@@ -95,16 +95,25 @@ function Lobby.add_player(lobby, player)
     end
 end
 
-function Lobby.remove_player(lobby, player)
+function Lobby.remove_player(lobby, player, silent_fail)
     for index, player_in_lobby in pairs(lobby.players) do
         if player.index == player_in_lobby.index then
+            
+            -- Removing player
             Lobby.log(lobby, "Removing player <"..player.name..">.")
             lobby.player_states[player.index] = nil
             table.remove(lobby.players, index)
             return
+
         end
     end
-    Lobby.log(lobby, "Could not remove player <"..player.name..">. Not found")
+    if not silent_fail then
+        Lobby.log(lobby, "Could not remove player <"..player.name..">. Not found")
+    end
+end
+
+function Lobby.on_player_left(lobby, player)
+    Lobby.remove_player(lobby, player, true)
 end
 
 function Lobby.state_machine(lobby)

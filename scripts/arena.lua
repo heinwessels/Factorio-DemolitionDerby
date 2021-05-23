@@ -1,8 +1,7 @@
-local util = require("util")
 local Effects = require("scripts.effects")
 local constants = require("scripts.constants")
 local Builder = require("scripts.builder")
-local curvefever_util = require("scripts.curvefever-util")
+local util = require("scripts.curvefever-util")
 local Cutscene = require("scripts.cutscene")
 
 local Arena = { }
@@ -19,7 +18,7 @@ function Arena.create(arena)
             surface = surface,
             area = area,
             starting_positions = nil,   -- Each location includes a third entry orientation
-            ideal_number_of_effect_beacons = curvefever_util.size_of_area(arena.area) * constants.arena.effect_density,
+            ideal_number_of_effect_beacons = util.size_of_area(arena.area) * constants.arena.effect_density,
             effect_beacons = { },   -- Array of all effect beacons part of this arena (array of references)
             builder = Builder.create(),
             
@@ -67,7 +66,7 @@ function Arena.create(arena)
     Builder.start(arena)
     
     -- Created!
-    Arena.log(arena, "Created arena <"..arena.name.."> with area <"..curvefever_util.to_string(arena.area)..">")
+    Arena.log(arena, "Created arena <"..arena.name.."> with area <"..util.to_string(arena.area)..">")
     return arena
 end
 
@@ -98,7 +97,7 @@ function Arena.add_player(arena, player)
     
     -- Check if this player was already added
     if arena.player_states[player.index] then
-        Arena.log(arena, "Cannot add player "..player.name.." to arena "..arena.name.." again (Total: "..#arena.players..")")
+        Arena.log(arena, "Cannot add player "..player.name.." again (Total: "..#arena.players..")")
         return
     end
     
@@ -114,7 +113,33 @@ function Arena.add_player(arena, player)
 
     -- TODO Create handles for destroying of vehicles
 
-    Arena.log(arena, "Added player "..player.name.." to arena "..arena.name.." (Total: "..#arena.players..")")
+    Arena.log(arena, "Added player "..player.name)
+end
+
+-- When a player left
+function Arena.on_player_left(arena, player)
+    for index, player_in_arena in pairs(arena.players) do
+        if player.index == player_in_arena.index then
+            
+            -- Removing player
+            Arena.log(arena, "Removing player <"..player.name..">.")
+            
+            local player_state = arena.player_states[player.index]
+            if player_state.status == "playing" then
+                -- Player is still playing. Get him out of his vehicle and
+                -- destroy it
+                local vehicle = player.character.vehicle
+                player.driving = false
+                vehicle.die()
+
+                -- TODO Carefully stop his effects
+            end
+            
+            arena.player_states[player.index] = nil
+            table.remove(arena.players, index)
+            return
+        end
+    end
 end
 
 -- Start the game for this arena (as it looks from the outside)
@@ -126,15 +151,15 @@ end
 -- and then teleport players back to the lobby instead of spawn
 function Arena.start_round(arena, lobby)
     if arena.status ~= "ready" then
-        Arena.log(arena, "Cannot start arena <"..arena.name.."> since it's not ready (status = "..arena.status..")")
+        Arena.log(arena, "Cannot start since it's not ready (status = "..arena.status..")")
     end
 
     if #arena.players == 0 then
-        Arena.log(arena, "Cannot start arena <"..arena.name.."> since it has no players")
+        Arena.log(arena, "Cannot start since it has no players")
     end
 
     -- Setup and update some variables
-    arena.ideal_number_of_effect_beacons = curvefever_util.size_of_area(arena.area) * constants.arena.effect_density
+    arena.ideal_number_of_effect_beacons = util.size_of_area(arena.area) * constants.arena.effect_density
     arena.lobby = lobby
 
     -- Setup players
@@ -234,7 +259,7 @@ function Arena.update(arena)
             arena.round.players_alive = #arena.players
 
             Arena.set_status(arena, "playing")            
-            Arena.log(arena, "Started arena <"..arena.name.."> with "..#arena.players.." players")
+            Arena.log(arena, "Started with "..#arena.players.." players")
             game.print("Round in Arena: "..arena.name.." started!")
         end
     ---------------------------------------------------
@@ -284,8 +309,8 @@ function Arena.update(arena)
             -- The game is over!
             arena.round.tick_ended = game.tick
             if not player_alive then player_alive={name = "<NO PLAYER>"} end    -- TODO Hacky
-            Arena.log(arena, "Round over at <"..arena.name.."> after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. <"..player_alive.name.."> was the victor!")
-            game.print("On Arena "..arena.name.." the player "..player_alive.name.." emerged victorious after "..curvefever_util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds!")
+            Arena.log(arena, "Round over after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. <"..player_alive.name.."> was the victor!")
+            game.print("On Arena "..arena.name.." the player "..player_alive.name.." emerged victorious after "..util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds!")
 
             -- TODO Show some victory thing
             -- TODO Show score!
@@ -321,15 +346,15 @@ function Arena.end_round(arena)
         if not player.character then
             -- Player was spectating and don't have a character
             -- Give his body back.
-            curvefever_util.player_from_spectator(player)
+            util.player_from_spectator(player)
         end
 
         -- Move him back to spawn or the the lobby
         local old_position = player.position        
         if arena.lobby then
-            curvefever_util.teleport_safe(player, arena.lobby.spawn_location)
+            util.teleport_safe(player, arena.lobby.spawn_location)
         else
-            curvefever_util.teleport_safe(player, global.world.spawn_location)
+            util.teleport_safe(player, global.world.spawn_location)
         end
 
         -- Create a cutscene to transition the player
@@ -353,10 +378,10 @@ function Arena.player_on_lost(arena, player)
     local player_state = arena.player_states[player.index]
 
     player_state.status = "lost"
-    Arena.log(arena, "Player <"..player.name.."> died on arena <"..arena.name..">")
+    Arena.log(arena, "Player <"..player.name.."> died.")
 
     -- Remove his character entity (the little man on the screen)
-    local character = curvefever_util.player_to_spectator(player)
+    local character = util.player_to_spectator(player)
     character.die() -- The body will remain there... nice
 end
 
@@ -417,7 +442,7 @@ function Arena.update_effect_beacons(arena)
             end
         end
         if did_something == true then
-            arena.effect_beacons = curvefever_util.compact_array(arena.effect_beacons)
+            arena.effect_beacons = util.compact_array(arena.effect_beacons)
         end
     end
 end

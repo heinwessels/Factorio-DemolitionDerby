@@ -14,8 +14,12 @@ script.on_event(defines.events.on_tick, function (event)
     -- Update this world!
     World.on_tick(global.world, event) 
 end)
+
 script.on_event(defines.events.on_player_joined_game, 
-    function (event) World.player_entered(global.world, event) end
+    function (event) World.on_player_entered(global.world, event) end
+)
+script.on_event(defines.events.on_player_left_game,
+    function (event) World.on_player_left(global.world, event) end
 )
 script.on_event(defines.events.on_script_trigger_effect, 
     function (event) World.on_script_trigger_effect(global.world, event) end

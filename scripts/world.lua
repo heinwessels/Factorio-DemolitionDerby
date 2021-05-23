@@ -3,7 +3,7 @@ util = require("util")
 local Arena = require("scripts.arena")
 local Lobby = require("scripts.lobby")
 local constants = require("scripts.constants")
-local curvefever_util = require("scripts.curvefever-util")
+local util = require("scripts.curvefever-util")
 local Splash = require("scripts.splash")
 
 local World = { }
@@ -66,10 +66,14 @@ function World.reset(world)
     return nil
 end
 
-function World.player_entered(world, event)
+function World.on_player_entered(world, event)
     -- Just make sure he goes to spawn.
     if not world then return end
     local player = game.get_player(event.player_index)    
+
+    World.log("Player <"..player.name.."> joined. Initial position <"..util.to_string(player.position)..">.")
+
+
     player.force = "player"
 
     -- TODO What to do with day time?
@@ -77,10 +81,10 @@ function World.player_entered(world, event)
 
     -- Make sure the player is at spawn and has a body
     if not player.character then
-        curvefever_util.player_from_spectator(player)
+        util.player_from_spectator(player)
         player.character.driving = false    -- Ensure that he's not in a vehicle
     end
-    curvefever_util.teleport_safe(player, world.spawn_location)
+    util.teleport_safe(player, world.spawn_location)
 
     -- Here is the splashy boi.
     -- After it ends player will automatically be
@@ -103,6 +107,22 @@ function World.player_entered(world, event)
     end
 
 end
+
+function World.on_player_left(world, event)
+    if not world then return end
+    local player = game.get_player(event.player_index)
+    if not player then return end
+
+    World.log("Player <"..player.name.."> left. Last position <"..util.to_string(player.position)..">.")
+
+    for index, lobby in pairs(world.lobbies) do
+        Lobby.on_player_left(lobby, player)
+    end
+    for _, arena in pairs(world.arenas) do
+        Arena.on_player_left(arena, player)
+    end 
+end
+
 
 function World.on_tick(world, event)
 
@@ -148,6 +168,10 @@ function World.on_script_trigger_effect(world, event)
     for _, arena in pairs(world.arenas) do
         Arena.hit_effect_event(arena, event)
     end
+end
+
+function World.log(msg)
+    log("World: "..msg)
 end
 
 return World
