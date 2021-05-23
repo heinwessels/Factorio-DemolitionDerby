@@ -90,7 +90,8 @@ end
 
 -- Add player to arena to be played
 -- This will teleport them into the vehicles
-function Arena.add_player(arena, player)
+-- Vehicle_index is optional and specifies which car to get into
+function Arena.add_player(arena, player, vehicle_index)
     if arena.status ~= "ready" then
         error("Can only add players to arena when it's ready or accepting. Arena <"..arena.name..">'s status is <"..arena.status..">")
     end
@@ -103,11 +104,13 @@ function Arena.add_player(arena, player)
     
     -- Add player to arena
     table.insert(arena.players, player)
-    Arena.create_player_state(arena, player)
+    local player_state = Arena.create_player_state(arena, player)
 
     -- Teleport player into his vehicle
-    player.character.driving = false    -- Get the guy out of his car
-    local vehicle = arena.vehicles[#arena.players]
+    player.character.driving = false    -- Get the guy out of his car in the lobby
+    if not vehicle_index then vehicle_index = #arena.players end
+    local vehicle = arena.vehicles[vehicle_index]  -- This is still the static vehicle
+    player_state.vehicle = vehicle
     player.teleport(vehicle.position)
     vehicle.set_driver(player)
 
@@ -126,10 +129,10 @@ function Arena.on_player_left(arena, player)
             
             local player_state = arena.player_states[player.index]
             if player_state.status == "playing" then
-                -- Player is still playing. Get him out of his vehicle and
-                -- destroy it
-                local vehicle = player.character.vehicle
-                player.driving = false
+                -- Player is still playing. 
+                -- He already left the game though.
+                -- So just destroy his vehicle
+                local vehicle = player_state.vehicle                
                 vehicle.die()
 
                 -- TODO Carefully stop his effects
@@ -174,6 +177,7 @@ function Arena.start_round(arena, lobby)
 
         -- Make sure player is in the correct force
         player.force = "player"
+        
     end
 
     -- Remove unused vehicles
@@ -195,6 +199,7 @@ function Arena.create_player_state(arena, player)
         player = player,    -- Reference to connected player
         vehicle = nil,      -- Reference to players vehicle while playing
     }
+    return arena.player_states[player.index]
 end
 
 -- Call this function every tick
@@ -248,7 +253,6 @@ function Arena.update(arena)
                     "curvefever-car"
                 )
             end
-
             
             -- Remove any references to the vehicles in the arena. Now we store them
             -- In the player state. (Easier when swopping vechiles as effects)
@@ -308,9 +312,13 @@ function Arena.update(arena)
         if should_end then
             -- The game is over!
             arena.round.tick_ended = game.tick
-            if not player_alive then player_alive={name = "<NO PLAYER>"} end    -- TODO Hacky
-            Arena.log(arena, "Round over after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. <"..player_alive.name.."> was the victor!")
-            game.print("On Arena "..arena.name.." the player "..player_alive.name.." emerged victorious after "..util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds!")
+            if not player_alive then 
+                game.print("On Arena "..arena.name.." after "..util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds there was no clear winner!")
+                Arena.log(arena, "Round over after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. There was no winner.")
+            else
+                game.print("On Arena "..arena.name.." the player "..player_alive.name.." emerged victorious after "..util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds!")
+                Arena.log(arena, "Round over after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. <"..player_alive.name.."> was the victor!")
+            end
 
             -- TODO Show some victory thing
             -- TODO Show score!
@@ -360,6 +368,12 @@ function Arena.end_round(arena)
             util.player_from_spectator(player)
         end
 
+        -- Make sure he has full health
+        player.character.health = player.character.prototype.max_health
+
+        -- Remove his GUI arrows
+        player.clear_gui_arrow()
+
         -- Move him back to spawn or the the lobby
         local old_position = player.position        
         if arena.lobby then
@@ -389,6 +403,7 @@ function Arena.player_on_lost(arena, player)
     local player_state = arena.player_states[player.index]
 
     player_state.status = "lost"
+    game.print(player.name.." died in Arena "..arena.name.."!")
     Arena.log(arena, "Player <"..player.name.."> died.")
 
     -- Remove his character entity (the little man on the screen)
@@ -404,8 +419,10 @@ function Arena.player_driving_state_changed(arena, event)
     local player = game.get_player(event.player_index)
     local player_state = arena.player_states[player.index]
     local entity = event.entity    
-        
-    if arena.status == "playing" and player_state.status == "playing" then
+    
+
+    if (arena.status == "playing" or arena.status == "countdown") and 
+            (player_state.status == "playing" or player_state.status == "idle") then
         -- We only really care if player is playing
         -- AND if the arena is playing
         if player.character.driving == false then
@@ -419,7 +436,7 @@ function Arena.player_driving_state_changed(arena, event)
             
             elseif not entity then
                 -- Player is not driving anymore and his entity doesn't exist.
-                -- This means he likely lost the match. This means we need to do
+                -- This means he lost the match. This means we need to do
                 -- some stuff.
                 Arena.player_on_lost(arena, player)
             end

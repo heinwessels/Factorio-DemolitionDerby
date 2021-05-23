@@ -130,8 +130,7 @@ function Lobby.state_machine(lobby)
             if count_ready_players > 0 and count_ready_players == #lobby.players then
                 -- Can start the count down!
                 Lobby.set_status(lobby, "countdown")
-                lobby.countdown_start = game.tick
-                game.print("Starting countdown to move to "..lobby.name.."!")
+                lobby.countdown_start = game.tick                
                 -- After the countdown we wil finalize the game
             end
         end
@@ -142,10 +141,7 @@ function Lobby.state_machine(lobby)
         -- TODO Do this with events rather
         if Lobby.count_ready_players(lobby) == #lobby.players then
 
-            local diff = game.tick - lobby.countdown_start        
-            if diff % 60 == 0 then
-                game.print(((constants.lobby.timing.countdown-diff)/60) .. "...")
-            end
+            local diff = game.tick - lobby.countdown_start                    
             if diff > constants.lobby.timing.countdown then
 
                 -- Choose a target arena randomly
@@ -174,7 +170,14 @@ function Lobby.state_machine(lobby)
                 for _, player in pairs(lobby.players) do                
                     local position = player.position    -- Remember where player was
                     
-                    Arena.add_player(arena, player)     -- This will teleport them
+                    -- Get vehicle index
+                    local car_index = nil
+                    for index, vehicle in pairs(lobby.vehicles) do
+                        if vehicle.get_driver() == player.character then
+                            car_index = index
+                        end
+                    end
+                    Arena.add_player(arena, player, car_index)     -- This will teleport them
 
                     -- Add a cutscene from the player position in the lobby
                     -- to where they are in the arena now

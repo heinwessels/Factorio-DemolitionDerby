@@ -16,8 +16,6 @@ data:extend({
         {
             name = "curvefever-car",
             energy_source = {type = "void"},
-            burner = nil,
-            sound_no_fuel = nil,    -- We will never have fuel
             minable = {result = "curvefever-car"},
             max_health = 100,
             resistances = {
@@ -49,6 +47,7 @@ data:extend({
         }
     },
 })
+data.raw.car["curvefever-car"].sound_no_fuel = nil    -- We will never have fuel. disable the sound
 data:extend({
     ----------------------------------------------------------------------------------
     -- CAR THAT CANNOT DRIVE
@@ -73,8 +72,6 @@ data:extend({
                 effectivity = 1,        -- DUMMY
                 fuel_inventory_size = 1,-- DUMMY
             },
-
-            collision_box = {{-0.45, -0.45}, {0.45, 0.45}},
         }
     },
     ----------------------------------------------------------------------------------
@@ -99,7 +96,7 @@ data:extend({
                 {
                     type = "electric",
                     percent = 0,
-                    decrease = -5000  -- die instantly on border wall
+                    decrease = -5000  -- die instantly on border wall TODO
                 },
                 {
                     type = "impact",
@@ -112,6 +109,14 @@ data:extend({
                 },
                 {
                     type = "acid",
+                    percent = 100,  -- immune
+                },
+                {
+                    type = "poison",
+                    percent = 100,  -- immune
+                },
+                {
+                    type = "explosion",
                     percent = 100,  -- immune
                 },
                 {

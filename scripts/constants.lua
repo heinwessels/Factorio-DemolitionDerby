@@ -7,7 +7,7 @@ return {
     },
     lobby = {
         timing = {
-            countdown = 2*60,      -- Time buffer from when arena is booked, and new players can jump in
+            countdown = 0.5*60,      -- Time buffer from when arena is booked, and new players can jump in
             ["post-transition"] = 1.5*60,   -- Transition period from arena back to lobby
 
             portal_cutscene = 0.5*60,        -- Duration of cutscene. Nill to disable
@@ -22,12 +22,12 @@ return {
     arena = {           -- Constants used in an arena
         starting_location_spacing = 20,
         effect_density = 1/(45*45),     -- effects per area in tiles
-        start_zoom = 0.5,
+        start_zoom = 0.4,
         
         timing = {
             ["transition-pre"] = 1.5*60,   -- Cutscene from lobby to arena
             ["countdown"] = 3*60,
-            ["post-wait"] = 1*60,   -- Little period after the round ended            
+            ["post-wait"] = 2*60,   -- Little period after the round ended            
         }
     },    
     vehicle_speed = 0.3,

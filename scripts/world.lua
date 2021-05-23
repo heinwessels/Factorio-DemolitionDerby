@@ -48,7 +48,7 @@ function World.reset(world)
     
     -- Move all players to spawn
     for _, player in pairs(game.players) do
-        player.teleport(world.spawn_location)
+        util.teleport_safe(player, world.spawn_location)
     end
 
     -- Clean all arenas
@@ -82,8 +82,8 @@ function World.on_player_entered(world, event)
     -- Make sure the player is at spawn and has a body
     if not player.character then
         util.player_from_spectator(player)
-        player.character.driving = false    -- Ensure that he's not in a vehicle
     end
+    player.character.driving = false    -- Ensure that he's not in a vehicle
     util.teleport_safe(player, world.spawn_location)
 
     -- Here is the splashy boi.
@@ -156,11 +156,6 @@ function World.on_player_driving_changed_state(world, event)
             Arena.player_driving_state_changed(arena, event)
             return
         end
-    end
-
-    if not event.entity then
-        -- The player might have tried to climb out of his car.
-        -- Prevent him!
     end
 end
 

@@ -294,7 +294,7 @@ function Effects.apply_effects(arena, player)
 
                     -- Spawn biter
                     biter = surface.create_entity{
-                        name = "behemoth-biter",
+                        name = "weasel-biter",
                         position = position,
                     }
                     if biter == nil then                            

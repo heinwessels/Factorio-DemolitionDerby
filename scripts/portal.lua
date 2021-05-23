@@ -40,7 +40,7 @@ function Portal.teleport_to(portal, player, duration)
 end
 
 function Portal.flush_cache(portal)
-    lobby.cache = { }
+    portal.cache = { }
 end
 
 function Portal.refresh_cache(portal, players)
