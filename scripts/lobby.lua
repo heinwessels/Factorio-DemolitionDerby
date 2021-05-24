@@ -96,10 +96,8 @@ function Lobby.add_player(lobby, player)
 
             -- Make sure player has a GUI
             LobbyGui.build_interface(lobby, player)
-
             
             Lobby.log(lobby, "Adding player <"..player.name..">. (Number of players: "..#lobby.players..")")
-
         else
             Lobby.log(lobby, "Cannot add player <"..player.name.."> again. (Number of players: "..#lobby.players..")")
         end

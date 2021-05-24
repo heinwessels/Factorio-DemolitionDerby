@@ -41,6 +41,7 @@ return {
     lobbies = {
         ["red-lobby"] = {
             name = "red-lobby",
+            colour = {r=0.4,g=0.102,b=0.9,a=0},
             max_players = 8,
             arena_names = {
                 "achtung",
