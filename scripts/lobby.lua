@@ -3,6 +3,7 @@ local constants = require("scripts.constants")
 local Arena = require("scripts.arena")
 local Portal = require("scripts.portal")
 local Cutscene = require("scripts.cutscene")
+local LobbyGui = require("scripts.lobby-gui")
 
 local Lobby = { }
 
@@ -86,9 +87,19 @@ end
 function Lobby.add_player(lobby, player)
     if #lobby.players < lobby.max_players then
         if not lobby.player_states[player.index] then
+
+            -- The player can be added! Now do it.
+
+            -- Add some lobby things
             table.insert(lobby.players, player)
             lobby.player_states[player.index] = { }
+
+            -- Make sure player has a GUI
+            LobbyGui.build_interface(lobby, player)
+
+            
             Lobby.log(lobby, "Adding player <"..player.name..">. (Number of players: "..#lobby.players..")")
+
         else
             Lobby.log(lobby, "Cannot add player <"..player.name.."> again. (Number of players: "..#lobby.players..")")
         end
@@ -105,6 +116,8 @@ function Lobby.remove_player(lobby, player, silent_fail)
             Lobby.log(lobby, "Removing player <"..player.name..">.")
             lobby.player_states[player.index] = nil
             table.remove(lobby.players, index)
+            
+            LobbyGui.destroy(lobby, player)
             return
 
         end

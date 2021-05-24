@@ -1,5 +1,6 @@
 return {
-    single_player = true,  -- Debugging purposes, for I am but one person
+    single_player = false,  -- Debugging purposes, for I am but one person
+    editor = false,         -- Basically returns the toolbars if set to true
     splash = {
         enabled = false,
         duration = 5*60,        -- Time splash should be shown

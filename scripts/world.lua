@@ -73,11 +73,13 @@ function World.on_player_entered(world, event)
 
     World.log("Player <"..player.name.."> joined. Initial position <"..util.to_string(player.position)..">.")
 
+    -- Set up some global things
+    if not global.players then global.players = {} end
+    if not global.players[player.index] then global.players[player.index] = { } end
 
+    -- Some random settings
     player.force = "player"
-
-    -- TODO What to do with day time?
-    player.surface.always_day=true
+    player.surface.always_day=true  -- TODO Make better?
 
     -- Make sure the player is at spawn and has a body
     if not player.character then
@@ -94,16 +96,13 @@ function World.on_player_entered(world, event)
     end
 
     -- Hide some GUI elements
-    if constants.single_player == false then
-        player.game_view_settings.show_controller_gui = false
-        player.game_view_settings.show_research_info = false
-        player.game_view_settings.show_side_menu = false
-        player.game_view_settings.show_minimap = false    
-    else
-        player.game_view_settings.show_controller_gui = true
-        player.game_view_settings.show_research_info = true
-        player.game_view_settings.show_side_menu = true
-        player.game_view_settings.show_minimap = true
+    for _, setting in pairs{
+        player.game_view_settings.show_controller_gui,
+        player.game_view_settings.show_research_info,
+        player.game_view_settings.show_side_menu,
+        player.game_view_settings.show_minimap
+    } do
+        setting = constants.editor
     end
 
 end
