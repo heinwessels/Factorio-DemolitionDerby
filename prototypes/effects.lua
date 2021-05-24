@@ -191,6 +191,17 @@ create_effect_beacon_for_both{
     overlay = {"not"},
 }
 create_effect_beacon_for_both{
+    name = "full_trail",
+    icon = "__base__/graphics/icons/coin.png",
+    picture = {
+        filename = "__base__/graphics/icons/wall.png",
+        priority = "medium",
+        width = 64,
+        height = 64,
+        scale = size_modifier * 0.9,
+    },
+}
+create_effect_beacon_for_both{
     name = "worm",
     icon = "__base__/graphics/icons/coin.png",
     picture = {

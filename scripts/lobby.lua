@@ -214,7 +214,6 @@ function Lobby.state_machine(lobby)
                 -- Start the game!
                 Arena.start_round(arena, lobby)
                 if arena.status ~= "transition-pre" then
-                    -- TODO THe player should have a transition here
                     Lobby.log(lobby, "Something went wrong starting arena <"..arena.name..">.")
                 end
                 Lobby.set_status(lobby, "busy")
@@ -268,6 +267,18 @@ function Lobby.check_portals(lobby)
 
                 -- Add him to lobby
                 Lobby.add_player(lobby, player)
+            else
+                -- There is no more space in lobby
+                if game.tick % 120 == 0 then
+                    player.create_local_flying_text{
+                        text = {"lobby.full-flying-text"},
+                        position = {
+                            player.position.x,
+                            player.position.y - 2,
+                        },
+                        color = {r=1,g=0,b=0,a=1},
+                    }
+                end
             end
         end
     end

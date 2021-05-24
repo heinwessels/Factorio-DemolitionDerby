@@ -18,18 +18,20 @@ function Effects.update_effect_beacons(arena)
     if #arena.effect_beacons < arena.ideal_number_of_effect_beacons then
         -- TODO Populate this automatically with weights
         local effects_to_spawn = {
-            "speed_up-player",
-            "speed_up-enemy",
-            "tank-player",
-            "tank-enemy",
-            "slow_down-player",
-            "slow_down-enemy",
-            "no_trail-player",
-            "no_trail-enemy",
-            "worm-player",
-            "worm-enemy",
-            "biters-player",
-            "biters-enemy",
+            -- "speed_up-player",
+            -- "speed_up-enemy",
+            -- "tank-player",
+            -- "tank-enemy",
+            -- "slow_down-player",
+            -- "slow_down-enemy",
+            -- "no_trail-player",
+            -- "no_trail-enemy",
+            "full_trail-player",
+            "full_trail-enemy",
+            -- "worm-player",
+            -- "worm-enemy",
+            -- "biters-player",
+            -- "biters-enemy",
         }
         Effects.attempt_spawn_effect_beacon(
             arena,
@@ -162,6 +164,39 @@ function Effects.apply_effects(arena, player)
             if not timed_out then                
                 if player_state.effects["trail"] then
                     Effects.remove_effect(arena, player, "trail")
+                end
+            else
+                -- On time-out give the player the trail effect again
+                Effects.add_effect(arena, player, {
+                    trail = {              
+                        ticks_to_live = nil, -- Forever
+                    },
+                })
+            end
+        ------------------------------------------------------------------------
+        elseif effect_type == "full_trail" then
+            -- Draws a trail behind the player without any gaps
+            if not timed_out then                
+
+                -- Make sure the trial effect is removed
+                if player_state.effects["trail"] then
+                    Effects.remove_effect(arena, player, "trail")                    
+                end
+
+                -- Now draw full trail
+                local orientation = vehicle.orientation * 2 * math.pi
+                local trail_constants = constants.effects.trail
+                local position = {
+                    x = vehicle.position.x - trail_constants.offset*math.sin(orientation),
+                    y = vehicle.position.y + trail_constants.offset*math.cos(orientation),
+                }
+                if not surface.find_entity("curvefever-trail", position) then 
+                    surface.create_entity{
+                        name = "curvefever-trail",
+                        type = "wall",
+                        position = position,
+                        create_build_effect_smoke = true,
+                    }
                 end
             else
                 -- On time-out give the player the trail effect again
@@ -391,6 +426,12 @@ function Effects.hit_effect_event(arena, beacon)
         elseif effect_type == "no_trail" then
             Effects.add_effect(arena, target, {
                 no_trail = {
+                    ticks_to_live = 5*60,
+                },                
+            })
+        elseif effect_type == "full_trail" then
+            Effects.add_effect(arena, target, {
+                full_trail = {
                     ticks_to_live = 5*60,
                 },                
             })
