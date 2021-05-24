@@ -40,7 +40,7 @@ function Arena.create(arena)
             -- transition-pre  -> Players are moved. Waiting for cutscene to finish
             -- countdown     -> 3, 2, 1, START!
             -- playing      -> Currently playing a round
-            -- post-wait    -> After the round there will be a whilte of nothing.
+            -- post-wait    -> After the round there will be a while of nothing.
             -- done         -> Done playing. Waiting for something to happen before clean
             -- building     -> (Re)building map (done at creation or cleaning)
             status = "empty",
@@ -104,7 +104,7 @@ function Arena.add_player(arena, player, vehicle_index)
     
     -- Add player to arena
     table.insert(arena.players, player)
-    local player_state = Arena.create_player_state(arena, player)
+    local player_state = Arena.create_player_state(arena, player)   -- This will reset his score to zero
 
     -- Teleport player into his vehicle
     player.character.driving = false    -- Get the guy out of his car in the lobby
@@ -198,6 +198,7 @@ function Arena.create_player_state(arena, player)
         status = "idle",    -- nothing has been done to this player
         player = player,    -- Reference to connected player
         vehicle = nil,      -- Reference to players vehicle while playing
+        score = 0,          -- Score for a specific round
     }
     return arena.player_states[player.index]
 end
@@ -282,6 +283,11 @@ function Arena.update(arena)
                 local vehicle = player.character.vehicle  
                 local player_state = arena.player_states[player.index]
 
+                if constants.single_player then
+                    -- Just some way to check score while I'm on my own
+                    if game.tick % 60 == 0 then player_state.score = player_state.score + 1 end
+                end
+
                 if player_state.status == "playing" or player_state.status == "lost" and vehicle then
                     
                     if player_state.status == "playing" then
@@ -330,9 +336,16 @@ function Arena.update(arena)
     elseif arena.status == "post-wait" then
         -- This just a little cool down after the round ended
         if game.tick > (arena.round.tick_ended + constants.arena.timing["post-wait"]) then
-            Arena.end_round(arena)
+            Arena.end_round(arena)  -- This will move players back to the lobby
+            Arena.set_status(arena, "done")
         end
     ---------------------------------------------------
+    elseif arena.status == "done" then
+        -- Initiate clean of the arena
+        -- The lobby also waits for this state to reset his state machine
+        if game.tick > arena.status_start_tick + 5 then -- Just give a few ticks
+            Arena.clean(arena)  --- This will set the status to "building"
+        end
     end
 end
 
@@ -355,7 +368,9 @@ function Arena.end_round(arena)
     
     -- Remove all players from the arena
     local surface = arena.surface
+    local lobby = arena.lobby
     for _, player in pairs(arena.players) do
+        local player_state = arena.player_states[player.index]
 
         if player.character and player.character.vehicle then
             -- If player was in a car get him out
@@ -372,12 +387,17 @@ function Arena.end_round(arena)
         player.character.health = player.character.prototype.max_health
 
         -- Remove his GUI arrows
-        player.clear_gui_arrow()
+        player.clear_gui_arrow()    -- TODO actually implement
 
         -- Move him back to spawn or the the lobby
         local old_position = player.position        
-        if arena.lobby then
-            util.teleport_safe(player, arena.lobby.spawn_location)
+        if lobby then
+            util.teleport_safe(player, lobby.spawn_location)
+
+            -- Update his lobby score
+            local lobby_state = lobby.player_states[player.index]
+            lobby_state.score = lobby_state.score + player_state.score
+
         else
             util.teleport_safe(player, global.world.spawn_location)
         end
@@ -390,10 +410,6 @@ function Arena.end_round(arena)
             end_zoom=1,
         }
     end
-
-    -- Initiate clean of the arena
-    -- It will also remove all players
-    Arena.clean(arena)
 end
 
 -- This function must be called when a player
@@ -409,6 +425,16 @@ function Arena.player_on_lost(arena, player)
     -- Remove his character entity (the little man on the screen)
     local character = util.player_to_spectator(player)
     character.die() -- The body will remain there... nice
+
+    -- Now give all the other alive players one point
+    for _, enemy in pairs(arena.players) do
+        if enemy.index ~= player.index then
+            local enemy_state = arena.player_states[enemy.index]
+            if enemy_state.status == "playing" then
+                enemy_state.score = enemy_state.score + 10
+            end
+        end        
+    end
 end
 
 -- Player likely accidentally pressed enter while playing.

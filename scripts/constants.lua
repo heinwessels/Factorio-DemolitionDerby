@@ -1,5 +1,5 @@
 return {
-    single_player = false,  -- Debugging purposes, for I am but one person
+    single_player = true,  -- Debugging purposes, for I am but one person
     editor = false,         -- Basically returns the toolbars if set to true
     splash = {
         enabled = false,
@@ -9,13 +9,12 @@ return {
     lobby = {
         timing = {
             countdown = 0.5*60,      -- Time buffer from when arena is booked, and new players can jump in
-            ["post-transition"] = 1.5*60,   -- Transition period from arena back to lobby
-
             portal_cutscene = 0.5*60,        -- Duration of cutscene. Nill to disable
         },
-        frequency = {
-            portals = 15,           -- Check portal every <n> ticks
-            players_ready = 30,           -- Check portal every <n> ticks
+        frequency = {   -- every <n> ticks
+            portals = 15,           -- Refresh
+            players_ready = 30,     -- Check players ready
+            gui_refresh = 60,       -- GUI refresh rate
         },
     },
     round = {        

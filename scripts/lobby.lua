@@ -30,7 +30,8 @@ function Lobby.create(lobby)
             --  "wait"  -- for world to put players in a game
             --  "busy"  -- The arena for this game is currently busy
             countdown_start = nil,
-
+            
+            arena = nil,
             arena_names = { },   -- Array of arena names this lobby can go to
             target_arena_name = nil,    -- Where the game will be played when in wait
 
@@ -77,6 +78,12 @@ function Lobby.update(lobby)
         Lobby.check_portals(lobby)
     end
 
+    if game.tick % constants.lobby.frequency.gui_refresh == 0 then
+        for _, player in pairs(lobby.players) do
+            LobbyGui.refresh(lobby, player)
+        end
+    end
+
     -- Update the main lobby state machine
     Lobby.state_machine(lobby)
 end
@@ -92,7 +99,10 @@ function Lobby.add_player(lobby, player)
 
             -- Add some lobby things
             table.insert(lobby.players, player)
-            lobby.player_states[player.index] = { }
+            lobby.player_states[player.index] = {
+                gui = { },
+                score = 0,  -- This score will be persistent while in this lobby
+            }
 
             -- Make sure player has a GUI
             LobbyGui.build_interface(lobby, player)
@@ -111,11 +121,11 @@ function Lobby.remove_player(lobby, player, silent_fail)
         if player.index == player_in_lobby.index then
             
             -- Removing player
-            Lobby.log(lobby, "Removing player <"..player.name..">.")
+            LobbyGui.destroy(lobby, player) -- before killing state
             lobby.player_states[player.index] = nil
             table.remove(lobby.players, index)
             
-            LobbyGui.destroy(lobby, player)
+            Lobby.log(lobby, "Removing player <"..player.name..">.")
             return
 
         end
@@ -157,6 +167,7 @@ function Lobby.state_machine(lobby)
 
                 -- Choose a target arena randomly
                 lobby.target_arena_name = lobby.arena_names[math.random(#lobby.arena_names)]
+                lobby.arena = global.world.arenas[lobby.target_arena_name]
                 Lobby.log(lobby, "Set target arena to <"..lobby.target_arena_name..">")
                 
                 -- Now we will wait for the arena to be ready
@@ -173,7 +184,7 @@ function Lobby.state_machine(lobby)
         if Lobby.count_ready_players(lobby) == #lobby.players then
 
             -- Waiting for a arena to be ready to send the players too   
-            local arena = global.world.arenas[lobby.target_arena_name]
+            local arena = lobby.arena
             if arena.status == "ready" then
                 -- Arena is ready! Add and teleport players to the arena.
 
@@ -215,21 +226,15 @@ function Lobby.state_machine(lobby)
         end
     ---------------------------------------------------
     elseif lobby.status == "busy" then
-        local arena = global.world.arenas[lobby.target_arena_name]
-        if arena.status ~= "playing" and arena.status ~= "post-wait"then
-            -- Wait for round to finish, and the little post-wait.
-            -- After that we will be receiving the players.
-            Lobby.set_status(lobby, "receiving-players")
-        end    
-    ---------------------------------------------------
-    elseif lobby.status == "receiving-players" then
-        -- The round finished. Lobby has received the players
-        -- but we need to wait for the cutscene to end
-        if game.tick > (lobby.status_start_tick + constants.lobby.timing["post-transition"]) then
-            -- Cutscene is done. 
-            -- We are ready for a new new game to start
+        local arena = lobby.arena
+        if arena.status == "done" then
+            -- The arena round is done
+            -- And the arena transfered the players back to the lobby
             Lobby.set_status(lobby, "ready")
-        end
+
+            -- Now reset the arena reference
+            lobby.arena = nil
+        end    
     ---------------------------------------------------
     end
 end

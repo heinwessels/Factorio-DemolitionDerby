@@ -254,9 +254,7 @@ function Effects.apply_effects(arena, player)
                 -- but it might happen that it wasn't. Here we just make dsure 
                 -- it's all cleaned up.
                 for _, worm in pairs(effect.worms) do
-                    if worm.valid then
-                        worm.die()
-                    end
+                    if worm.valid then worm.die() end
                 end
             end        
             ------------------------------------------------------------------------
@@ -324,7 +322,7 @@ function Effects.apply_effects(arena, player)
                 end
             else
                 for _, biter in pairs(effect.biters) do
-                    biter.die()
+                    if biter.valid then biter.die() end
                 end
             end
         end
