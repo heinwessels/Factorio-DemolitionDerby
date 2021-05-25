@@ -148,14 +148,17 @@ function Lobby.state_machine(lobby)
 
         -- See if all players in the lobby are in their cars
         if game.tick % constants.lobby.frequency.players_ready == 0 then
-            local count_ready_players = Lobby.count_ready_players(lobby)
-            if count_ready_players > 0 and count_ready_players == #lobby.players then
-                -- Can start the count down!
-                Lobby.set_status(lobby, "countdown")
-                lobby.countdown_start = game.tick                
-                -- After the countdown we wil finalize the game
+            local player_count = #lobby.players
+            if player_count > 0 then
+                local count_ready_players = Lobby.count_ready_players(lobby)
+                if count_ready_players > 0 and count_ready_players == player_count then
+                    -- Can start the count down!
+                    Lobby.set_status(lobby, "countdown")
+                    lobby.countdown_start = game.tick                
+                    -- After the countdown we wil finalize the game
+                end
             end
-        end
+        end        
     ---------------------------------------------------
     elseif lobby.status == "countdown" then
 
@@ -167,7 +170,7 @@ function Lobby.state_machine(lobby)
             if diff > constants.lobby.timing.countdown then
 
                 -- Choose a target arena randomly
-                lobby.target_arena_name = lobby.arena_names[math.random(#lobby.arena_names)]
+                lobby.target_arena_name = lobby.arena_names[math.random(#lobby.arena_names)]                
                 lobby.arena = global.world.arenas[lobby.target_arena_name]
                 Lobby.log(lobby, "Set target arena to <"..lobby.target_arena_name..">")
                 

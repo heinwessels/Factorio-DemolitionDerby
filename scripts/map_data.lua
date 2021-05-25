@@ -22,7 +22,7 @@ end
 
 return {
     arenas = {
-        achtung = create_arena({
+        ["achtung"] = create_arena({
             name = "achtung",
             max_players = 8,
             surface = "nauvis",
@@ -31,7 +31,7 @@ return {
                 right_bottom = { x = 450, y = 75 },
             },             
         }),
-        blue = create_arena({
+        ["sledgehammer"] = create_arena({
             name = "sledgehammer",
             max_players = 8,
             surface = "nauvis",
@@ -40,7 +40,7 @@ return {
                 right_bottom = { x = 149, y = -125 },
             },
         }),
-        blue = create_arena({
+        ["fury-road"] = create_arena({
             name = "fury-road",
             max_players = 8,
             surface = "nauvis",
@@ -49,7 +49,7 @@ return {
                 right_bottom = { x = -150, y = 75 },
             },
         }),
-        blue = create_arena({
+        ["bellville"] = create_arena({
             name = "bellville",
             max_players = 8,
             surface = "nauvis",
@@ -97,11 +97,11 @@ return {
             name = "blue-lobby",
             colour = {r=0.15,g=0.29,b=0.4,a=0},
             max_players = 8,
-            arena_names = { "sledgehammer", },
+            arena_names = { "sledgehammer" },
             surface = "nauvis",
             area = {
                 left_top = { x = -89,  y = -9 },
-                right_bottom = { x = -70, y = -10 },
+                right_bottom = { x = -70, y = 10 },
             },
             portals = {
                 inside = {
@@ -122,11 +122,11 @@ return {
             name = "green-lobby",
             colour = {r=0.07,g=0.32,b=0.09,a=0},
             max_players = 8,
-            arena_names = { "sledgehammer", "achtung" },
+            arena_names = { "fury-road" },
             surface = "nauvis",
             area = {
                 left_top = { x = -10,  y = -89 },
-                right_bottom = { x = -9, y = -70 },
+                right_bottom = { x = 9, y = -70 },
             },
             portals = {
                 inside = {
@@ -147,11 +147,11 @@ return {
             name = "purple-lobby",
             colour = {r=0.33,g=0.17,b=0.37,a=0},
             max_players = 8,
-            arena_names = { "sledgehammer", "achtung" },
+            arena_names = { "bellville" },
             surface = "nauvis",
             area = {
                 left_top = { x = -10,  y = 70 },
-                right_bottom = { x = -9, y = 89 },
+                right_bottom = { x = 9, y = 89 },
             },
             portals = {
                 inside = {
