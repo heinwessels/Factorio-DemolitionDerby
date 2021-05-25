@@ -37,6 +37,21 @@ return {
                 },
             },             
         }),
+        blue = create_arena({
+            name = "blue",
+            max_players = 8,
+            surface = "nauvis",
+            area = {
+                left_top = {
+                    x = 239,
+                    y = 129,
+                },
+                right_bottom = {
+                    x = 539,
+                    y = 279,
+                },
+            },             
+        }),
     },
     lobbies = {
         ["red-lobby"] = {
@@ -68,6 +83,39 @@ return {
                     area = {
                         left_top = { x = 12, y = 19 },
                         right_bottom = { x = 15, y = 22}
+                    },
+                },
+            } 
+        },
+        ["blue-lobby"] = {
+            name = "blue-lobby",
+            colour = {r=0.4,g=0.102,b=0.9,a=0},
+            max_players = 8,
+            arena_names = {
+                "blue",
+            },
+            surface = "nauvis",
+            area = {
+                left_top = {
+                    x = 30,
+                    y = 41,
+                },
+                right_bottom = {
+                    x = 49,
+                    y = 60,
+                },
+            },
+            portals = {
+                inside = {
+                    area = {
+                        left_top = { x = 23, y = 49 },
+                        right_bottom = { x = 26, y = 52}
+                    }
+                },
+                outside = {
+                    area = {
+                        left_top = { x = 12, y = 49 },
+                        right_bottom = { x = 15, y = 52}
                     },
                 },
             } 
