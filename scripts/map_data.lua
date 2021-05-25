@@ -27,14 +27,8 @@ return {
             max_players = 8,
             surface = "nauvis",
             area = {
-                left_top = {
-                    x = 239,
-                    y = -91,
-                },
-                right_bottom = {
-                    x = 539,
-                    y = 59,
-                },
+                left_top = { x = 150, y = -75 },
+                right_bottom = { x = 450, y = 75 },
             },             
         }),
         blue = create_arena({
@@ -42,15 +36,27 @@ return {
             max_players = 8,
             surface = "nauvis",
             area = {
-                left_top = {
-                    x = 239,
-                    y = 129,
-                },
-                right_bottom = {
-                    x = 539,
-                    y = 279,
-                },
-            },             
+                left_top = { x = -151, y = -275 },
+                right_bottom = { x = 149, y = -125 },
+            },
+        }),
+        blue = create_arena({
+            name = "fury-road",
+            max_players = 8,
+            surface = "nauvis",
+            area = {
+                left_top = { x = -450, y = -75 },
+                right_bottom = { x = -150, y = 75 },
+            },
+        }),
+        blue = create_arena({
+            name = "bellville",
+            max_players = 8,
+            surface = "nauvis",
+            area = {
+                left_top = { x = -150, y = 125 },
+                right_bottom = { x = 150, y = 275 },
+            },
         }),
     },
     lobbies = {
@@ -114,7 +120,7 @@ return {
         },
         ["green-lobby"] = {
             name = "green-lobby",
-            colour = {r=0.28,g=0.38,b=0.4,a=0},
+            colour = {r=0.07,g=0.32,b=0.09,a=0},
             max_players = 8,
             arena_names = { "sledgehammer", "achtung" },
             surface = "nauvis",
