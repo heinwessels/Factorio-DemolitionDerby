@@ -10,12 +10,12 @@
             "name": "Factorio Mod Debug",
             "factorioPath": "D:/Games/Factorio/Factorio_1.1.33/bin/x64/factorio.exe"
         },
-        {
-            "type": "factoriomod",
-            "request": "launch",
-            "name": "Factorio Mod Debug (Profile)",
-            "factorioPath": "D:/Games/Factorio/Factorio_1.1.33/bin/x64/factorio.exe",
-            "hookMode": "profile"
-        }
+        // {
+        //     "type": "factoriomod",
+        //     "request": "launch",
+        //     "name": "Factorio Mod Debug (Profile)",
+        //     "factorioPath": "D:/Games/Factorio/Factorio_1.1.33/bin/x64/factorio.exe",
+        //     "hookMode": "profile"
+        // }
     ]
 }

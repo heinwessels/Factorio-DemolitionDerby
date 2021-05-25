@@ -5,6 +5,32 @@ data:extend({
         data.raw["wall"]["stone-wall"],
         {
             name = "curvefever-trail",
+            resistances = {
+                {
+                    type = "fire",
+                    percent = 100
+                },
+                {
+                    type = "impact",
+                    percent = 100,
+                },
+                {
+                    type = "explosion",
+                    decrease = -5000,   -- Die instantly
+                },
+                {
+                    type = "laser",
+                    decrease = -5000,   -- Die instantly
+                },
+                {
+                    type = "acid",
+                    percent = 100,
+                },
+                {
+                    type = "physical",
+                    percent = 100,
+                },
+            },
         }
     },
 

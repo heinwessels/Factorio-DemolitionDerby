@@ -285,22 +285,26 @@ function Lobby.check_portals(lobby)
     end
 
     -- Handle inside portal
-    players = Portal.players_in_range(inside_portal)
-    Portal.refresh_cache(inside_portal, players)
-    for _, player in pairs(players) do
-        if not Portal.player_in_cache(inside_portal, player) then            
-            -- This is the first time the player is in the area
+    if #lobby.players > 0 then
+        -- Only handle this is we know there are players inside
 
-            -- This player wants to leave the lobby!
+        players = Portal.players_in_range(inside_portal)
+        Portal.refresh_cache(inside_portal, players)
+        for _, player in pairs(players) do
+            if not Portal.player_in_cache(inside_portal, player) then            
+                -- This is the first time the player is in the area
 
-            -- Teleport him!
-            Portal.teleport_to(outside_portal, player)            
+                -- This player wants to leave the lobby!
 
-            -- Make sure he isn't instantly teleported back
-            Portal.add_player_to_cache(outside_portal, player)
+                -- Teleport him!
+                Portal.teleport_to(outside_portal, player)            
 
-            -- Remove him from the lobby
-            Lobby.remove_player(lobby, player)
+                -- Make sure he isn't instantly teleported back
+                Portal.add_player_to_cache(outside_portal, player)
+
+                -- Remove him from the lobby
+                Lobby.remove_player(lobby, player)
+            end
         end
     end
 
@@ -348,6 +352,8 @@ function Lobby.player_driving_state_changed(lobby, player, vehicle)
                 color = {r=1,g=0,b=0,a=1},
             }        
             return true -- Let world know we handled it
+        else
+            return -- Just ignore
         end
     end
 
