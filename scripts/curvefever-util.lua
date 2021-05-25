@@ -13,6 +13,13 @@ function Util.compact_array(t)
     return ans
 end
 
+function Util.is_player_in_list(players, player)
+    for _, other in pairs(players) do
+        if other.index == player.index then return true end
+    end
+    return false
+end
+
 -- Returns the area of an area in tiles^2
 function Util.size_of_area(area)
     return (area.right_bottom.x-area.left_top.x)*(area.right_bottom.y-area.left_top.y)

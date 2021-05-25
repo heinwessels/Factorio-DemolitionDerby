@@ -145,15 +145,24 @@ function World.on_player_driving_changed_state(world, event)
     if world.enabled == false then return end
 
     local player = game.get_player(event.player_index)
+    local vehicle = event.entity
 
     -- Check if this player was playing in an arena
     for _, arena in pairs(world.arenas) do
-        if arena.player_states[player.index] then
-            -- The player who got out of his car is in this arena
-            -- It's not possible for him to try climb in in an arena
-            -- hopefully.
-            Arena.player_driving_state_changed(arena, event)
-            return
+        -- This player is playing in this arena
+        -- This could be either:
+        --  Player tried to climb out of his car
+        --  Player crashed and lost
+        if Arena.player_driving_state_changed(arena, player, vehicle) then
+            return  -- Event location found. Stop looking for other locations
+        end
+    end
+
+    -- Now we know the event was not in an arena
+    -- Check if this player was playing in an arena
+    for _, lobby in pairs(world.lobbies) do
+        if Lobby.player_driving_state_changed(lobby, player, vehicle) then
+            return -- The event has been handled
         end
     end
 end

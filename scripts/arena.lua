@@ -441,12 +441,16 @@ end
 -- Double check, and put him back in his car. This is 
 -- also triggered when the player swops cars during an
 -- effect. 
-function Arena.player_driving_state_changed(arena, event)
-    local player = game.get_player(event.player_index)
-    local player_state = arena.player_states[player.index]
-    local entity = event.entity    
+function Arena.player_driving_state_changed(arena, player, vehicle)
     
-
+    -- First verify this event happened in this arena
+    if not util.position_in_area(player.position, arena.area) then return end
+    
+    -- Did it happen to one of the known players?
+    local player_state = arena.player_states[player.index]
+    if not player_state then return true end -- Just ignore it, and notify world it's handled
+    
+    -- This is something we should handel
     if (arena.status == "playing" or arena.status == "countdown") and 
             (player_state.status == "playing" or player_state.status == "idle") then
         -- We only really care if player is playing
@@ -454,14 +458,14 @@ function Arena.player_driving_state_changed(arena, event)
         if player.character.driving == false then
             -- This means he likely got OUT of his vehicle
             -- This could be because of the effect
-            if entity and player_state.vehicle == entity then
+            if vehicle and player_state.vehicle == vehicle then
                 -- The player's car still exists. This means he tried
                 -- to climb out or swapped vehicles. Just make sure he
                 -- back in his vehicle.
                 player_state.vehicle.set_driver(player)
             
-            elseif not entity then
-                -- Player is not driving anymore and his entity doesn't exist.
+            elseif not vehicle then
+                -- Player is not driving anymore and his vehicle doesn't exist.
                 -- This means he lost the match. This means we need to do
                 -- some stuff.
                 Arena.player_on_lost(arena, player)

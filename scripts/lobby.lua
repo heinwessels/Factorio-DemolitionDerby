@@ -102,6 +102,7 @@ function Lobby.add_player(lobby, player)
             lobby.player_states[player.index] = {
                 gui = { },
                 score = 0,  -- This score will be persistent while in this lobby
+                ready = false,
             }
 
             -- Make sure player has a GUI
@@ -308,14 +309,54 @@ end
 -- Count the ready players (players in cars)
 function Lobby.count_ready_players(lobby)
     local count_ready_players = 0
-    for _, vehicle in pairs(lobby.vehicles) do            
-        if vehicle.get_driver() ~= nil then
-            -- TODO Check if this player is in out list.
-            -- If not, kick him from lobby!
+    for _, player in pairs(lobby.players) do
+        local player_state = lobby.player_states[player.index]
+        if player_state.ready then
             count_ready_players = count_ready_players + 1
         end
     end
     return count_ready_players
+end
+
+-- This happens when players climb in cars in the lobby
+-- to show that they are ready to play. We will use this
+-- event to keep track of that
+function Lobby.player_driving_state_changed(lobby, player, vehicle)
+    
+    local event_handled = falses
+
+    -- First verify this event happened in this lobby
+    if not util.position_in_area(player.position, lobby.area) then return end
+
+    -- Is he one of the players in the lobby?
+    -- (this should not be possible, but it should be robust)
+    if not util.is_player_in_list(lobby.players, player) then
+        -- Player should not be here. Teleport him to spawn
+        if player.character.driving then
+            -- However, we only do this when he get's into a car
+            -- This is to distinguish the kick event from when we take
+            -- him out of the car, to not teleport him twice
+
+            player.character.driving = false -- Make sure he is out of car
+            util.teleport_safe(player, global.world.spawn_location)
+            player.create_local_flying_text{
+                text = {"lobby.not-recognised"},
+                position = {
+                    player.position.x,
+                    player.position.y - 2,
+                },
+                color = {r=1,g=0,b=0,a=1},
+            }        
+            return true -- Let world know we handled it
+        end
+    end
+
+    -- If we reach this point then the event happened in this lobby
+    -- and it's a legal player in this lobby. So set his ready status
+    -- according to if he is in a car or not
+    local player_state = lobby.player_states[player.index]
+    player_state.ready = player.character.driving
+
 end
 
 function Lobby.set_status(lobby, status)
