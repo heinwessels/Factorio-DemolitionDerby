@@ -45,7 +45,7 @@ return {
         },
         worm = {
             spacing = 2.5,
-            ticks_to_live = 13*60,
+            ticks_to_live = 13*60,  -- How long should the worm live?
         },
         biters = {
             period = 0.25*60,       -- Every how long should a biter be released

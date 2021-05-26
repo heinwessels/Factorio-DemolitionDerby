@@ -18,20 +18,20 @@ function Effects.update_effect_beacons(arena)
     if #arena.effect_beacons < arena.ideal_number_of_effect_beacons then
         -- TODO Populate this automatically with weights
         local effects_to_spawn = {
-            "speed_up-player",
-            "speed_up-enemy",
-            "tank-player",
-            "tank-enemy",
-            "slow_down-player",
-            "slow_down-enemy",
-            "no_trail-player",
-            "no_trail-enemy",
-            "full_trail-player",
-            "full_trail-enemy",
-            "worm-player",
+            -- "speed_up-player",
+            -- "speed_up-enemy",
+            -- "tank-player",
+            -- "tank-enemy",
+            -- "slow_down-player",
+            -- "slow_down-enemy",
+            -- "no_trail-player",
+            -- "no_trail-enemy",
+            -- "full_trail-player",
+            -- "full_trail-enemy",
+            -- "worm-player",
             "worm-enemy",
-            "biters-player",
-            "biters-enemy",
+            -- "biters-player",
+            -- "biters-enemy",
         }
         Effects.attempt_spawn_effect_beacon(
             arena,
@@ -269,30 +269,15 @@ function Effects.apply_effects(arena, player)
             if not timed_out then
                 if not effect.worms_positions_to_spawn then
                     effect.worms_positions_to_spawn = { }
-                end
-                if not effect.worms then effect.worms = { } end
+                end                
                 if effect.extended == true or effect.fresh == true then
                     -- Should always add a worm if this is triggered.
                     -- Line it up here. We will spawn it in the next gap
                     table.insert(effect.worms_positions_to_spawn, effect.position)
                 end
-                
-                -- First loop through existing worms and see if some should die
-                -- (Only because there can be multiple)
-                local did_something = false
-                for index, worm_instance in pairs(effect.worms) do
-                    if worm_instance.time + effect_constants.ticks_to_live < tick then
-                        -- We can delete destroy this worm
-                        worm_instance.worm.die()
-                        effect.worms[index] = nil
-                    end
-                end
-                if did_something == true then
-                    effect.worms = util.compact_array(effect.worms)
-                end
 
                 -- Should we try and spawn a worm?
-                did_something = false
+                local did_something = false -- If we spawned a worm
                 for index, position in pairs(effect.worms_positions_to_spawn) do
                     -- First make sure player is far enough away
                     local spacing = effect_constants.spacing
@@ -325,10 +310,7 @@ function Effects.apply_effects(arena, player)
                             error("Could not spawn worm on arena <"..arena.name.."> for player <"..player.name.."> at location <"..util.to_string(player.position)..">")
                         else
                             -- Remember when we spawned this worm so that we can kill it at the correct time
-                            table.insert(effect.worms,{
-                                worm = worm,
-                                time = game.tick
-                            })
+                            Effects.add_effect_entity(arena, worm, tick + effect_constants.ticks_to_live, true)
 
                             -- Now make sure we don't spawn a hord of worms!
                             effect.worms_positions_to_spawn[index]=nil
@@ -339,13 +321,6 @@ function Effects.apply_effects(arena, player)
                 if did_something == true then
                     effect.worms_positions_to_spawn = 
                             util.compact_array(effect.worms_positions_to_spawn)
-                end
-            else
-                -- Worms should ideally be destoryed already by this point,
-                -- but it might happen that it wasn't. Here we just make dsure 
-                -- it's all cleaned up.
-                for _, worm in pairs(effect.worms) do
-                    if worm.valid then worm.die() end
                 end
             end        
             ------------------------------------------------------------------------
