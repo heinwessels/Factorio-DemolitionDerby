@@ -7,10 +7,25 @@ function Util.merge(tables) return Factorio_util.merge(tables) end
 -- Remove all nils from an array
 function Util.compact_array(t)
     local ans = {}
+    local l = 1
     for _,v in pairs(t) do
-        ans[ #ans+1 ] = v
+        ans[ l ] = v
+        l = l + 1
     end
     return ans
+end
+
+-- Removes index of a table by overwriting it 
+-- with the last element in the table, and then setting
+-- the last element to nil
+function Util.array_remove_index_unordered(arr, index, len)
+    local last_index = len or #arr
+    if index == last_index then
+        arr[index] = nil -- Its the last element anyway        
+    else
+        arr[index] = arr[last_index]
+        arr[last_index] = nil
+    end
 end
 
 function Util.is_player_in_list(players, player)

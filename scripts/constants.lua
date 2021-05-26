@@ -28,7 +28,10 @@ return {
             ["transition-pre"] = 1.5*60,   -- Cutscene from lobby to arena
             ["countdown"] = 3*60,
             ["post-wait"] = 2*60,   -- Little period after the round ended            
-        }
+        },
+        frequency = {
+            effect_entity = 10,     -- How often effect entities are polled
+        },
     },    
     vehicle_speed = 0.3,
     effects = {
@@ -45,10 +48,10 @@ return {
             ticks_to_live = 13*60,
         },
         biters = {
-            ticks_to_live = 8*60,
-            max_biters = 5,    -- Maximum amount of biters that may be released
-            period = 0.25*60,    -- Every how long should a biter be released
-            offset = 4,         -- How far behind vehicle should they spawn
+            period = 0.25*60,       -- Every how long should a biter be released
+            ticks_to_live = 1.5*60, -- This will determine how many biters will spawn
+            biter_life_ticks = 8*60,-- How long should biters live
+            offset = 4,             -- How far behind vehicle should they spawn
             speed_modifier = 0.9,   -- Relative to player speed
         }
     },

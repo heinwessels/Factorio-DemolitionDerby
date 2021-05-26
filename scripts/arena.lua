@@ -28,7 +28,10 @@ function Arena.create(arena)
             players = { },
             player_states = { },
             effects = { },  -- Current effects scattered in arena
-            
+
+            effect_entity_entries = { }, -- Entities the arena keeps track of and destroys on time
+            number_of_effect_entities = 0,   -- Cache the size
+
             vehicles = { }, -- Vehicles in starting locations. As soon as a
                             -- game starts this goes to { } and each player's
                             -- vehicle is stored in his player_state
@@ -73,6 +76,9 @@ end
 -- Clean up so that we can play another game
 function Arena.clean(arena)
     Arena.set_status(arena, "building")  
+
+    -- Clear all effect entities
+    Effects.flush_effect_entities(arena)
 
     -- Clear the state
     arena.effect_beacons = { } -- Builder will destroy them anyway
@@ -187,7 +193,7 @@ function Arena.start_round(arena, lobby)
             vehicle.destroy()
         end
     end
-   
+    
     Arena.set_status(arena, "transition-pre")
 end
 
@@ -205,6 +211,7 @@ end
 
 -- Call this function every tick
 function Arena.update(arena)
+    local tick = game.tick
 
     ---------------------------------------------------
     if arena.status == "building" then
@@ -233,14 +240,14 @@ function Arena.update(arena)
     elseif arena.status == "transition-pre" then
         -- Players were teleported to arena.
         -- Now wait for cutscene to finish
-        if arena.status_start_tick + constants.arena.timing["transition-pre"] < game.tick then
+        if arena.status_start_tick + constants.arena.timing["transition-pre"] < tick then
             -- The transition should be done.
             Arena.set_status(arena, "countdown")
         end
     ---------------------------------------------------
     elseif arena.status == "countdown" then
         -- Now we need to display a count down for the player
-        if arena.status_start_tick + constants.arena.timing["countdown"] < game.tick then
+        if arena.status_start_tick + constants.arena.timing["countdown"] < tick then
             -- COUNTDOWN FINISHED! ACTUAL START!
 
             for _, player in pairs(arena.players) do
@@ -259,7 +266,7 @@ function Arena.update(arena)
             -- In the player state. (Easier when swopping vechiles as effects)
             arena.vehicles = { }
 
-            arena.round.tick_started = game.tick
+            arena.round.tick_started = tick
             arena.round.tick_ended = 0
             arena.round.players_alive = #arena.players
 
@@ -272,6 +279,11 @@ function Arena.update(arena)
 
         -- Add more effect beacons if required
         Effects.update_effect_beacons(arena)
+
+        -- Update effect entities
+        if tick % constants.arena.frequency.effect_entity == 0 then
+            Effects.update_effect_entities(arena, tick)
+        end
         
         -- Update player specific things
         arena.round.players_alive = 0   -- Will count the amount now
@@ -285,7 +297,7 @@ function Arena.update(arena)
 
                 if constants.single_player then
                     -- Just some way to check score while I'm on my own
-                    if game.tick % 60 == 0 then player_state.score = player_state.score + 1 end
+                    if tick % 60 == 0 then player_state.score = player_state.score + 1 end
                 end
 
                 if player_state.status == "playing" or player_state.status == "lost" and vehicle then
@@ -317,7 +329,7 @@ function Arena.update(arena)
         end
         if should_end then
             -- The game is over!
-            arena.round.tick_ended = game.tick
+            arena.round.tick_ended = tick
             if not player_alive then 
                 game.print("On Arena "..arena.name.." after "..util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds there was no clear winner!")
                 Arena.log(arena, "Round over after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. There was no winner.")
@@ -335,7 +347,7 @@ function Arena.update(arena)
     ---------------------------------------------------
     elseif arena.status == "post-wait" then
         -- This just a little cool down after the round ended
-        if game.tick > (arena.round.tick_ended + constants.arena.timing["post-wait"]) then
+        if tick > (arena.round.tick_ended + constants.arena.timing["post-wait"]) then
             Arena.end_round(arena)  -- This will move players back to the lobby
             Arena.set_status(arena, "done")
         end

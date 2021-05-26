@@ -76,9 +76,66 @@ function Effects.attempt_spawn_effect_beacon(arena, beacon_name)
     return nil
 end
 
+-- To simplify some designs the arena will take care
+-- of some spawned entities. For example, after a biter was spawned
+-- this function will ensure it dies on time
+-- This function is likely NOT called every tick
+function Effects.update_effect_entities(arena, tick)
+    local entries = arena.effect_entity_entries
+    local number_of_entries = arena.number_of_effect_entities
+    for index, entry in pairs(entries) do
+        local tick_to_die = entry.tick_to_die
+        if tick_to_die and tick > tick_to_die then
+            -- This entity should be destroyed or killed
+            local entity = entry.entity
+            if entry.tick_to_die then
+                entity.die()
+            else
+                entity.destroy()
+            end
+
+            -- Remove from this list
+            util.array_remove_index_unordered(entries, index, number_of_entries)
+            arena.number_of_effect_entities = number_of_entries - 1
+        end
+    end
+end
+
+-- This will make sure that all entities that the arena
+-- is taking cared off is killed or destroyed
+function Effects.flush_effect_entities(arena)
+    local entries = arena.effect_entity_entries
+    for index, entry in pairs(entries) do
+        local entity = entry.entity
+        if entity.valid then
+            if entry.should_die then
+                entity.die()
+            else
+                entity.destroy()
+            end
+        end
+    end
+    arena.number_of_effect_entities = 0
+    entries = { }
+end
+
+-- If an entity is added to the effects using this function then
+-- the arena will keep track of it and kill (or destroy) it at the
+-- correct tick.
+function Effects.add_effect_entity(arena, entity, tick_to_die, should_die)
+    local number_of_effect_entities = arena.number_of_effect_entities
+    arena.number_of_effect_entities = number_of_effect_entities + 1
+    arena.effect_entity_entries[arena.number_of_effect_entities] = {
+        entity = entity,
+        tick_to_die = tick_to_die,  -- nil if never
+        should_die = should_die
+    }
+end
+
 -- Iterate through all effects currently on player and add them to the player
 function Effects.apply_effects(arena, player)
 
+    local tick = game.tick
     local surface = player.surface
     local character = player.character    
 
@@ -92,7 +149,7 @@ function Effects.apply_effects(arena, player)
 
         -- Did this effect time out?
         local timed_out = false
-        if effect.ticks_to_live and game.tick > effect.tick_started + effect.ticks_to_live then
+        if effect.ticks_to_live and tick > effect.tick_started + effect.ticks_to_live then
             -- Keep track of it effects can stop correctly. Only removed
             -- afterwards
             timed_out = true
@@ -102,7 +159,7 @@ function Effects.apply_effects(arena, player)
         ------------------------------------------------------------------------
         if effect_type == "trail" then
             -- Default drawing of trail behind player
-            if game.tick % effect_constants.period >= effect_constants.gap then
+            if tick % effect_constants.period >= effect_constants.gap then
                 local orientation = vehicle.orientation * 2 * math.pi
                 local position = {
                     x = vehicle.position.x - effect_constants.offset*math.sin(orientation),
@@ -121,7 +178,7 @@ function Effects.apply_effects(arena, player)
         elseif effect_type == "speed_up" then
             -- Increase vehicle speed and spurt flames
             vehicle.speed = vehicle.speed * effect.speed_modifier
-            if game.tick % constants.effects.speed.fire_freq == 0 then
+            if tick % constants.effects.speed.fire_freq == 0 then
                 surface.create_entity{
                     name = "fire-flame",
                     type = "fire",
@@ -224,8 +281,7 @@ function Effects.apply_effects(arena, player)
                 -- (Only because there can be multiple)
                 local did_something = false
                 for index, worm_instance in pairs(effect.worms) do
-                    if worm_instance.time + effect_constants.ticks_to_live
-                            < game.tick then
+                    if worm_instance.time + effect_constants.ticks_to_live < tick then
                         -- We can delete destroy this worm
                         worm_instance.worm.die()
                         effect.worms[index] = nil
@@ -296,16 +352,10 @@ function Effects.apply_effects(arena, player)
         elseif effect_type == "biters" then
             -- Stops player from drawing trail behind him
             if not timed_out then
-                if not effect.biters then effect.biters = { } end
-                if not effect.max_biters then effect.max_biters = effect_constants.max_biters end
-                if effect.extended == true then                    
-                    effect.max_biters = effect.max_biters + effect_constants.max_biters
-                end
-                if not effect.last_spawn_time then effect.last_spawn_time = game.tick end
-                if #effect.biters < effect.max_biters
-                        and effect.last_spawn_time + effect_constants.period < game.tick then
+                if not effect.last_spawn_time then effect.last_spawn_time = tick end
+                if effect.last_spawn_time + effect_constants.period < tick then
                     -- Enough time has passed
-                    effect.last_spawn_time = game.tick
+                    effect.last_spawn_time = tick
 
                     -- Determine where to spawn biter
                     local orientation = vehicle.orientation * 2 * math.pi
@@ -339,11 +389,7 @@ function Effects.apply_effects(arena, player)
                         biter.orientation = vehicle.orientation 
 
                         -- Find an player to attack
-                        local enemy = nil
-                        if #arena.players > 0 then
-                            -- TODO Chooses closest player
-                            enemy = Effects.find_random_enemy(arena, player)
-                        end                        
+                        local enemy = Effects.find_random_enemy(arena, player)
                         if not enemy then enemy = player end -- If you're the only player they will attack you! Haha!
                         local command = {
                             target= enemy.character.vehicle, 
@@ -352,12 +398,9 @@ function Effects.apply_effects(arena, player)
                         }
                         biter.set_command(command)
                         biter.speed = constants.vehicle_speed * effect_constants.speed_modifier
-                        table.insert(effect.biters, biter)
+                        
+                        Effects.add_effect_entity(arena, biter, tick + effect_constants.biter_life_ticks, true)
                     end
-                end
-            else
-                for _, biter in pairs(effect.biters) do
-                    if biter.valid then biter.die() end
                 end
             end
         end
@@ -449,7 +492,7 @@ function Effects.hit_effect_event(arena, beacon)
                     ticks_to_live = effect_constants.ticks_to_live,
                 },
                 no_trail = {
-                    ticks_to_live = effect_constants.period * (effect_constants.max_biters + 1)
+                    ticks_to_live = effect_constants.ticks_to_live
                 },
             })
         end
