@@ -13,69 +13,6 @@ local Effects = { }
 --      },
 -- }
 
--- Manages beacons. Is there enough? Can I spawn another one?
-function Effects.update_effect_beacons(arena)
-    if #arena.effect_beacons < arena.ideal_number_of_effect_beacons then
-        -- TODO Populate this automatically with weights
-        local effects_to_spawn = {
-            -- "speed_up-player",
-            -- "speed_up-enemy",
-            -- "tank-player",
-            -- "tank-enemy",
-            -- "slow_down-player",
-            -- "slow_down-enemy",
-            -- "no_trail-player",
-            -- "no_trail-enemy",
-            -- "full_trail-player",
-            -- "full_trail-enemy",
-            -- "worm-player",
-            "worm-enemy",
-            -- "biters-player",
-            -- "biters-enemy",
-        }
-        Effects.attempt_spawn_effect_beacon(
-            arena,
-            effects_to_spawn[math.random(#effects_to_spawn)]
-        )
-    else
-        -- The array is full. Make sure everything is still valid
-        local did_something = false
-        for index, effect in pairs(arena.effect_beacons) do
-            if not effect.valid then
-                did_someting = true
-                arena.effect_beacons[index]=nil
-            end
-        end
-        if did_something == true then
-            arena.effect_beacons = util.compact_array(arena.effect_beacons)
-        end
-    end
-end
-
--- Will attempt to spawn an effect beacon at a location
--- Should always work though.
--- Returns a reference to the beacon entity or nill
-function Effects.attempt_spawn_effect_beacon(arena, beacon_name)
-    local surface = arena.surface
-    local spacing = 5
-    for try = 1,10 do
-        local beacon = surface.create_entity{
-            name = "curvefever-effect-"..beacon_name,
-            position = {
-                x=math.random(arena.area.left_top.x+spacing, arena.area.right_bottom.x-spacing),
-                y=math.random(arena.area.left_top.y+spacing, arena.area.right_bottom.y-spacing)
-            },            
-            force = "enemy" -- We need it to explode when player touches it
-        }
-        if beacon then
-            table.insert(arena.effect_beacons, beacon)
-            -- Effects.log(arena, "In arena <"..arena.name.."> created effect beacon <"..beacon_name..">. (Total of "..#arena.effect_beacons..")")
-            return beacon
-        end
-    end
-    return nil
-end
-
 -- To simplify some designs the arena will take care
 -- of some spawned entities. For example, after a biter was spawned
 -- this function will ensure it dies on time
@@ -229,8 +166,8 @@ function Effects.apply_effects(arena, player)
                         ticks_to_live = nil, -- Forever
                     },
                 })
-            end
-        ------------------------------------------------------------------------
+            end        
+        ------------------------------------------------------------------------        
         elseif effect_type == "full_trail" then
             -- Draws a trail behind the player without any gaps
             if not timed_out then                
@@ -262,6 +199,56 @@ function Effects.apply_effects(arena, player)
                         ticks_to_live = nil, -- Forever
                     },
                 })
+            end
+        ------------------------------------------------------------------------
+        elseif effect_type == "artillery" then
+            -- Stops player from drawing trail behind him
+            if not timed_out then                
+                if not effect.last_shot_fired then
+                    -- We haven't fired the first shot yet. Can we?
+                    if tick > effect.tick_started + effect_constants.warm_up_time then
+                        -- We can start!
+                        effect.shots_left = util.size_of_area(arena.area) * effect_constants.coverage_density                        
+                        effect.last_shot_fired = 0  -- But we will do it next tick for simplicity
+                    end
+                else
+                    if tick > effect.last_shot_fired + effect_constants.period and effect.shots_left > 0 then
+
+                        -- Do the kaboom for everyone!
+                        -- We're going to shoot a couple of shots for every sound
+                        surface.play_sound{
+                            path = "artillery-shoot",
+                        }
+
+                        local shots_fired_now = 0
+                        while effect.shots_left > 0 and shots_fired_now < effect_constants.shots_per_sound do
+                            -- Fire a random shot!
+                            local target = util.random_position_in_area(arena.area)                        
+                        
+                            -- Create the artillary shell mid air!
+                            local speed = 1
+                            local offset_target = {
+                                x = target.x - speed*effect_constants.shell_travel_time,
+                                y = target.y - speed*effect_constants.shell_travel_time
+                            }
+                            local shell = surface.create_entity{
+                                name = "artillery-projectile", 
+                                position = offset_target, 
+                                force = "enemy", 
+                                target = target,
+                                speed = 1
+                            }
+                            if shell then
+                                Effects.add_effect_entity(arena, shell, 0)  -- Just delete shells once the round is over
+                            end
+
+                            -- Fire control
+                            shots_fired_now = shots_fired_now + 1
+                            effect.last_shot_fired = tick
+                            effect.shots_left = effect.shots_left - 1
+                        end
+                    end
+                end
             end
         ------------------------------------------------------------------------
         elseif effect_type == "worm" then
@@ -390,6 +377,70 @@ function Effects.apply_effects(arena, player)
     end
 end
 
+-- Manages beacons. Is there enough? Can I spawn another one?
+function Effects.update_effect_beacons(arena)
+    if #arena.effect_beacons < arena.ideal_number_of_effect_beacons then
+        -- TODO Populate this automatically with weights
+        local effects_to_spawn = {
+            -- "speed_up-player",
+            -- "speed_up-enemy",
+            -- "tank-player",
+            -- "tank-enemy",
+            -- "slow_down-player",
+            -- "slow_down-enemy",
+            -- "no_trail-player",
+            -- "no_trail-enemy",
+            -- "full_trail-player",
+            -- "full_trail-enemy",
+            -- "worm-player",
+            -- "worm-enemy",
+            -- "biters-player",
+            -- "biters-enemy",
+            "artillery-all"
+        }
+        Effects.attempt_spawn_effect_beacon(
+            arena,
+            effects_to_spawn[math.random(#effects_to_spawn)]
+        )
+    else
+        -- The array is full. Make sure everything is still valid
+        local did_something = false
+        for index, effect in pairs(arena.effect_beacons) do
+            if not effect.valid then
+                did_someting = true
+                arena.effect_beacons[index]=nil
+            end
+        end
+        if did_something == true then
+            arena.effect_beacons = util.compact_array(arena.effect_beacons)
+        end
+    end
+end
+
+-- Will attempt to spawn an effect beacon at a location
+-- Should always work though.
+-- Returns a reference to the beacon entity or nill
+function Effects.attempt_spawn_effect_beacon(arena, beacon_name)
+    local surface = arena.surface
+    local spacing = 5   -- How far from the edges may we spawn things?
+    for try = 1,10 do
+        local beacon = surface.create_entity{
+            name = "curvefever-effect-"..beacon_name,
+            position = util.random_position_in_area({
+                left_top = {x=arena.area.left_top.x+spacing, y=arena.area.left_top.y+spacing},
+                right_bottom = {x=arena.area.right_bottom.x-spacing, y=arena.area.right_bottom.y-spacing}
+            }),
+            force = "enemy" -- We need it to explode when player touches it
+        }
+        if beacon then
+            table.insert(arena.effect_beacons, beacon)
+            -- Effects.log(arena, "In arena <"..arena.name.."> created effect beacon <"..beacon_name..">. (Total of "..#arena.effect_beacons..")")
+            return beacon
+        end
+    end
+    return nil
+end
+
 -- This handler should be called if any effect beacon
 -- is hit. This function will decide if it's part of this
 -- arena, and apply it
@@ -410,12 +461,16 @@ function Effects.hit_effect_event(arena, beacon)
             return
         end
         player = vehicle.get_driver().player
+        
+        -- Unpack effect beacon
         local last_dash = util.string_find_last(beacon.name, "-")
         local effect_type = string.sub(beacon.name, 19, last_dash-1)
         local target_str = string.sub(beacon.name, last_dash+1, -1)
-        if target_str == "enemy" then
+        if target_str == "enemy" then   -- Who should this effect be applied to?
             target = Effects.find_random_enemy(arena, player) or player
         else
+            -- This is either "player" or "all"
+            -- It it's all it simply means who will do the execution
             target = player
         end
         
@@ -469,6 +524,12 @@ function Effects.hit_effect_event(arena, beacon)
                 no_trail = {
                     ticks_to_live = effect_constants.ticks_to_live
                 },
+            })
+        elseif effect_type == "artillery" then
+            Effects.add_effect(arena, target, {
+                artillery = {
+                    ticks_to_live = 10*60,  -- Just some maximum amount of time to live
+                },                
             })
         end
     end

@@ -47,6 +47,13 @@ function Util.position_in_area(position, area)
         (position.y > area.left_top.y and position.y < area.right_bottom.y )
 end
 
+function Util.random_position_in_area(area)
+    return {
+        x=math.random(area.left_top.x, area.right_bottom.x),
+        y=math.random(area.left_top.y, area.right_bottom.y)
+    }
+end
+
 -- Is the position within the area?
 function Util.middle_of_area(area)
     return {

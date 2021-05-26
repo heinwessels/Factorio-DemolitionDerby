@@ -43,6 +43,11 @@ data:extend({
                     percent = 0,
                     decrease = -5000  -- die instantly
                 },
+                {
+                    type = "explosion",
+                    percent = 0,
+                    decrease = -5000  -- die instantly
+                },
             },
         }
     },

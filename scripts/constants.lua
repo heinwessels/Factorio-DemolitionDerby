@@ -17,7 +17,8 @@ return {
             gui_refresh = 60,       -- GUI refresh rate
         },
     },
-    round = {        
+    round = {    
+
     },
     arena = {           -- Constants used in an arena
         starting_location_spacing = 20,
@@ -53,6 +54,13 @@ return {
             biter_life_ticks = 8*60,-- How long should biters live
             offset = 4,             -- How far behind vehicle should they spawn
             speed_modifier = 0.9,   -- Relative to player speed
-        }
+        },
+        artillery = {
+            warm_up_time = 3*60,    -- How long before the shots start to fire
+            shell_travel_time = 3*60,-- How long must the shells travel?
+            period = 0.4*60,       -- Period at which to fire shots
+            shots_per_sound = 5,    -- How many shots to fire for each sound played
+            coverage_density = 1/(35*35), -- effects per area in tiles
+        },
     },
 }

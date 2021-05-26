@@ -223,3 +223,15 @@ create_effect_beacon_for_both{
         scale = size_modifier,
     }
 }
+create_effect_beacon{
+    name = "artillery",
+    target = "all",
+    icon = "__base__/graphics/icons/coin.png",
+    picture = {
+        filename = "__base__/graphics/icons/artillery-turret.png",
+        priority = "medium",
+        width = 64,
+        height = 64,
+        scale = size_modifier,
+    }
+}
