@@ -69,6 +69,39 @@ function Effects.add_effect_entity(arena, entity, tick_to_die, should_die)
     }
 end
 
+-- Every function will be given
+--      arena, player, effect, ctx
+-- where ctx is a table that contains
+--  ctx = {
+--      player_state
+--      timed_out,
+--      tick,
+--      effect_constants
+--  }
+local apply_effects_handler = {
+    ["trail"] = function (arena, player, effect, ctx)
+        -- Default drawing of trail behind player
+        local effect_constants = ctx.effect_constants
+        if ctx.tick % effect_constants.period >= effect_constants.gap then
+            local vehicle = ctx.player_state.vehicle
+            local orientation = vehicle.orientation * 2 * math.pi
+            local position = {
+                x = vehicle.position.x - effect_constants.offset*math.sin(orientation),
+                y = vehicle.position.y + effect_constants.offset*math.cos(orientation),
+            }
+            local surface = arena.surface
+            if not surface.find_entity("curvefever-trail", position) then 
+                surface.create_entity{
+                    name = "curvefever-trail",
+                    type = "wall",
+                    position = position,
+                    create_build_effect_smoke = true,
+                }
+            end
+        end
+    end,
+}
+
 -- Iterate through all effects currently on player and add them to the player
 function Effects.apply_effects(arena, player)
 
@@ -95,22 +128,12 @@ function Effects.apply_effects(arena, player)
         -- Apply the effects
         ------------------------------------------------------------------------
         if effect_type == "trail" then
-            -- Default drawing of trail behind player
-            if tick % effect_constants.period >= effect_constants.gap then
-                local orientation = vehicle.orientation * 2 * math.pi
-                local position = {
-                    x = vehicle.position.x - effect_constants.offset*math.sin(orientation),
-                    y = vehicle.position.y + effect_constants.offset*math.cos(orientation),
-                }
-                if not surface.find_entity("curvefever-trail", position) then 
-                    surface.create_entity{
-                        name = "curvefever-trail",
-                        type = "wall",
-                        position = position,
-                        create_build_effect_smoke = true,
-                    }
-                end
-            end
+            apply_effects_handler[effect_type](arena, player, effect, {
+                player_state = player_state,
+                effect_constants = effect_constants,
+                tick = tick, 
+                timed_out = timed_out
+            })
         ------------------------------------------------------------------------
         elseif effect_type == "speed_up" then
             -- Increase vehicle speed and spurt flames
