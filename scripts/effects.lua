@@ -519,6 +519,8 @@ function Effects.hit_effect_event(arena, beacon)
             Effects.log(arena, "Could not find vehicle that triggered effect beacon.")
             return
         end
+        local driver = vehicle.get_driver()
+        if not driver then return end   -- Just silently ignore if something goes wrong
         player = vehicle.get_driver().player
         
         -- Unpack effect beacon

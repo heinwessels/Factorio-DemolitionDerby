@@ -68,8 +68,10 @@ function LobbyGui.refresh(lobby, player)
         local arena_score = "-"
         if lobby.arena then
             local arena_player_state = lobby.arena.player_states[player.index]
-            player_state = arena_player_state.status
-            arena_score = arena_player_state.score
+            if arena_player_state then
+                player_state = arena_player_state.status
+                arena_score = arena_player_state.score
+            end
         end
 
         if player_state == "playing" then

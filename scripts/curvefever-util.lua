@@ -19,13 +19,16 @@ end
 -- with the last element in the table, and then setting
 -- the last element to nil
 function Util.array_remove_index_unordered(arr, index, len)
-    local last_index = len or #arr
-    if index == last_index then
-        arr[index] = nil -- Its the last element anyway        
-    else
-        arr[index] = arr[last_index]
-        arr[last_index] = nil
-    end
+    table.remove(arr, index)
+
+    -- TODO FIX ME
+    -- local last_index = len or #arr
+    -- if index == last_index then
+    --     arr[index] = nil -- Its the last element anyway        
+    -- else
+    --     arr[index] = arr[last_index]
+    --     arr[last_index] = nil
+    -- end
 end
 
 function Util.is_player_in_list(players, player)

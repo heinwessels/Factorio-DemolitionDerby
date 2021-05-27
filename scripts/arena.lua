@@ -333,14 +333,14 @@ function Arena.update(arena)
             if not player_alive then 
                 -- There is no alive players left
                 if #arena.players > 1 then
-                    game.print("On Arena "..arena.name.." after "..util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds there was no clear winner!")
+                    game.print("On Arena "..arena.name.." after "..util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds there was no winner!")
                 else
                     game.print("On Arena "..arena.name.." "..arena.players[1].name.." played alone and lost after "..util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds!")
                 end
                 Arena.log(arena, "Round over after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. There was no winner and "..#arena.players.." players.")
             else
                 game.print("On Arena "..arena.name.." the player "..player_alive.name.." emerged victorious after "..util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds!")
-                Arena.log(arena, "Round over after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. <"..player_alive.name.."> was the victor and there were "..#arena.player.." players.")
+                Arena.log(arena, "Round over after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. <"..player_alive.name.."> was the victor and there were "..#arena.players.." players.")
             end
 
             -- TODO Show some victory thing
@@ -448,7 +448,7 @@ function Arena.player_on_lost(arena, player)
         if enemy.index ~= player.index then
             local enemy_state = arena.player_states[enemy.index]
             if enemy_state.status == "playing" then
-                enemy_state.score = enemy_state.score + 10
+                enemy_state.score = enemy_state.score + 1
             end
         end        
     end
