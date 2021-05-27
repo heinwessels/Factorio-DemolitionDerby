@@ -7,12 +7,17 @@ data:extend({
             name = "curvefever-trail",
             resistances = {
                 {
-                    type = "fire",
-                    percent = 100
+                    type = "physical",
+                    decrease = 3,
+                    percent = 20
                 },
                 {
                     type = "impact",
-                    percent = 100,
+                    decrease = 45,
+                },
+                {
+                    type = "fire",
+                    percent = 100
                 },
                 {
                     type = "explosion",
@@ -24,11 +29,7 @@ data:extend({
                 },
                 {
                     type = "acid",
-                    percent = 100,
-                },
-                {
-                    type = "physical",
-                    percent = 100,
+                    percent = 100,      -- immune
                 },
             },
         }
