@@ -62,6 +62,7 @@ function Builder.iterate(arena)
                 "tree",
                 "unit",
                 "turret",
+                "artillery-flare",
                 "fire", -- This is for worm spit
             },
         }) do

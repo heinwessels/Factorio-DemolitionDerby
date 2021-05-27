@@ -25,7 +25,7 @@ function Effects.update_effect_entities(arena, tick)
         if tick_to_die and tick > tick_to_die then
             -- This entity should be destroyed or killed
             local entity = entry.entity
-            if entry.tick_to_die then
+            if entry.should_die then
                 entity.die()
             else
                 entity.destroy()
@@ -208,10 +208,16 @@ function Effects.apply_effects(arena, player)
                     -- We haven't fired the first shot yet. Can we?
                     if tick > effect.tick_started + effect_constants.warm_up_time then
                         -- We can start!
-                        effect.shots_left = util.size_of_area(arena.area) * effect_constants.coverage_density                        
+                        effect.shots_left = util.size_of_area(arena.area) * effect_constants.coverage_density
                         effect.last_shot_fired = 0  -- But we will do it next tick for simplicity
                     end
                 else
+                    -- Player drove through artillary again.
+                    if effect.extended == true then
+                        effect.shots_left = effect.shots_left
+                                + util.size_of_area(arena.area) * effect_constants.coverage_density
+                    end
+
                     if tick > effect.last_shot_fired + effect_constants.period and effect.shots_left > 0 then
 
                         -- Do the kaboom for everyone!
@@ -224,7 +230,23 @@ function Effects.apply_effects(arena, player)
                         while effect.shots_left > 0 and shots_fired_now < effect_constants.shots_per_sound do
                             -- Fire a random shot!
                             local target = util.random_position_in_area(arena.area)                        
-                        
+                            
+                            -- First create a flair
+                            -- It doesn't do anything. Only shows players where it will hit
+                            local flair = surface.create_entity{
+                                name = "artillery-flare", 
+                                position = target, 
+                                height = 1,             -- Top of the fall
+                                vertical_speed = 0.01,  -- How fast does it fall
+                                frame_speed = 1,        -- Don't think this does anything 
+                                movement = {0, 0}
+                            }
+                            if flair then
+                                Effects.add_effect_entity(arena, flair, 
+                                    tick + effect_constants.shell_travel_time*1.707
+                                ) -- Should dissapear when shell hits
+                            end
+
                             -- Create the artillary shell mid air!
                             local speed = 1
                             local offset_target = {
@@ -239,12 +261,12 @@ function Effects.apply_effects(arena, player)
                                 speed = 1
                             }
                             if shell then
-                                Effects.add_effect_entity(arena, shell, 0)  -- Just delete shells once the round is over
+                                Effects.add_effect_entity(arena, shell, nil)  -- Just delete shells once the round is over
                             end
 
                             -- Fire control
                             shots_fired_now = shots_fired_now + 1
-                            effect.last_shot_fired = tick
+                            effect.laaast_shot_fired = tick
                             effect.shots_left = effect.shots_left - 1
                         end
                     end
