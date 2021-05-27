@@ -64,19 +64,24 @@ function LobbyGui.refresh(lobby, player)
 
     for _, player in pairs(lobby.players) do
         local lobby_state = lobby.player_states[player.index]
-        player_table.add{type="label", caption=player.name}
-        player_table.add{type="label", caption=lobby_state.score}
-        
+        local player_state = nil
+        local arena_score = "-"
         if lobby.arena then
             local arena_player_state = lobby.arena.player_states[player.index]
-            if arena_player_state then
-                player_table.add{type="label", caption=arena_player_state.score}
-            else
-                player_table.add{type="label", caption="-"}
-            end
-        else
-            player_table.add{type="label", caption="-"}
+            player_state = arena_player_state.status
+            arena_score = arena_player_state.score
         end
+
+        if player_state == "playing" then
+            player_table.add{type="label", caption=player.name, style="bold_green_label"}
+        elseif player_state == "lost" then
+            player_table.add{type="label", caption=player.name, style="bold_red_label"}
+        else
+            player_table.add{type="label", caption=player.name}
+        end
+
+        player_table.add{type="label", caption=lobby_state.score}
+        player_table.add{type="label", caption=arena_score}
     end
 end
 
