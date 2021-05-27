@@ -25,7 +25,7 @@ return {
             x = 40,
             y = 10
         },
-        effect_density = 1/(45*45),     -- effects per area in tiles
+        effect_density = 1/(50*50),     -- effects per area in tiles
         start_zoom = 0.4,
         timing = {
             ["transition-pre"] = 1.5*60,   -- Cutscene from lobby to arena

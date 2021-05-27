@@ -218,7 +218,7 @@ function Effects.apply_effects(arena, player)
                                 + util.size_of_area(arena.area) * effect_constants.coverage_density
                     end
 
-                    if tick > effect.last_shot_fired + effect_constants.period and effect.shots_left > 0 then
+                    if tick > (effect.last_shot_fired + effect_constants.period) and effect.shots_left > 0 then
 
                         -- Do the kaboom for everyone!
                         -- We're going to shoot a couple of shots for every sound
@@ -266,7 +266,7 @@ function Effects.apply_effects(arena, player)
 
                             -- Fire control
                             shots_fired_now = shots_fired_now + 1
-                            effect.laaast_shot_fired = tick
+                            effect.last_shot_fired = tick
                             effect.shots_left = effect.shots_left - 1
                         end
                     end
@@ -404,20 +404,20 @@ function Effects.update_effect_beacons(arena)
     if #arena.effect_beacons < arena.ideal_number_of_effect_beacons then
         -- TODO Populate this automatically with weights
         local effects_to_spawn = {
-            -- "speed_up-player",
-            -- "speed_up-enemy",
-            -- "tank-player",
-            -- "tank-enemy",
-            -- "slow_down-player",
-            -- "slow_down-enemy",
-            -- "no_trail-player",
-            -- "no_trail-enemy",
-            -- "full_trail-player",
-            -- "full_trail-enemy",
-            -- "worm-player",
-            -- "worm-enemy",
-            -- "biters-player",
-            -- "biters-enemy",
+            "speed_up-player",
+            "speed_up-enemy",
+            "tank-player",
+            "tank-enemy",
+            "slow_down-player",
+            "slow_down-enemy",
+            "no_trail-player",
+            "no_trail-enemy",
+            "full_trail-player",
+            "full_trail-enemy",
+            "worm-player",
+            "worm-enemy",
+            "biters-player",
+            "biters-enemy",
             "artillery-all"
         }
         Effects.attempt_spawn_effect_beacon(
