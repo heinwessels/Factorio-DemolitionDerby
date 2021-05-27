@@ -25,10 +25,12 @@ function Effects.update_effect_entities(arena, tick)
         if tick_to_die and tick > tick_to_die then
             -- This entity should be destroyed or killed
             local entity = entry.entity
-            if entry.should_die then
-                entity.die()
-            else
-                entity.destroy()
+            if entity.valid then
+                if entry.should_die then
+                    entity.die()
+                else
+                    entity.destroy()
+                end
             end
 
             -- Remove from this list
@@ -162,7 +164,7 @@ local apply_effects_handler = {
     end,
     ["full_trail"] = function (arena, player, effect, ctx)
         -- Draws a trail behind the player without any gaps
-        if not timed_out then
+        if not ctx.timed_out then
             -- Make sure the trial effect is removed
 
             if effect.fresh then
@@ -193,6 +195,202 @@ local apply_effects_handler = {
                     ticks_to_live = nil, -- Forever
                 },
             })
+        end
+    end,
+    ["artillery"] = function (arena, player, effect, ctx)
+        -- Stops player from drawing trail behind him
+        if not ctx.timed_out then
+            local tick = ctx.tick
+            local effect_constants = ctx.effect_constants
+            if not effect.last_shot_fired then
+                -- We haven't fired the first shot yet. Can we?
+                if tick > effect.tick_started + effect_constants.warm_up_time then
+                    -- We can start!
+                    effect.shots_left = util.size_of_area(arena.area) * effect_constants.coverage_density
+                    effect.last_shot_fired = 0  -- But we will do it next tick for simplicity
+                end
+            else
+                -- Player drove through artillary again.
+                if effect.extended == true then
+                    effect.shots_left = effect.shots_left
+                            + util.size_of_area(arena.area) * effect_constants.coverage_density
+                end
+
+                local surface = arena.surface
+                if tick > (effect.last_shot_fired + effect_constants.period) and effect.shots_left > 0 then
+
+                    -- Do the kaboom for everyone!
+                    -- We're going to shoot a couple of shots for every sound                    
+                    surface.play_sound{
+                        path = "wdd-artillery-shoot",
+                    }
+
+                    local shots_fired_now = 0
+                    while effect.shots_left > 0 and shots_fired_now < effect_constants.shots_per_sound do
+                        -- Fire a random shot!
+                        local target = util.random_position_in_area(arena.area)                        
+                        
+                        -- First create a flair
+                        -- It doesn't do anything. Only shows players where it will hit
+                        local flair = surface.create_entity{
+                            name = "artillery-flare", 
+                            position = target, 
+                            height = 2,             -- Top of the fall
+                            vertical_speed = 0.01,  -- How fast does it fall
+                            frame_speed = 1,        -- Don't think this does anything 
+                            movement = {0, 0}
+                        }
+                        if flair then
+                            Effects.add_effect_entity(arena, flair, 
+                                tick + effect_constants.shell_travel_time*1.707
+                            ) -- Should dissapear when shell hits
+                        end
+
+                        -- Create the artillary shell mid air!
+                        local speed = 1
+                        local offset_target = {
+                            x = target.x - speed*effect_constants.shell_travel_time,
+                            y = target.y - speed*effect_constants.shell_travel_time
+                        }
+                        local shell = surface.create_entity{
+                            name = "artillery-projectile", 
+                            position = offset_target, 
+                            force = "enemy", 
+                            target = target,
+                            speed = 1
+                        }
+                        if shell then
+                            Effects.add_effect_entity(arena, shell, nil)  -- Just delete shells once the round is over
+                        end
+
+                        -- Fire control
+                        shots_fired_now = shots_fired_now + 1
+                        effect.last_shot_fired = tick
+                        effect.shots_left = effect.shots_left - 1
+                    end
+                end
+            end
+        end
+    end,
+    ["worm"] = function (arena, player, effect, ctx)
+        -- Stops player from drawing trail behind him
+        if not ctx.timed_out then
+            if not effect.worms_positions_to_spawn then
+                effect.worms_positions_to_spawn = { }
+            end                
+            if effect.extended == true or effect.fresh == true then
+                -- Should always add a worm if this is triggered.
+                -- Line it up here. We will spawn it in the next gap
+                table.insert(effect.worms_positions_to_spawn, effect.position)
+            end
+
+            -- Should we try and spawn a worm?
+            local effect_constants = ctx.effect_constants
+            local surface = arena.surface
+            local did_something = false -- If we spawned a worm
+            for index, position in pairs(effect.worms_positions_to_spawn) do
+                -- First make sure player is far enough away
+                local spacing = effect_constants.spacing
+                if util.position_in_area(
+                    player.position,
+                    {
+                        left_top = {x = position.x - 2*spacing, y= position.y - 2*spacing},
+                        right_bottom = {x = position.x + 2*spacing, y= position.y + 2*spacing}
+                    }
+                ) == false then
+                    -- Player is far enough away
+                    
+                    -- Destroy all walls in that area
+                    for _, wall in pairs(surface.find_entities_filtered{
+                        area = {
+                            {position.x - spacing, position.y - spacing},
+                            {position.x + spacing, position.y + spacing}
+                        },
+                        name = "curvefever-trail"
+                    }) do
+                        wall.die()
+                    end
+
+                    -- Add worm
+                    local worm = surface.create_entity{
+                        name = "behemoth-worm-turret",                        
+                        position = position,
+                    }
+                    if worm == nil then
+                        error("Could not spawn worm on arena <"..arena.name.."> for player <"..player.name.."> at location <"..util.to_string(player.position)..">")
+                    else
+                        -- Remember when we spawned this worm so that we can kill it at the correct time
+                        Effects.add_effect_entity(arena, worm, ctx.tick + effect_constants.ticks_to_live, true)
+
+                        -- Now make sure we don't spawn a hord of worms!
+                        effect.worms_positions_to_spawn[index]=nil
+                        did_something = true
+                    end
+                end
+            end
+            if did_something == true then
+                effect.worms_positions_to_spawn = 
+                        util.compact_array(effect.worms_positions_to_spawn)
+            end
+        end
+    end,
+    ["biters"] = function (arena, player, effect, ctx)
+        -- Stops player from drawing trail behind him
+        if not ctx.timed_out then
+            local tick = ctx.tick
+            local effect_constants = ctx.effect_constants
+            if not effect.last_spawn_time then effect.last_spawn_time = tick end
+            if effect.last_spawn_time + effect_constants.period < tick then
+                -- Enough time has passed
+                effect.last_spawn_time = tick
+
+                -- Determine where to spawn biter
+                local vehicle = ctx.player_state.vehicle
+                local orientation = vehicle.orientation * 2 * math.pi
+                local position = {
+                    x = vehicle.position.x - effect_constants.offset*math.sin(orientation),
+                    y = vehicle.position.y + effect_constants.offset*math.cos(orientation),
+                }
+                                    
+                -- Is there a wall in the way? Destroy it!
+                local surface = arena.surface
+                for _, wall in pairs(surface.find_entities_filtered{
+                    area = {
+                        left_top =      {x=position.x - 3, y=position.y - 3},
+                        right_bottom =  {x=position.x + 3, y=position.y + 3}
+                    },
+                    name = "curvefever-trail"
+                }) do                        
+                    wall.die()
+                end
+
+                -- Spawn biter
+                biter = surface.create_entity{
+                    name = "wdd-biter",
+                    position = position,
+                }
+                if biter == nil then                            
+                    error("Could not spawn biter on arena <"..arena.name.."> for player <"..player.name.."> at location <"..util.to_string(effect.position)..">")
+                else
+                    -- Valid biter spawn!
+                    
+                    -- Point him in the direction of the vechile
+                    biter.orientation = vehicle.orientation 
+
+                    -- Find an player to attack
+                    local enemy = Effects.find_random_enemy(arena, player)
+                    if not enemy then enemy = player end -- If you're the only player they will attack you! Haha!
+                    local command = {
+                        target= enemy.character.vehicle, 
+                        type = defines.command.attack, 
+                        distraction = defines.distraction.none
+                    }
+                    biter.set_command(command)
+                    biter.speed = constants.arena.vehicle_speed * effect_constants.speed_modifier
+                    
+                    Effects.add_effect_entity(arena, biter, tick + effect_constants.biter_life_ticks, true)
+                end
+            end
         end
     end,
 }
@@ -228,196 +426,6 @@ function Effects.apply_effects(arena, player)
             tick = tick, 
             timed_out = timed_out
         }) end
-
-        
-        -- elseif effect_type == "artillery" then
-        --     -- Stops player from drawing trail behind him
-        --     if not timed_out then                
-        --         if not effect.last_shot_fired then
-        --             -- We haven't fired the first shot yet. Can we?
-        --             if tick > effect.tick_started + effect_constants.warm_up_time then
-        --                 -- We can start!
-        --                 effect.shots_left = util.size_of_area(arena.area) * effect_constants.coverage_density
-        --                 effect.last_shot_fired = 0  -- But we will do it next tick for simplicity
-        --             end
-        --         else
-        --             -- Player drove through artillary again.
-        --             if effect.extended == true then
-        --                 effect.shots_left = effect.shots_left
-        --                         + util.size_of_area(arena.area) * effect_constants.coverage_density
-        --             end
-
-        --             if tick > (effect.last_shot_fired + effect_constants.period) and effect.shots_left > 0 then
-
-        --                 -- Do the kaboom for everyone!
-        --                 -- We're going to shoot a couple of shots for every sound
-        --                 surface.play_sound{
-        --                     path = "wdd-artillery-shoot",
-        --                 }
-
-        --                 local shots_fired_now = 0
-        --                 while effect.shots_left > 0 and shots_fired_now < effect_constants.shots_per_sound do
-        --                     -- Fire a random shot!
-        --                     local target = util.random_position_in_area(arena.area)                        
-                            
-        --                     -- First create a flair
-        --                     -- It doesn't do anything. Only shows players where it will hit
-        --                     local flair = surface.create_entity{
-        --                         name = "artillery-flare", 
-        --                         position = target, 
-        --                         height = 1,             -- Top of the fall
-        --                         vertical_speed = 0.01,  -- How fast does it fall
-        --                         frame_speed = 1,        -- Don't think this does anything 
-        --                         movement = {0, 0}
-        --                     }
-        --                     if flair then
-        --                         Effects.add_effect_entity(arena, flair, 
-        --                             tick + effect_constants.shell_travel_time*1.707
-        --                         ) -- Should dissapear when shell hits
-        --                     end
-
-        --                     -- Create the artillary shell mid air!
-        --                     local speed = 1
-        --                     local offset_target = {
-        --                         x = target.x - speed*effect_constants.shell_travel_time,
-        --                         y = target.y - speed*effect_constants.shell_travel_time
-        --                     }
-        --                     local shell = surface.create_entity{
-        --                         name = "artillery-projectile", 
-        --                         position = offset_target, 
-        --                         force = "enemy", 
-        --                         target = target,
-        --                         speed = 1
-        --                     }
-        --                     if shell then
-        --                         Effects.add_effect_entity(arena, shell, nil)  -- Just delete shells once the round is over
-        --                     end
-
-        --                     -- Fire control
-        --                     shots_fired_now = shots_fired_now + 1
-        --                     effect.last_shot_fired = tick
-        --                     effect.shots_left = effect.shots_left - 1
-        --                 end
-        --             end
-        --         end
-        --     end
-        -- ------------------------------------------------------------------------
-        -- elseif effect_type == "worm" then
-        --     -- Stops player from drawing trail behind him
-        --     if not timed_out then
-        --         if not effect.worms_positions_to_spawn then
-        --             effect.worms_positions_to_spawn = { }
-        --         end                
-        --         if effect.extended == true or effect.fresh == true then
-        --             -- Should always add a worm if this is triggered.
-        --             -- Line it up here. We will spawn it in the next gap
-        --             table.insert(effect.worms_positions_to_spawn, effect.position)
-        --         end
-
-        --         -- Should we try and spawn a worm?
-        --         local did_something = false -- If we spawned a worm
-        --         for index, position in pairs(effect.worms_positions_to_spawn) do
-        --             -- First make sure player is far enough away
-        --             local spacing = effect_constants.spacing
-        --             if util.position_in_area(
-        --                 player.position,
-        --                 {
-        --                     left_top = {x = position.x - 2*spacing, y= position.y - 2*spacing},
-        --                     right_bottom = {x = position.x + 2*spacing, y= position.y + 2*spacing}
-        --                 }
-        --             ) == false then
-        --                 -- Player is far enough away
-                        
-        --                 -- Destroy all walls in that area
-        --                 for _, wall in pairs(surface.find_entities_filtered{
-        --                     area = {
-        --                         {position.x - spacing, position.y - spacing},
-        --                         {position.x + spacing, position.y + spacing}
-        --                     },
-        --                     name = "curvefever-trail"
-        --                 }) do
-        --                     wall.die()
-        --                 end
-
-        --                 -- Add worm
-        --                 local worm = surface.create_entity{
-        --                     name = "behemoth-worm-turret",                        
-        --                     position = position,
-        --                 }
-        --                 if worm == nil then
-        --                     error("Could not spawn worm on arena <"..arena.name.."> for player <"..player.name.."> at location <"..util.to_string(player.position)..">")
-        --                 else
-        --                     -- Remember when we spawned this worm so that we can kill it at the correct time
-        --                     Effects.add_effect_entity(arena, worm, tick + effect_constants.ticks_to_live, true)
-
-        --                     -- Now make sure we don't spawn a hord of worms!
-        --                     effect.worms_positions_to_spawn[index]=nil
-        --                     did_something = true
-        --                 end
-        --             end
-        --         end
-        --         if did_something == true then
-        --             effect.worms_positions_to_spawn = 
-        --                     util.compact_array(effect.worms_positions_to_spawn)
-        --         end
-        --     end        
-        --     ------------------------------------------------------------------------
-        -- elseif effect_type == "biters" then
-        --     -- Stops player from drawing trail behind him
-        --     if not timed_out then
-        --         if not effect.last_spawn_time then effect.last_spawn_time = tick end
-        --         if effect.last_spawn_time + effect_constants.period < tick then
-        --             -- Enough time has passed
-        --             effect.last_spawn_time = tick
-
-        --             -- Determine where to spawn biter
-        --             local orientation = vehicle.orientation * 2 * math.pi
-        --             local position = {
-        --                 x = vehicle.position.x - effect_constants.offset*math.sin(orientation),
-        --                 y = vehicle.position.y + effect_constants.offset*math.cos(orientation),
-        --             }
-                                        
-        --             -- Is there a wall in the way? Destroy it!
-        --             for _, wall in pairs(surface.find_entities_filtered{
-        --                 area = {
-        --                     left_top =      {x=position.x - 3, y=position.y - 3},
-        --                     right_bottom =  {x=position.x + 3, y=position.y + 3}
-        --                 },
-        --                 name = "curvefever-trail"
-        --             }) do                        
-        --                 wall.die()
-        --             end
-
-        --             -- Spawn biter
-        --             biter = surface.create_entity{
-        --                 name = "weasel-biter",
-        --                 position = position,
-        --             }
-        --             if biter == nil then                            
-        --                 error("Could not spawn biter on arena <"..arena.name.."> for player <"..player.name.."> at location <"..util.to_string(effect.position)..">")
-        --             else
-        --                 -- Valid biter spawn!
-                        
-        --                 -- Point him in the direction of the vechile
-        --                 biter.orientation = vehicle.orientation 
-
-        --                 -- Find an player to attack
-        --                 local enemy = Effects.find_random_enemy(arena, player)
-        --                 if not enemy then enemy = player end -- If you're the only player they will attack you! Haha!
-        --                 local command = {
-        --                     target= enemy.character.vehicle, 
-        --                     type = defines.command.attack, 
-        --                     distraction = defines.distraction.none
-        --                 }
-        --                 biter.set_command(command)
-        --                 biter.speed = constants.vehicle_speed * effect_constants.speed_modifier
-                        
-        --                 Effects.add_effect_entity(arena, biter, tick + effect_constants.biter_life_ticks, true)
-        --             end
-        --         end
-        --     end
-        -- end
-        ------------------------------------------------------------------------
 
         -- Did this effect time out?
         effect.fresh = false
@@ -572,9 +580,9 @@ function Effects.hit_effect_event(arena, beacon)
                 biters = {
                     ticks_to_live = effect_constants.ticks_to_live,
                 },
-                no_trail = {
-                    ticks_to_live = effect_constants.ticks_to_live
-                },
+                -- no_trail = {
+                --     ticks_to_live = effect_constants.ticks_to_live
+                -- },
             })
         elseif effect_type == "artillery" then
             Effects.add_effect(arena, target, {
@@ -592,12 +600,13 @@ end
 function Effects.add_effect(arena, player, effects)
     local player_state = arena.player_states[player.index]
     for effect_type, effect in pairs(effects) do
-        effect.position = player.position        
-        if player_state.effects[effect_type] then
+        effect.position = player.position
+        local player_effect = player_state.effects[effect_type]
+        if player_effect and player_effect.ticks_to_live then
             -- Player already has this effect applied. Extend time            
-            player_state.effects[effect_type].extended = true -- This will show an extension has been made
-            player_state.effects[effect_type].position = effect.position
-            player_state.effects[effect_type].ticks_to_live = player_state.effects[effect_type].ticks_to_live + effect.ticks_to_live
+            player_effect.extended = true -- This will show an extension has been made
+            player_effect.position = effect.position
+            player_effect.ticks_to_live = player_effect.ticks_to_live + effect.ticks_to_live
         else
             -- Player does not currently have this effect applied. Add it
             effect.tick_started = game.tick

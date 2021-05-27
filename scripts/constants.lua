@@ -21,6 +21,7 @@ return {
 
     },
     arena = {           -- Constants used in an arena
+        vehicle_speed = 0.3,
         starting_location_spacing = { 
             x = 40,
             y = 10
@@ -35,8 +36,7 @@ return {
         frequency = {
             effect_entity = 10,     -- How often effect entities are polled
         },
-    },    
-    vehicle_speed = 0.3,
+    },
     effects = {
         trail = {
             offset = 3,     -- Distance to draw behind the car

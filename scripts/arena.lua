@@ -308,7 +308,7 @@ function Arena.update(arena)
                         player_alive = player -- If round end, this will contain the victor
                         
                         -- Force player to always be moving
-                        vehicle.speed = constants.vehicle_speed
+                        vehicle.speed = constants.arena.vehicle_speed
                     end
 
                     -- Apply any effects

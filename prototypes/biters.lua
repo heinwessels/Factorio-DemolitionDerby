@@ -6,7 +6,7 @@ data:extend({
     util.merge{
         data.raw["unit"]["behemoth-biter"],
         {
-            name = "weasel-biter",
+            name = "wdd-biter",
             resistances = {
                 {
                     type = "physical",
