@@ -295,7 +295,7 @@ function Arena.update(arena)
                 local vehicle = player.character.vehicle  
                 local player_state = arena.player_states[player.index]
 
-                if constants.single_player then
+                if #arena.players == 1 then
                     -- Just some way to check score while I'm on my own
                     if tick % 60 == 0 then player_state.score = player_state.score + 1 end
                 end
@@ -322,20 +322,25 @@ function Arena.update(arena)
 
         -- Check if the round is over, etc.
         local should_end = false
-        if constants.single_player == true and arena.round.players_alive == 0 then
+        if #arena.players == 1 and arena.round.players_alive == 0 then
             should_end = true
-        elseif constants.single_player == false and arena.round.players_alive <= 1 then
+        elseif #arena.players > 1 and arena.round.players_alive <= 1 then
             should_end = true
         end
         if should_end then
             -- The game is over!
             arena.round.tick_ended = tick
             if not player_alive then 
-                game.print("On Arena "..arena.name.." after "..util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds there was no clear winner!")
-                Arena.log(arena, "Round over after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. There was no winner.")
+                -- There is no alive players left
+                if #arena.players > 1 then
+                    game.print("On Arena "..arena.name.." after "..util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds there was no clear winner!")
+                else
+                    game.print("On Arena "..arena.name.." "..arena.players[1].name.." played alone and lost after "..util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds!")
+                end
+                Arena.log(arena, "Round over after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. There was no winner and "..#arena.players.." players.")
             else
                 game.print("On Arena "..arena.name.." the player "..player_alive.name.." emerged victorious after "..util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds!")
-                Arena.log(arena, "Round over after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. <"..player_alive.name.."> was the victor!")
+                Arena.log(arena, "Round over after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. <"..player_alive.name.."> was the victor and there were "..#arena.player.." players.")
             end
 
             -- TODO Show some victory thing

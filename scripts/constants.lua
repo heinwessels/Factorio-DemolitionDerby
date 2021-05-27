@@ -1,5 +1,4 @@
-return {
-    single_player = true,  -- Debugging purposes, for I am but one person
+return {    
     editor = false,         -- Basically returns the toolbars if set to true
     splash = {
         enabled = false,
@@ -21,6 +20,7 @@ return {
 
     },
     arena = {           -- Constants used in an arena
+        allow_single_player = true, -- TODO unused
         vehicle_speed = 0.3,
         starting_location_spacing = { 
             x = 40,
