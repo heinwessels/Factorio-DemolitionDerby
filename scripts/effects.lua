@@ -223,7 +223,7 @@ function Effects.apply_effects(arena, player)
                         -- Do the kaboom for everyone!
                         -- We're going to shoot a couple of shots for every sound
                         surface.play_sound{
-                            path = "artillery-shoot",
+                            path = "wdd-artillery-shoot",
                         }
 
                         local shots_fired_now = 0

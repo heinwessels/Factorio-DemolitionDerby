@@ -489,25 +489,25 @@ end
 function Arena.create_default_starting_locations(arena)
     -- Determines some default starting locations
     -- Currently only places them in a grid.
+    -- Assumes the arena is horizontal, as it should be
     -- TODO Rather make a cool circle thing
     arena.starting_locations = { }
     local spacing = constants.arena.starting_location_spacing
-    local middle = {
-        x=arena.area.left_top.x+(arena.area.right_bottom.x-arena.area.left_top.x)/2,
-        y=arena.area.left_top.y+(arena.area.right_bottom.y-arena.area.left_top.y)/2,
-    }    
-    local x = middle.x-spacing*((math.ceil(arena.max_players/2)-1)/2)
+    local middle = util.middle_of_area(arena.area)
+    local x = middle.x-spacing.x*((math.ceil(arena.max_players/2)-1)/2)
     while #arena.starting_locations < arena.max_players do
-        local y = middle.y + spacing/2
+        local y = middle.y + spacing.y/2
         local direction = defines.direction.south
         if #arena.starting_locations % 2 ~= 0 then
-            y = middle.y - spacing/2
+            y = middle.y - spacing.y/2
             direction = defines.direction.north
-        else
-            -- Ready for next column
-            x = x + spacing -- This is our iterator
         end
         table.insert(arena.starting_locations, {x=x, y=y, direction=direction})
+
+        if #arena.starting_locations % 2 == 0 then
+            -- Ready for next column
+            x = x + spacing.x -- This is our iterator
+        end
     end
     return arena.starting_locations
 end
