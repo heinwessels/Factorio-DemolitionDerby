@@ -43,7 +43,7 @@ return {
             period = 90,    -- Duty cycle period in ticks of drawing
             gap = 25,       -- Part of the duty cycle that should not be a trail
         },
-        speed = {
+        speed_up = {
             fire_freq = 5,  -- Every how many ticks should fire be spawned
         },
         worm = {
