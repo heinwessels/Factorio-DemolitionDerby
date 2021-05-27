@@ -40,8 +40,8 @@ return {
                 right_bottom = { x = 149, y = -125 },
             },
         }),
-        ["fury-road"] = create_arena({
-            name = "fury-road",
+        ["thunderdome"] = create_arena({
+            name = "thunderdome",
             max_players = 8,
             surface = "nauvis",
             area = {
@@ -97,7 +97,7 @@ return {
             name = "blue-lobby",
             colour = {r=0.15,g=0.29,b=0.4,a=0},
             max_players = 8,
-            arena_names = { "sledgehammer" },
+            arena_names = { "thunderdome" },
             surface = "nauvis",
             area = {
                 left_top = { x = -89,  y = -9 },
@@ -122,7 +122,7 @@ return {
             name = "green-lobby",
             colour = {r=0.07,g=0.32,b=0.09,a=0},
             max_players = 8,
-            arena_names = { "fury-road" },
+            arena_names = { "sledgehammer" },
             surface = "nauvis",
             area = {
                 left_top = { x = -10,  y = -89 },
