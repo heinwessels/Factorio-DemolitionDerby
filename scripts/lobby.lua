@@ -141,7 +141,6 @@ function Lobby.on_player_left(lobby, player)
 end
 
 function Lobby.state_machine(lobby)
-    if not lobby.vehicles then return end   -- Shouldn't do anything if there's no vehicles
     
     ---------------------------------------------------    
     if lobby.status == "ready" then

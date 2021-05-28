@@ -21,11 +21,14 @@ script.on_event(defines.events.on_player_joined_game,
 script.on_event(defines.events.on_player_left_game,
     function (event) World.on_player_left(global.world, event) end
 )
+script.on_event(defines.events.on_player_driving_changed_state,
+    function (event) World.on_player_driving_changed_state(global.world, event) end
+)
 script.on_event(defines.events.on_script_trigger_effect, 
     function (event) World.on_script_trigger_effect(global.world, event) end
 )
-script.on_event(defines.events.on_player_driving_changed_state,
-    function (event) World.on_player_driving_changed_state(global.world, event) end
+script.on_event(defines.events.on_entity_destroyed,
+    function (event) World.on_entity_destroyed(global.world, event) end
 )
 
 -- It is possible to define the name and table inside the call

@@ -18,16 +18,19 @@ function Arena.create(arena)
             surface = surface,
             area = area,
             starting_positions = nil,   -- Each location includes a third entry orientation
-            ideal_number_of_effect_beacons = util.size_of_area(arena.area) * constants.arena.effect_density,
-            effect_beacons = { },   -- Array of all effect beacons part of this arena (array of references)
             builder = Builder.create(),
             
             lobby = nil,    -- (Optional) keep reference of lobby that added players. Not required
-
+            
             max_players = 6,    -- Default
             players = { },
             player_states = { },
             effects = { },  -- Current effects scattered in arena
+            
+            ideal_number_of_effect_beacons = 
+                    util.size_of_area(arena.area) * constants.arena.effect_density,
+            number_of_effect_beacons = 0,
+            effect_beacons = { },   -- Array of all effect beacons part of this arena (array of references)
 
             effect_entity_entries = { }, -- Entities the arena keeps track of and destroys on time
             number_of_effect_entities = 0,   -- Cache the size
@@ -171,6 +174,13 @@ function Arena.start_round(arena, lobby)
     Effects.flush_effect_entities(arena)    -- Just make sure again there is nothing left
     arena.ideal_number_of_effect_beacons = util.size_of_area(arena.area) * constants.arena.effect_density
     arena.lobby = lobby
+
+    -- Reset the effect beacons cache
+    -- The table should be empty, but we don't care if it's not
+    -- deleted entities only means that the arena won't recognise
+    -- it and assume its from another mod or something
+    arena.effect_beacons = { }
+    arena.number_of_effect_beacons = 0
 
     -- Setup players
     for index, player in pairs(arena.players) do
@@ -367,17 +377,6 @@ function Arena.update(arena)
     if handler then handler(arena) end
 end
 
--- A player touched a effect beacon.
--- If in this arena, then transfer it to our effects department
-function Arena.hit_effect_event(arena, event)
-    local beacon = event.source_entity
-    if beacon.type ~= "land-mine" then return end    
-    if util.position_in_area(beacon.position, arena.area) then
-        Effects.hit_effect_event(arena, beacon)
-        return true
-    end
-end
-
 -- Handle things when a round ends.
 -- Players need to see scores
 -- And then be teleported back to arena
@@ -452,6 +451,28 @@ function Arena.player_on_lost(arena, player)
             end
         end        
     end
+end
+
+-- A player touched a effect beacon.
+-- If in this arena, then transfer it to our effects department
+function Arena.on_script_trigger_effect(arena, event)
+    local beacon = event.source_entity
+    if beacon.type ~= "land-mine" then return end   -- Don't care
+    if util.position_in_area(beacon.position, arena.area) then
+        -- This effect happened in our arena!
+        Effects.hit_effect_event(arena, beacon)
+        return true
+    end
+end
+
+-- An effect beacon was destroyed. It's not sure yet if
+-- it was in this arena. Send this to effects to see how
+-- to handle it
+function Arena.on_entity_destroyed(arena, event)
+    return Effects.on_entity_destroyed(arena, 
+        event.registration_number,
+        event.unit_number
+    )
 end
 
 -- Player likely accidentally pressed enter while playing.

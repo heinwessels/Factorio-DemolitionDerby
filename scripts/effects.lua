@@ -444,42 +444,73 @@ function Effects.apply_effects(arena, player)
     end
 end
 
--- Manages beacons. Is there enough? Can I spawn another one?
+-- A beacon is destroyed. If it was activated by a player it
+-- would already have been handled
+function Effects.on_entity_destroyed(arena, reg, unit_number)
+    local beacon = arena.effect_beacons[reg]
+    if beacon then
+        -- This beacon was destroyed in our arena!
+
+        -- Ignore it if this arena isn't playing though
+        -- We're gonna clean the array before playing again 
+        -- anyway
+        if not arena.status == "playing" then return true end
+
+        -- Remove the entry from our table
+        arena.effect_beacons[reg] = nil
+        arena.number_of_effect_beacons = 
+                arena.number_of_effect_beacons - 1
+
+        -- Return the fact that it was in our arena
+        -- so that the world doesn't send it to
+        -- other arenas
+        return true
+    end
+    -- If it wasn't in this arena nil is returned, and the world
+    -- will know to try the next arena
+end
+
+local effects_to_spawn = {
+    "speed_up-player",
+    "speed_up-enemy",
+    "tank-player",
+    "tank-enemy",
+    "slow_down-player",
+    "slow_down-enemy",
+    "no_trail-player",
+    "no_trail-enemy",
+    "full_trail-player",
+    "full_trail-enemy",
+    "worm-player",
+    "worm-enemy",
+    "biters-player",
+    "biters-enemy",
+    "artillery-all"
+}
+-- Here the effect beacons are updated. If there are less than the ideal number
+-- then we add more. The length it cached, so it's easy to check.
+-- It's known when an effect beacon was destroyed using the 
+-- <register_on_entity_destroyed> function.
 function Effects.update_effect_beacons(arena)
-    if #arena.effect_beacons < arena.ideal_number_of_effect_beacons then
-        -- TODO Populate this automatically with weights
-        local effects_to_spawn = {
-            "speed_up-player",
-            "speed_up-enemy",
-            "tank-player",
-            "tank-enemy",
-            "slow_down-player",
-            "slow_down-enemy",
-            "no_trail-player",
-            "no_trail-enemy",
-            "full_trail-player",
-            "full_trail-enemy",
-            "worm-player",
-            "worm-enemy",
-            "biters-player",
-            "biters-enemy",
-            "artillery-all"
-        }
-        Effects.attempt_spawn_effect_beacon(
-            arena,
-            effects_to_spawn[math.random(#effects_to_spawn)]
+    if arena.number_of_effect_beacons < arena.ideal_number_of_effect_beacons then
+        -- There are less beacons than we desire. Add another one
+        -- and register it with the correct callback
+
+        local type_to_spawn = effects_to_spawn[math.random(#effects_to_spawn)]
+        local beacon = Effects.attempt_spawn_effect_beacon(
+            arena, type_to_spawn
         )
-    else
-        -- The array is full. Make sure everything is still valid
-        local did_something = false
-        for index, effect in pairs(arena.effect_beacons) do
-            if not effect.valid then
-                did_someting = true
-                arena.effect_beacons[index]=nil
-            end
-        end
-        if did_something == true then
-            arena.effect_beacons = util.compact_array(arena.effect_beacons)
+        if beacon then
+            -- We successfully created a placed a new entity!
+
+            -- Now register a callback so that we know when this beacon is destroyed
+            -- Either by a player driving over it, or by some other means
+            -- We receive an registration number. We will use this as key
+            local reg = script.register_on_entity_destroyed(beacon)
+
+            -- Add it to the table of effect beacons            
+            arena.number_of_effect_beacons = arena.number_of_effect_beacons + 1
+            arena.effect_beacons[reg] = beacon
         end
     end
 end
@@ -499,11 +530,7 @@ function Effects.attempt_spawn_effect_beacon(arena, beacon_name)
             }),
             force = "enemy" -- We need it to explode when player touches it
         }
-        if beacon then
-            table.insert(arena.effect_beacons, beacon)
-            -- Effects.log(arena, "In arena <"..arena.name.."> created effect beacon <"..beacon_name..">. (Total of "..#arena.effect_beacons..")")
-            return beacon
-        end
+        if beacon then return beacon end
     end
     return nil
 end
@@ -511,6 +538,9 @@ end
 -- This handler should be called if any effect beacon
 -- is hit. This function will decide if it's part of this
 -- arena, and apply it
+-- Note: This does not clean up (or even touch) the cache
+-- of effect beacons. That's handled afterwards by the
+-- <on_entity_destroyed> event.
 function Effects.hit_effect_event(arena, beacon)
     local surface = beacon.surface
     
@@ -523,10 +553,7 @@ function Effects.hit_effect_event(arena, beacon)
     local player = nil
     if vehicle_in_range then
         local vehicle = vehicle_in_range[1]
-        if not vehicle then
-            Effects.log(arena, "Could not find vehicle that triggered effect beacon.")
-            return
-        end
+        if not vehicle then return end  -- This beacon was likely destroyed by non-player
         local driver = vehicle.get_driver()
         if not driver then return end   -- Just silently ignore if something goes wrong
         player = vehicle.get_driver().player

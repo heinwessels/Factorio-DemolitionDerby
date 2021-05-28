@@ -167,9 +167,21 @@ function World.on_player_driving_changed_state(world, event)
     end
 end
 
+-- This will handle the effect beacons, as each beacon
+-- has a script trigger action. It need to be determined
+-- for which arena it is though.
 function World.on_script_trigger_effect(world, event)
     for _, arena in pairs(world.arenas) do
-        if Arena.hit_effect_event(arena, event) then return end
+        if Arena.on_script_trigger_effect(arena, event) then return end
+    end
+end
+
+-- This also triggers when an effect beacon is hit, but will
+-- only trigger after the entity is destoyed (for any reason)
+-- This is only used to clean up the cache of effect beacons
+function World.on_entity_destroyed(world, event)
+    for _, arena in pairs(world.arenas) do
+        if Arena.on_entity_destroyed(arena, event) then return end
     end
 end
 
