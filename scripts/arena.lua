@@ -257,10 +257,16 @@ function Arena.update(arena)
                 -- Players are still in the fake cars
                 -- Give them a real car (and not a static one)
                 -- And store it in the state! We will remove
-                player_state.vehicle = Effects.swap_vehicle(
-                    player,
-                    "curvefever-car"
-                )
+                player_state.vehicle = Effects.swap_vehicle(player, "curvefever-car" )
+                if not player_state.vehicle then
+                    -- It failed. Not sure how this would happen
+                    -- Do a hail mary hack, otherwise fail
+                    player.character.driving = true -- Hopefully this gets him into his car
+                    player_state.vehicle = Effects.swap_vehicle(player, "curvefever-car" )
+                    if not player_state.vehicle then
+                        error("Player "..player.name.." isn't in the static-car to swop from.")
+                    end
+                end
             end
             
             -- Remove any references to the vehicles in the arena. Now we store them
@@ -463,6 +469,9 @@ function Arena.player_driving_state_changed(arena, player, vehicle)
     -- First verify this event happened in this arena
     if not util.position_in_area(player.position, arena.area) then return end
     
+    -- Log that this happened, because this is error prone
+    Arena.log(arena, "Driving state change. Player: "..player.name..". Vehicle: "..((vehicle and vehicle.name) or "nil"))
+
     -- Did it happen to one of the known players?
     local player_state = arena.player_states[player.index]
     if not player_state then return true end -- Just ignore it, and notify world it's handled

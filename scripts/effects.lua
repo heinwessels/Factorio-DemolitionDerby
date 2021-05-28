@@ -664,9 +664,7 @@ end
 function Effects.swap_vehicle(player, vehicle_name)
     local character = player.character
     local vehicle = character.vehicle
-    if not vehicle then
-        error("Player "..player.name.." isn't driving a vehicle to swap")
-    end
+    if not vehicle then return nil end
 
     -- Saying we did it a little preemptively
     -- log("Player "..player.name.." vechicle swopped from "..vehicle.name.." to "..vehicle_name)
