@@ -210,12 +210,8 @@ function Arena.create_player_state(arena, player)
     return arena.player_states[player.index]
 end
 
--- Call this function every tick
-function Arena.update(arena)
-    local tick = game.tick
-
-    ---------------------------------------------------
-    if arena.status == "building" then
+local arena_state_handler = {
+    ["building"] = function (arena)
         Builder.iterate(arena)
         if arena.builder.state == "idle" then
             -- It's done building
@@ -227,28 +223,20 @@ function Arena.update(arena)
                 area = arena.area   -- This is quite a large area
             }
         end
-    
-    ---------------------------------------------------
-    elseif arena.status == "ready" then
-        -- Just idling. Waiting for lobby to book us.
-    
-    ---------------------------------------------------
-    elseif arena.status == "waiting-for-players" then
-        -- We are booked. Waiting for lobby to transfer
-        -- the players.
-    
-    ---------------------------------------------------
-    elseif arena.status == "transition-pre" then
+    end,
+    ["ready"] = nil, -- Just idling. Waiting for lobby to book us.
+    ["waiting-for-players"] = nil, -- We are booked. Waiting for lobby to transfer the players.
+    ["transition-pre"] = function (arena)
         -- Players were teleported to arena.
         -- Now wait for cutscene to finish
-        if arena.status_start_tick + constants.arena.timing["transition-pre"] < tick then
+        if arena.status_start_tick + constants.arena.timing["transition-pre"] < game.tick then
             -- The transition should be done.
             Arena.set_status(arena, "countdown")
         end
-    ---------------------------------------------------
-    elseif arena.status == "countdown" then
+    end,
+    ["countdown"] = function (arena)
         -- Now we need to display a count down for the player
-        if arena.status_start_tick + constants.arena.timing["countdown"] < tick then
+        if arena.status_start_tick + constants.arena.timing["countdown"] < game.tick then
             -- COUNTDOWN FINISHED! ACTUAL START!
 
             for _, player in pairs(arena.players) do
@@ -273,7 +261,7 @@ function Arena.update(arena)
             -- In the player state. (Easier when swopping vechiles as effects)
             arena.vehicles = { }
 
-            arena.round.tick_started = tick
+            arena.round.tick_started = game.tick
             arena.round.tick_ended = 0
             arena.round.players_alive = #arena.players
 
@@ -281,9 +269,9 @@ function Arena.update(arena)
             Arena.log(arena, "Started with "..#arena.players.." players")
             game.print("Round in Arena: "..arena.name.." started!")
         end
-    ---------------------------------------------------
-    elseif arena.status == "playing" then
-
+    end,
+    ["playing"] = function (arena)
+        local tick = game.tick
         -- Add more effect beacons if required
         Effects.update_effect_beacons(arena)
 
@@ -356,21 +344,27 @@ function Arena.update(arena)
 
             Arena.set_status(arena, "post-wait")
         end
-    ---------------------------------------------------
-    elseif arena.status == "post-wait" then
+    end,
+    ["post-wait"] = function (arena)
         -- This just a little cool down after the round ended
-        if tick > (arena.round.tick_ended + constants.arena.timing["post-wait"]) then
+        if game.tick > (arena.round.tick_ended + constants.arena.timing["post-wait"]) then
             Arena.end_round(arena)  -- This will move players back to the lobby
             Arena.set_status(arena, "done")
         end
-    ---------------------------------------------------
-    elseif arena.status == "done" then
+    end,
+    ["done"] = function (arena)
         -- Initiate clean of the arena
         -- The lobby also waits for this state to reset his state machine
         if game.tick > arena.status_start_tick + 5 then -- Just give a few ticks
             Arena.clean(arena)  --- This will set the status to "building"
         end
-    end
+    end,
+}
+
+-- Call this function every tick
+function Arena.update(arena)
+    local handler = arena_state_handler[arena.status]
+    if handler then handler(arena) end
 end
 
 -- A player touched a effect beacon.
