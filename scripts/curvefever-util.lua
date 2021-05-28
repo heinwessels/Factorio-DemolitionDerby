@@ -17,18 +17,12 @@ end
 
 -- Removes index of a table by overwriting it 
 -- with the last element in the table, and then setting
--- the last element to nil
-function Util.array_remove_index_unordered(arr, index, len)
-    table.remove(arr, index)
-
-    -- TODO FIX ME
-    -- local last_index = len or #arr
-    -- if index == last_index then
-    --     arr[index] = nil -- Its the last element anyway        
-    -- else
-    --     arr[index] = arr[last_index]
-    --     arr[last_index] = nil
-    -- end
+-- the last element to nil. This is useful when looping 
+-- through an array
+function Util.array_remove_index_unordered(arr, index, length)
+    local last_index = length or #arr
+    arr[index] = arr[last_index]
+    arr[last_index] = nil
 end
 
 function Util.is_player_in_list(players, player)

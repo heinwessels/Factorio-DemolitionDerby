@@ -168,6 +168,7 @@ function Arena.start_round(arena, lobby)
     end
 
     -- Setup and update some variables
+    Effects.flush_effect_entities(arena)    -- Just make sure again there is nothing left
     arena.ideal_number_of_effect_beacons = util.size_of_area(arena.area) * constants.arena.effect_density
     arena.lobby = lobby
 
@@ -435,8 +436,7 @@ end
 function Arena.player_on_lost(arena, player)
     local player_state = arena.player_states[player.index]
 
-    player_state.status = "lost"
-    game.print(player.name.." died in Arena "..arena.name.."!")
+    player_state.status = "lost"    
     Arena.log(arena, "Player <"..player.name.."> died.")
 
     -- Remove his character entity (the little man on the screen)

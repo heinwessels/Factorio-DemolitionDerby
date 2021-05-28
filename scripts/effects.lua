@@ -19,8 +19,10 @@ local Effects = { }
 -- This function is likely NOT called every tick
 function Effects.update_effect_entities(arena, tick)
     local entries = arena.effect_entity_entries
-    local number_of_entries = arena.number_of_effect_entities
-    for index, entry in pairs(entries) do
+    local index = 1
+    --for index, entry in pairs(entries) do
+    while index <= arena.number_of_effect_entities do
+        local entry = entries[index]
         local tick_to_die = entry.tick_to_die
         if tick_to_die and tick > tick_to_die then
             -- This entity should be destroyed or killed
@@ -34,8 +36,12 @@ function Effects.update_effect_entities(arena, tick)
             end
 
             -- Remove from this list
-            util.array_remove_index_unordered(entries, index, number_of_entries)
-            arena.number_of_effect_entities = number_of_entries - 1
+            util.array_remove_index_unordered(entries, index, arena.number_of_effect_entities)
+            arena.number_of_effect_entities = arena.number_of_effect_entities - 1            
+
+            -- Do not increment index, because now we need to process the entity we just moved
+        else
+            index = index + 1
         end
     end
 end
@@ -55,20 +61,20 @@ function Effects.flush_effect_entities(arena)
         end
     end
     arena.number_of_effect_entities = 0
-    entries = { }
+    arena.effect_entity_entries = { }
 end
 
 -- If an entity is added to the effects using this function then
 -- the arena will keep track of it and kill (or destroy) it at the
 -- correct tick.
-function Effects.add_effect_entity(arena, entity, tick_to_die, should_die)
-    local number_of_effect_entities = arena.number_of_effect_entities
-    arena.number_of_effect_entities = number_of_effect_entities + 1
+function Effects.add_effect_entity(arena, entity, tick_to_die, should_die)    
+    arena.number_of_effect_entities = arena.number_of_effect_entities + 1
     arena.effect_entity_entries[arena.number_of_effect_entities] = {
         entity = entity,
         tick_to_die = tick_to_die,  -- nil if never
         should_die = should_die
     }
+    if arena.number_of_effect_entities ~= #arena.effect_entity_entries then error("ALERT") end
 end
 
 -- Every function will be given
@@ -260,7 +266,9 @@ local apply_effects_handler = {
                             speed = 1
                         }
                         if shell then
-                            Effects.add_effect_entity(arena, shell, nil)  -- Just delete shells once the round is over
+                            Effects.add_effect_entity(arena, shell,
+                                tick + effect_constants.shell_travel_time*2    -- By this time it should've hit anyway
+                            )
                         end
 
                         -- Fire control
@@ -441,16 +449,16 @@ function Effects.update_effect_beacons(arena)
     if #arena.effect_beacons < arena.ideal_number_of_effect_beacons then
         -- TODO Populate this automatically with weights
         local effects_to_spawn = {
-            "speed_up-player",
-            "speed_up-enemy",
-            "tank-player",
-            "tank-enemy",
-            "slow_down-player",
-            "slow_down-enemy",
-            "no_trail-player",
-            "no_trail-enemy",
-            "full_trail-player",
-            "full_trail-enemy",
+            -- "speed_up-player",
+            -- "speed_up-enemy",
+            -- "tank-player",
+            -- "tank-enemy",
+            -- "slow_down-player",
+            -- "slow_down-enemy",
+            -- "no_trail-player",
+            -- "no_trail-enemy",
+            -- "full_trail-player",
+            -- "full_trail-enemy",
             "worm-player",
             "worm-enemy",
             "biters-player",
