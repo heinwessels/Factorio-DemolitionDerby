@@ -1,5 +1,5 @@
 local math2d = require("math2d")
-local util = require("scripts.curvefever-util")
+local util = require("scripts.wdd-util")
 local constants = require("scripts.constants")
 local Cutscene = require("scripts.cutscene")
 

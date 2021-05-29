@@ -32,7 +32,7 @@ script.on_event(defines.events.on_entity_destroyed,
 )
 
 -- It is possible to define the name and table inside the call
-remote.add_interface("curvefever-interface", {
+remote.add_interface("wdd-interface", {
     -- the values can be only primitive type or (nested) tables
     
     enable = function (enable)

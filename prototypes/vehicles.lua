@@ -7,16 +7,16 @@ data:extend({
     util.merge{
         data.raw["item-with-entity-data"]["car"],
         {
-            name = "curvefever-car",
-            place_result = "curvefever-car",
+            name = "wdd-car",
+            place_result = "wdd-car",
         }
     },
     util.merge{
         data.raw["car"]["car"],
         {
-            name = "curvefever-car",
+            name = "wdd-car",
             energy_source = {type = "void"},
-            minable = {result = "curvefever-car"},
+            minable = {result = "wdd-car"},
             max_health = 100,
             resistances = {
                 {
@@ -52,23 +52,23 @@ data:extend({
         }
     },
 })
-data.raw.car["curvefever-car"].sound_no_fuel = nil    -- We will never have fuel. disable the sound
+data.raw.car["wdd-car"].sound_no_fuel = nil    -- We will never have fuel. disable the sound
 data:extend({
     ----------------------------------------------------------------------------------
     -- CAR THAT CANNOT DRIVE
     ----------------------------------------------------------------------------------
     util.merge{
-        data.raw["item-with-entity-data"]["curvefever-car"],
+        data.raw["item-with-entity-data"]["wdd-car"],
         {
-            name = "curvefever-car-static",
-            place_result = "curvefever-car-static",
+            name = "wdd-car-static",
+            place_result = "wdd-car-static",
         }
     },
     util.merge{
-        data.raw["car"]["curvefever-car"],
+        data.raw["car"]["wdd-car"],
         {
-            name = "curvefever-car-static",
-            minable = {result = "curvefever-car"},
+            name = "wdd-car-static",
+            minable = {result = "wdd-car"},
             
             -- Energy source with no fuel and no power icon
             energy_source = {
@@ -85,17 +85,17 @@ data:extend({
     util.merge{
         data.raw["item-with-entity-data"]["tank"],
         {
-            name = "curvefever-tank",
-            place_result = "curvefever-tank",
+            name = "wdd-tank",
+            place_result = "wdd-tank",
         }
     },
     util.merge{
         data.raw["car"]["tank"],
         {
-            name = "curvefever-tank",
+            name = "wdd-tank",
             energy_source = {type = "void"},
             burner = nil,
-            minable = {result = "curvefever-tank"},
+            minable = {result = "wdd-tank"},
             max_health = 2000,
             resistances = {
                 {
@@ -138,17 +138,17 @@ data:extend({
 ----------------------------------------------------------------------------------
 data:extend({
     util.merge{
-        data.raw["car"]["curvefever-car"],
+        data.raw["car"]["wdd-car"],
         {
-            name = "curvefever-car-inverted",
-            rotation_speed = -data.raw.car["curvefever-car"].rotation_speed
+            name = "wdd-car-inverted",
+            rotation_speed = -data.raw.car["wdd-car"].rotation_speed
         }
     },
     util.merge{
-        data.raw["car"]["curvefever-tank"],
+        data.raw["car"]["wdd-tank"],
         {
-            name = "curvefever-tank-inverted",
-            rotation_speed = -data.raw.car["curvefever-tank"].rotation_speed
+            name = "wdd-tank-inverted",
+            rotation_speed = -data.raw.car["wdd-tank"].rotation_speed
         }
     },
 })

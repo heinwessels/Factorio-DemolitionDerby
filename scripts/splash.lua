@@ -1,4 +1,4 @@
-local curvefever_util = require("scripts.curvefever-util")
+local wdd_util = require("scripts.wdd-util")
 local constants = require("scripts.constants")
 
 local Splash = { }

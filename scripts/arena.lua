@@ -1,7 +1,7 @@
 local Effects = require("scripts.effects")
 local constants = require("scripts.constants")
 local Builder = require("scripts.builder")
-local util = require("scripts.curvefever-util")
+local util = require("scripts.wdd-util")
 local Cutscene = require("scripts.cutscene")
 
 local Arena = { }
@@ -229,7 +229,7 @@ local arena_state_handler = {
 
             -- There's new vehicles. Get references to it
             arena.vehicles = arena.surface.find_entities_filtered{
-                name = "curvefever-car-static", --It's static until the game begins
+                name = "wdd-car-static", --It's static until the game begins
                 area = arena.area   -- This is quite a large area
             }
         end
@@ -255,12 +255,12 @@ local arena_state_handler = {
                 -- Players are still in the fake cars
                 -- Give them a real car (and not a static one)
                 -- And store it in the state! We will remove
-                player_state.vehicle = Effects.swap_vehicle(player, "curvefever-car" )
+                player_state.vehicle = Effects.swap_vehicle(player, "wdd-car" )
                 if not player_state.vehicle then
                     -- It failed. Not sure how this would happen
                     -- Do a hail mary hack, otherwise fail
                     player.character.driving = true -- Hopefully this gets him into his car
-                    player_state.vehicle = Effects.swap_vehicle(player, "curvefever-car" )
+                    player_state.vehicle = Effects.swap_vehicle(player, "wdd-car" )
                     if not player_state.vehicle then
                         error("Player "..player.name.." isn't in the static-car to swop from.")
                     end

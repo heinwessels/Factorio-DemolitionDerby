@@ -1,4 +1,4 @@
-local util = require("scripts.curvefever-util")
+local util = require("scripts.wdd-util")
 
 data:extend({
     

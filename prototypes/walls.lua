@@ -4,7 +4,7 @@ data:extend({
     util.merge{
         data.raw["wall"]["stone-wall"],
         {
-            name = "curvefever-trail",
+            name = "wdd-trail",
             resistances = {
                 {
                     type = "physical",
@@ -39,15 +39,15 @@ data:extend({
     util.merge{
         data.raw["item"]["stone-wall"],
         {
-            name = "curvefever-border",
-            place_result = "curvefever-border",
+            name = "wdd-border",
+            place_result = "wdd-border",
         }
     },
     util.merge{
         data.raw["wall"]["stone-wall"],
         {
-            name = "curvefever-border",
-            minable = {result = "curvefever-border"},
+            name = "wdd-border",
+            minable = {result = "wdd-border"},
             max_health = 100000000,
             resistances = {
                 {

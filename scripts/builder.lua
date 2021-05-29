@@ -1,4 +1,4 @@
-local curvefever_util = require("scripts.curvefever-util")
+local wdd_util = require("scripts.wdd-util")
 Builder = { }
 
 function Builder.create()
@@ -69,7 +69,7 @@ function Builder.iterate(arena)
             if entity.type == "sticker" then
                 game.print("Found it!")
             end
-            if entity.name ~= "curvefever-border" then
+            if entity.name ~= "wdd-border" then
                 entity.destroy{raise_destroy=false}
             end
         end
@@ -87,13 +87,13 @@ function Builder.iterate(arena)
         local surface = arena.surface
         for _, position in pairs(arena.starting_locations) do            
             local vehicle = surface.create_entity{
-                name = "curvefever-car-static",
+                name = "wdd-car-static",
                 position = {position.x, position.y},
                 direction = position.direction,
                 force = "player"
             }
             if not vehicle then
-                error("Something went wrong attempting to spawn vehicle at <"..curvefever_util.to_string(position).."> for arena <"..arena.name..">")
+                error("Something went wrong attempting to spawn vehicle at <"..wdd_util.to_string(position).."> for arena <"..arena.name..">")
             end
         end
 

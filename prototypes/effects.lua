@@ -1,4 +1,4 @@
-local util = require("scripts.curvefever-util")
+local util = require("scripts.wdd-util")
 
 local size_modifier = 1.5
 
@@ -8,17 +8,17 @@ local size_modifier = 1.5
 data:extend({
     {
         type = "item",
-        name = "curvefever-effect-base",
+        name = "wdd-effect-base",
         icon = "__base__/graphics/icons/coin.png",
         icon_size = 64, icon_mipmaps = 4,
         subgroup = "gun",
         order = "f[land-mine]",
-        place_result = "curvefever-effect-base",
+        place_result = "wdd-effect-base",
         stack_size = 100
     },
     {
         type = "land-mine",
-        name = "curvefever-effect-base",
+        name = "wdd-effect-base",
         icon = "__base__/graphics/icons/coin.png",
         icon_size = 64, icon_mipmaps = 4,
         flags =
@@ -26,7 +26,7 @@ data:extend({
             "placeable-enemy",
             "placeable-off-grid"
         },
-        minable = {mining_time = 0.5, result = "curvefever-effect-base"},
+        minable = {mining_time = 0.5, result = "wdd-effect-base"},
         mined_sound = { filename = "__core__/sound/deconstruct-small.ogg" },
         max_health = 15,
         trigger_radius = 2.5,
@@ -35,21 +35,21 @@ data:extend({
         collision_box = {{-size_modifier,-size_modifier}, {size_modifier, size_modifier}},
         selection_box = {{-size_modifier, -size_modifier}, {size_modifier, size_modifier}},
         picture_safe = {
-            filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-player.png",
+            filename = "__DemolitionDerby__/graphics/entities/effect-beacon/effect-beacon-player.png",
             priority = "medium",
             width = 64,
             height = 64,
             scale = size_modifier,
         },
         picture_set = {
-            filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-player.png",
+            filename = "__DemolitionDerby__/graphics/entities/effect-beacon/effect-beacon-player.png",
             priority = "medium",
             width = 64,
             height = 64,
             scale = size_modifier,
         },
         picture_set_enemy = {
-            filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-player.png",
+            filename = "__DemolitionDerby__/graphics/entities/effect-beacon/effect-beacon-player.png",
             priority = "medium",
             width = 64,
             height = 64,
@@ -66,7 +66,7 @@ data:extend({
                 {                    
                     {
                         type = "script",
-                        effect_id = "curvefever-effect-beacon"
+                        effect_id = "wdd-effect-beacon"
                     }
                 }
             }
@@ -79,11 +79,11 @@ data:extend({
 ----------------------------------------------------------------------------------
 local function create_effect_beacon(config)
     -- type = "good" or "bad" or "bad-not-stripe" (will have a stripe overlay saying NOT)
-    if string.match(config.name, "curvefever-") then error("`curvefever-` preposition added automatically.") end
-    local name = "curvefever-effect-"..config.name.."-"..config.target
+    if string.match(config.name, "wdd-") then error("`wdd-` preposition added automatically.") end
+    local name = "wdd-effect-"..config.name.."-"..config.target
     data:extend({
         util.merge{
-            data.raw["item"]["curvefever-effect-base"],
+            data.raw["item"]["wdd-effect-base"],
             {
                 name = name,
                 place_result = name,
@@ -91,7 +91,7 @@ local function create_effect_beacon(config)
             }
         },
         util.merge{
-            data.raw["land-mine"]["curvefever-effect-base"],
+            data.raw["land-mine"]["wdd-effect-base"],
             {
                 name = name,
                 minable = {result = name},                
@@ -103,7 +103,7 @@ local function create_effect_beacon(config)
 
     table.insert(picture.layers, 
         {
-            filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-"..config.target..".png",
+            filename = "__DemolitionDerby__/graphics/entities/effect-beacon/effect-beacon-"..config.target..".png",
             priority = "medium",
             width = 64,
             height = 64,
@@ -117,7 +117,7 @@ local function create_effect_beacon(config)
     for _, overlay in pairs(config.overlay) do
         table.insert(picture.layers, 
             {
-                filename = "__CurveFever__/graphics/entities/effect-beacon/effect-beacon-overlay-"..overlay..".png",
+                filename = "__DemolitionDerby__/graphics/entities/effect-beacon/effect-beacon-overlay-"..overlay..".png",
                 priority = "medium",
                 width = 64,
                 height = 64,

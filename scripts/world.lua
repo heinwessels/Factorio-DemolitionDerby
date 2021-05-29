@@ -3,7 +3,7 @@ util = require("util")
 local Arena = require("scripts.arena")
 local Lobby = require("scripts.lobby")
 local constants = require("scripts.constants")
-local util = require("scripts.curvefever-util")
+local util = require("scripts.wdd-util")
 local Splash = require("scripts.splash")
 
 local World = { }

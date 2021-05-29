@@ -1,4 +1,4 @@
-local util = require("scripts.curvefever-util")
+local util = require("scripts.wdd-util")
 local constants = require("scripts.constants")
 local Arena = require("scripts.arena")
 local Portal = require("scripts.portal")
@@ -12,7 +12,7 @@ function Lobby.create(lobby)
         lobby.surface = game.surfaces[lobby.surface]
     end
     local vehicles = lobby.surface.find_entities_filtered{
-        name = "curvefever-car-static",
+        name = "wdd-car-static",
         area = lobby.area
     }
     local vehicle_positions = { }
@@ -251,8 +251,7 @@ function Lobby.check_portals(lobby)
     local outside_portal = lobby.portals.outside
     if not inside_portal or not outside_portal then return end
 
-    -- Handle outside portal
-    
+    -- Handle outside portal    
     local players = Portal.players_in_range(outside_portal)
     Portal.refresh_cache(outside_portal, players)
     for _, player in pairs(players) do
@@ -347,6 +346,7 @@ function Lobby.player_driving_state_changed(lobby, player, vehicle)
             -- him out of the car, to not teleport him twice
 
             player.character.driving = false -- Make sure he is out of car
+            Lobby.remove_player(lobby, player)  -- Make sure he is removed
             util.teleport_safe(player, global.world.spawn_location)
             player.create_local_flying_text{
                 text = {"lobby.not-recognised"},

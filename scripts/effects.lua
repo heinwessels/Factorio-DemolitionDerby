@@ -1,4 +1,4 @@
-local util = require("scripts.curvefever-util")
+local util = require("scripts.wdd-util")
 local constants = require("scripts.constants")
 
 local Effects = { }
@@ -98,9 +98,9 @@ local apply_effects_handler = {
                 y = vehicle.position.y + effect_constants.offset*math.cos(orientation),
             }
             local surface = arena.surface
-            if not surface.find_entity("curvefever-trail", position) then 
+            if not surface.find_entity("wdd-trail", position) then 
                 surface.create_entity{
-                    name = "curvefever-trail",
+                    name = "wdd-trail",
                     type = "wall",
                     position = position,
                     create_build_effect_smoke = true,
@@ -128,11 +128,11 @@ local apply_effects_handler = {
             vehicle.speed = vehicle.speed * effect.speed_modifier
             if not string.match(vehicle.name, "tank") then
                 -- Haven't swapped vehicles yet. Do it now.
-                ctx.player_state.vehicle = Effects.swap_vehicle(player, "curvefever-tank")
+                ctx.player_state.vehicle = Effects.swap_vehicle(player, "wdd-tank")
             end
         else
             -- Timed out, swap back to normal vehicle
-            ctx.player_state.vehicle = Effects.swap_vehicle(player, "curvefever-car")
+            ctx.player_state.vehicle = Effects.swap_vehicle(player, "wdd-car")
         end
     end,
     ["invert"] = function (arena, player, effect, ctx)
@@ -204,9 +204,9 @@ local apply_effects_handler = {
                 y = vehicle.position.y + effect_constants.offset*math.cos(orientation),
             }
             local surface = arena.surface
-            if not surface.find_entity("curvefever-trail", position) then 
+            if not surface.find_entity("wdd-trail", position) then 
                 surface.create_entity{
-                    name = "curvefever-trail",
+                    name = "wdd-trail",
                     type = "wall",
                     position = position,
                     create_build_effect_smoke = true,
@@ -332,7 +332,7 @@ local apply_effects_handler = {
                             {position.x - spacing, position.y - spacing},
                             {position.x + spacing, position.y + spacing}
                         },
-                        name = "curvefever-trail"
+                        name = "wdd-trail"
                     }) do
                         wall.die()
                     end
@@ -385,7 +385,7 @@ local apply_effects_handler = {
                         left_top =      {x=position.x - 3, y=position.y - 3},
                         right_bottom =  {x=position.x + 3, y=position.y + 3}
                     },
-                    name = "curvefever-trail"
+                    name = "wdd-trail"
                 }) do                        
                     wall.die()
                 end
@@ -543,7 +543,7 @@ function Effects.attempt_spawn_effect_beacon(arena, beacon_name)
     local spacing = 5   -- How far from the edges may we spawn things?
     for try = 1,10 do
         local beacon = surface.create_entity{
-            name = "curvefever-effect-"..beacon_name,
+            name = "wdd-effect-"..beacon_name,
             position = util.random_position_in_area({
                 left_top = {x=arena.area.left_top.x+spacing, y=arena.area.left_top.y+spacing},
                 right_bottom = {x=arena.area.right_bottom.x-spacing, y=arena.area.right_bottom.y-spacing}
