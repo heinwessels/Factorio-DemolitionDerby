@@ -96,14 +96,10 @@ function World.on_player_entered(world, event)
     end
 
     -- Hide some GUI elements
-    for _, setting in pairs{
-        player.game_view_settings.show_controller_gui,
-        player.game_view_settings.show_research_info,
-        player.game_view_settings.show_side_menu,
-        player.game_view_settings.show_minimap
-    } do
-        setting = constants.editor
-    end
+    player.game_view_settings.show_controller_gui = false
+    player.game_view_settings.show_research_info = false
+    player.game_view_settings.show_side_menu = false
+    player.game_view_settings.show_minimap = false
 
 end
 

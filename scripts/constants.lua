@@ -1,5 +1,4 @@
-return {    
-    editor = false,         -- Basically returns the toolbars if set to true
+return {
     splash = {
         enabled = false,
         duration = 5*60,        -- Time splash should be shown

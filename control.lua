@@ -32,7 +32,7 @@ script.on_event(defines.events.on_entity_destroyed,
 )
 
 -- It is possible to define the name and table inside the call
-remote.add_interface("wdd-interface", {
+remote.add_interface("wdd", {
     -- the values can be only primitive type or (nested) tables
     
     enable = function (enable)
@@ -41,6 +41,16 @@ remote.add_interface("wdd-interface", {
 
     clean = function()
         World.clean(global.world)
+    end,
+
+    editor = function(enable)
+        if enable == nil then enable = true end
+        for _, player in pairs(game.players) do
+            player.game_view_settings.show_controller_gui = enable
+            player.game_view_settings.show_research_info = enable
+            player.game_view_settings.show_side_menu = enable
+            player.game_view_settings.show_minimap = enable
+        end
     end,
 
     -- TODO Add way to change constants. And change constants to config.
