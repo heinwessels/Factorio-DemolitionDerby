@@ -64,5 +64,8 @@ return {
             shots_per_sound = 5,    -- How many shots to fire for each sound played
             coverage_density = 1/(30*30), -- effects per area in tiles
         },
+        invert = {
+            ticks_to_live = 5*60,
+        }
     },
 }

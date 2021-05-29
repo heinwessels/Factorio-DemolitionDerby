@@ -130,5 +130,25 @@ data:extend({
                 },
             },
         }
+    },    
+})
+
+----------------------------------------------------------------------------------
+-- Create versions for both car and tank with inverted driving
+----------------------------------------------------------------------------------
+data:extend({
+    util.merge{
+        data.raw["car"]["curvefever-car"],
+        {
+            name = "curvefever-car-inverted",
+            rotation_speed = -data.raw.car["curvefever-car"].rotation_speed
+        }
+    },
+    util.merge{
+        data.raw["car"]["curvefever-tank"],
+        {
+            name = "curvefever-tank-inverted",
+            rotation_speed = -data.raw.car["curvefever-tank"].rotation_speed
+        }
     },
 })

@@ -126,13 +126,31 @@ local apply_effects_handler = {
         if not ctx.timed_out then            
             local vehicle = ctx.player_state.vehicle
             vehicle.speed = vehicle.speed * effect.speed_modifier
-            if vehicle.name ~= "curvefever-tank" then
+            if not string.match(vehicle.name, "tank") then
                 -- Haven't swapped vehicles yet. Do it now.
                 ctx.player_state.vehicle = Effects.swap_vehicle(player, "curvefever-tank")
             end
         else
             -- Timed out, swap back to normal vehicle
             ctx.player_state.vehicle = Effects.swap_vehicle(player, "curvefever-car")
+        end
+    end,
+    ["invert"] = function (arena, player, effect, ctx)
+        -- Turn into tank and go slower
+        local vehicle = ctx.player_state.vehicle
+        if not ctx.timed_out then            
+            if string.sub(vehicle.name, -8, -1) ~= "inverted" then
+                -- Player isn't driving the inverted version
+                ctx.player_state.vehicle = 
+                        Effects.swap_vehicle(player, vehicle.name.."-inverted")
+            end
+        else
+            -- Timed out, swap back to normal vehicle
+            if string.sub(vehicle.name, -8, -1) == "inverted" then
+                -- but only if it actually still have the inverted vehicle
+                ctx.player_state.vehicle = 
+                        Effects.swap_vehicle(player, string.sub(vehicle.name, 1, -10))
+            end
         end
     end,
     ["slow_down"] = function (arena, player, effect, ctx)
@@ -475,6 +493,8 @@ local effects_to_spawn = {
     "speed_up-enemy",
     "tank-player",
     "tank-enemy",
+    "invert-player",
+    "invert-enemy",
     "slow_down-player",
     "slow_down-enemy",
     "no_trail-player",
@@ -547,7 +567,7 @@ function Effects.hit_effect_event(arena, beacon)
     local vehicle_in_range = surface.find_entities_filtered{
         position = beacon.position,
         radius = 6,
-        name = {"curvefever-car", "curvefever-tank"},
+        type = "car",
         limit = 1, -- TODO HANDLE MORE!
     }
     local player = nil
@@ -617,14 +637,18 @@ function Effects.hit_effect_event(arena, beacon)
                 biters = {
                     ticks_to_live = effect_constants.ticks_to_live,
                 },
-                -- no_trail = {
-                --     ticks_to_live = effect_constants.ticks_to_live
-                -- },
             })
         elseif effect_type == "artillery" then
             Effects.add_effect(arena, target, {
                 artillery = {
                     ticks_to_live = 10*60,  -- Just some maximum amount of time to live
+                },                
+            })
+        elseif effect_type == "invert" then
+            local effect_constants = constants.effects[effect_type]
+            Effects.add_effect(arena, target, {
+                invert = {
+                    ticks_to_live = effect_constants.ticks_to_live,
                 },                
             })
         end

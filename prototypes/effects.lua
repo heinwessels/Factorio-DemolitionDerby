@@ -235,3 +235,14 @@ create_effect_beacon{
         scale = size_modifier,
     }
 }
+create_effect_beacon_for_both{
+    name = "invert",
+    icon = "__base__/graphics/icons/coin.png",
+    picture = {
+        filename = "__base__/graphics/icons/signal/signal_R.png",
+        priority = "medium",
+        width = 64,
+        height = 64,
+        scale = size_modifier,
+    }
+}
