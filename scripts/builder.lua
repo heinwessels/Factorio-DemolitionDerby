@@ -43,18 +43,22 @@ function Builder.iterate(arena)
         }
         Builder.set_state(arena, "cleaning")
     elseif builder.state == "cleaning" then
+
+        -- Calculate area to clean this round
+        local area = {
+            {
+                x=builder.build_area.left_top.x+builder.iterator, 
+                y=builder.build_area.left_top.y
+            },
+            {
+                x=builder.build_area.left_top.x+builder.iterator+1, 
+                y=builder.build_area.right_bottom.y
+            }
+        }
+
         -- Clean out all rocks, trees, vehicles and trails
         for _, entity in pairs(surface.find_entities_filtered{
-            area = {
-                {
-                    x=builder.build_area.left_top.x+builder.iterator, 
-                    y=builder.build_area.left_top.y
-                },
-                {
-                    x=builder.build_area.left_top.x+builder.iterator+1, 
-                    y=builder.build_area.right_bottom.y
-                }
-            },
+            area = area,
             type = {
                 "car", 
                 "land-mine", 
@@ -74,6 +78,26 @@ function Builder.iterate(arena)
             end
         end
 
+        -- Fix the tiles that might have been destroyed by a nuke
+        -- Each tile will have a small chance to be fixed
+        local nuclear_tiles = surface.find_tiles_filtered{
+            area = area, name = "nuclear-ground"
+        }
+        if #nuclear_tiles > 0 then
+            local tiles_to_replace = { }            
+            for _, tile in pairs(nuclear_tiles) do
+                if math.random(1,10) == 1 then
+                    -- This tile will be changed to refined concrete
+                    table.insert(tiles_to_replace, {
+                        name = "refined-concrete",
+                        position = tile.position
+                    })
+                end
+            end
+            surface.set_tiles(tiles_to_replace)
+        end
+
+        -- Set builder to clean next section
         builder.iterator = builder.iterator + 1
         if builder.iterator >= (builder.build_area.right_bottom.x-builder.build_area.left_top.x) then
             Builder.set_state(arena, "building")

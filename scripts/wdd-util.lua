@@ -59,6 +59,20 @@ function Util.middle_of_area(area)
     }
 end
 
+function Util.area_grow(area, growth)
+    return {
+        left_top = {
+            x = area.left_top.x - growth,
+            y = area.left_top.y - growth
+        },
+        right_bottom = { 
+            x = area.right_bottom.x + growth,
+            y = area.right_bottom.y + growth
+        }
+    }
+end
+
+
 -- When two players are teleported to exactly the same
 -- spot they will get stuck on top of another. This
 -- Will first try to spawn at the correct location.

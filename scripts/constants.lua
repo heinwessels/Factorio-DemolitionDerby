@@ -62,6 +62,11 @@ return {
             shots_per_sound = 5,    -- How many shots to fire for each sound played
             coverage_density = 1/(30*30), -- effects per area in tiles
         },
+        nuke = {
+            warm_up_time = 6*60,    -- How long before the shot is fired
+            shell_travel_time = 4*60,
+            ticks_to_live = 15*60
+        },
         invert = {
             ticks_to_live = 5*60,
         }

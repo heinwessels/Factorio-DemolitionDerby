@@ -235,6 +235,18 @@ create_effect_beacon{
         scale = size_modifier,
     }
 }
+create_effect_beacon{
+    name = "nuke",
+    target = "all",
+    icon = "__base__/graphics/icons/coin.png",
+    picture = {
+        filename = "__base__/graphics/technology/atomic-bomb.png",
+        priority = "medium",
+        width = 256,
+        height = 256,
+        scale = size_modifier / 4,  -- Divide for larger tech icon
+    }
+}
 create_effect_beacon_for_both{
     name = "invert",
     icon = "__base__/graphics/icons/coin.png",

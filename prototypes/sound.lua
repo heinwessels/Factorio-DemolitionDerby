@@ -28,5 +28,10 @@ data:extend({
         type = "sound",
         filename = "__base__/sound/fight/medium-explosion-1.ogg",
         volume = 0.7
-    },    
+    },
+    {
+        name = "wdd-nuke",
+        type = "sound",
+        filename = "__base__/sound/programmable-speaker/siren.ogg",
+    },
 })

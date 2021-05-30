@@ -221,77 +221,133 @@ local apply_effects_handler = {
             })
         end
     end,
+    ["nuke"] = function (arena, player, effect, ctx)
+        local tick = ctx.tick
+        local effect_constants = ctx.effect_constants
+        if effect.fresh then
+            -- Play siren sound
+            for _, player in pairs(arena.players) do
+                -- player.play_sound{ path = "wdd-nuke" }
+                arena.surface.play_sound{ path = "wdd-nuke" }
+            end
+        elseif tick > effect.tick_started + effect_constants.warm_up_time then
+            -- Handle main functionality here
+
+            local surface = arena.surface
+            local target = util.random_position_in_area(
+                util.area_grow(arena.area, -20) -- edge of blast should only reach border
+            )
+
+            -- Play sound
+
+            -- Create flair
+            -- TODO Green flair
+            local flair = surface.create_entity{
+                name = "artillery-flare", 
+                position = target, 
+                height = 2,             -- Top of the fall
+                vertical_speed = 0.01,  -- How fast does it fall
+                frame_speed = 1,        -- Don't think this does anything 
+                movement = {0, 0}
+            }
+            if flair then
+                Effects.add_effect_entity(arena, flair, 
+                    tick + effect_constants.shell_travel_time
+                ) -- Should dissapear when shell hits
+            end
+
+            -- Create projectile
+            local speed = 1
+            local offset_target = {
+                x = target.x,
+                y = target.y - speed*effect_constants.shell_travel_time
+            }
+            local nuke = surface.create_entity{
+                name = "atomic-rocket", 
+                position = offset_target, 
+                force = "enemy", 
+                target = target,
+                speed = speed
+            }
+            if nuke then
+                Effects.add_effect_entity(arena, nuke,
+                    tick + effect_constants.shell_travel_time*2    -- By this time it should've hit anyway
+                )
+            end
+
+            -- Remove this effect
+            effect.mark_for_deletion = true
+        end
+    end,
     ["artillery"] = function (arena, player, effect, ctx)
-        -- Stops player from drawing trail behind him
-        if not ctx.timed_out then
-            local tick = ctx.tick
-            local effect_constants = ctx.effect_constants
-            if not effect.last_shot_fired then
-                -- We haven't fired the first shot yet. Can we?
-                if tick > effect.tick_started + effect_constants.warm_up_time then
-                    -- We can start!
-                    effect.shots_left = util.size_of_area(arena.area) * effect_constants.coverage_density
-                    effect.last_shot_fired = 0  -- But we will do it next tick for simplicity
-                end
-            else
-                -- Player drove through artillary again.
-                if effect.extended == true then
-                    effect.shots_left = effect.shots_left
-                            + util.size_of_area(arena.area) * effect_constants.coverage_density
-                end
+        -- Artillery will rain from the sky!
+        local tick = ctx.tick
+        local effect_constants = ctx.effect_constants
+        if not effect.last_shot_fired then
+            -- We haven't fired the first shot yet. Can we?
+            if tick > effect.tick_started + effect_constants.warm_up_time then
+                -- We can start!
+                effect.shots_left = util.size_of_area(arena.area) * effect_constants.coverage_density
+                effect.last_shot_fired = 0  -- But we will do it next tick for simplicity
+            end
+        else
+            -- Player drove through artillary again.
+            if effect.extended == true then
+                effect.shots_left = effect.shots_left
+                        + util.size_of_area(arena.area) * effect_constants.coverage_density
+            end
 
-                local surface = arena.surface
-                if tick > (effect.last_shot_fired + effect_constants.period) and effect.shots_left > 0 then
+            local surface = arena.surface
+            if tick > (effect.last_shot_fired + effect_constants.period) and effect.shots_left > 0 then
 
-                    -- Do the kaboom for everyone!
-                    -- We're going to shoot a couple of shots for every sound                    
-                    surface.play_sound{ path = "wdd-artillery-shoot" }
+                -- Do the kaboom for everyone!
+                -- We're going to shoot a couple of shots for every sound                    
+                surface.play_sound{ path = "wdd-artillery-shoot" }
 
-                    local shots_fired_now = 0
-                    while effect.shots_left > 0 and shots_fired_now < effect_constants.shots_per_sound do
-                        -- Fire a random shot!
-                        local target = util.random_position_in_area(arena.area)                        
-                        
-                        -- First create a flair
-                        -- It doesn't do anything. Only shows players where it will hit
-                        local flair = surface.create_entity{
-                            name = "artillery-flare", 
-                            position = target, 
-                            height = 2,             -- Top of the fall
-                            vertical_speed = 0.01,  -- How fast does it fall
-                            frame_speed = 1,        -- Don't think this does anything 
-                            movement = {0, 0}
-                        }
-                        if flair then
-                            Effects.add_effect_entity(arena, flair, 
-                                tick + effect_constants.shell_travel_time*1.707
-                            ) -- Should dissapear when shell hits
-                        end
-
-                        -- Create the artillary shell mid air!
-                        local speed = 1
-                        local offset_target = {
-                            x = target.x - speed*effect_constants.shell_travel_time,
-                            y = target.y - speed*effect_constants.shell_travel_time
-                        }
-                        local shell = surface.create_entity{
-                            name = "artillery-projectile", 
-                            position = offset_target, 
-                            force = "enemy", 
-                            target = target,
-                            speed = 1
-                        }
-                        if shell then
-                            Effects.add_effect_entity(arena, shell,
-                                tick + effect_constants.shell_travel_time*2    -- By this time it should've hit anyway
-                            )
-                        end
-
-                        -- Fire control
-                        shots_fired_now = shots_fired_now + 1
-                        effect.last_shot_fired = tick
-                        effect.shots_left = effect.shots_left - 1
+                local shots_fired_now = 0
+                while effect.shots_left > 0 and shots_fired_now < effect_constants.shots_per_sound do
+                    -- Fire a random shot!
+                    local target = util.random_position_in_area(arena.area)
+                    
+                    -- First create a flair
+                    -- It doesn't do anything. Only shows players where it will hit
+                    local flair = surface.create_entity{
+                        name = "artillery-flare", 
+                        position = target, 
+                        height = 2,             -- Top of the fall
+                        vertical_speed = 0.01,  -- How fast does it fall
+                        frame_speed = 1,        -- Don't think this does anything 
+                        movement = {0, 0}
+                    }
+                    if flair then
+                        Effects.add_effect_entity(arena, flair, 
+                            tick + effect_constants.shell_travel_time*1.707
+                        ) -- Should dissapear when shell hits
                     end
+
+                    -- Create the artillary shell mid air!
+                    local speed = 1
+                    local offset_target = {
+                        x = target.x - speed*effect_constants.shell_travel_time,
+                        y = target.y - speed*effect_constants.shell_travel_time
+                    }
+                    local shell = surface.create_entity{
+                        name = "artillery-projectile", 
+                        position = offset_target, 
+                        force = "enemy", 
+                        target = target,
+                        speed = speed
+                    }
+                    if shell then
+                        Effects.add_effect_entity(arena, shell,
+                            tick + effect_constants.shell_travel_time*2    -- By this time it should've hit anyway
+                        )
+                    end
+
+                    -- Fire control
+                    shots_fired_now = shots_fired_now + 1
+                    effect.last_shot_fired = tick
+                    effect.shots_left = effect.shots_left - 1
                 end
             end
         end
@@ -454,7 +510,7 @@ function Effects.apply_effects(arena, player)
         -- Did this effect time out?
         effect.fresh = false
         effect.extended = false
-        if timed_out then
+        if timed_out or effect.mark_for_deletion then
             Effects.remove_effect(arena, player, effect_type)
         end        
     end
@@ -503,7 +559,8 @@ local effects_to_spawn = {
     "worm-enemy",
     "biters-player",
     "biters-enemy",
-    "artillery-all"
+    "artillery-all",
+    "nuke-all",
 }
 -- Here the effect beacons are updated. If there are less than the ideal number
 -- then we add more. The length it cached, so it's easy to check.
@@ -642,6 +699,13 @@ function Effects.hit_effect_event(arena, beacon)
                     ticks_to_live = 10*60,  -- Just some maximum amount of time to live
                 },                
             })
+        elseif effect_type == "nuke" then
+            local effect_constants = constants.effects[effect_type]
+            Effects.add_effect(arena, target, {
+                nuke = {
+                    ticks_to_live = effect_constants.ticks_to_live,
+                },                
+            })
         elseif effect_type == "invert" then
             local effect_constants = constants.effects[effect_type]
             Effects.add_effect(arena, target, {
@@ -649,6 +713,8 @@ function Effects.hit_effect_event(arena, beacon)
                     ticks_to_live = effect_constants.ticks_to_live,
                 },                
             })
+        else
+            error("Unrecognised effect")
         end
     end
 end
