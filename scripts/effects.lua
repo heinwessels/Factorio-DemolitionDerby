@@ -245,9 +245,7 @@ local apply_effects_handler = {
 
                     -- Do the kaboom for everyone!
                     -- We're going to shoot a couple of shots for every sound                    
-                    surface.play_sound{
-                        path = "wdd-artillery-shoot",
-                    }
+                    surface.play_sound{ path = "wdd-artillery-shoot" }
 
                     local shots_fired_now = 0
                     while effect.shots_left > 0 and shots_fired_now < effect_constants.shots_per_sound do
@@ -580,7 +578,7 @@ function Effects.hit_effect_event(arena, beacon)
         
         -- Unpack effect beacon
         local last_dash = util.string_find_last(beacon.name, "-")
-        local effect_type = string.sub(beacon.name, 19, last_dash-1)
+        local effect_type = string.sub(beacon.name, 12, last_dash-1)
         local target_str = string.sub(beacon.name, last_dash+1, -1)
         if target_str == "enemy" then   -- Who should this effect be applied to?
             target = Effects.find_random_enemy(arena, player) or player

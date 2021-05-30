@@ -50,7 +50,8 @@ function Arena.create(arena)
             -- done         -> Done playing. Waiting for something to happen before clean
             -- building     -> (Re)building map (done at creation or cleaning)
             status = "empty",
-            status_start_tick = 0,   -- The tick the status started
+            status_start_tick = 0,  -- The tick the status started
+            status_fresh = false,   -- True only the first update after status change
 
             -- Remembers some information about this round
             round = {
@@ -155,10 +156,8 @@ function Arena.on_player_left(arena, player)
 end
 
 -- Start the game for this arena (as it looks from the outside)
--- In arena it will still go through 2 waiting periods before actually starting
+-- In arena it will still go through a few statesbefore actually starting
 -- Players need to be in the arena in the cars already.
--- TODO Let arena start do it rather. More robust.
--- This will do some checks.
 -- <lobby> can be nil, but if it's there <arena> will remember
 -- and then teleport players back to the lobby instead of spawn
 function Arena.start_round(arena, lobby)
@@ -193,8 +192,7 @@ function Arena.start_round(arena, lobby)
         })
 
         -- Make sure player is in the correct force
-        player.force = "player"
-        
+        player.force = "player"        
     end
 
     -- Remove unused vehicles
@@ -237,48 +235,61 @@ local arena_state_handler = {
     ["ready"] = nil, -- Just idling. Waiting for lobby to book us.
     ["waiting-for-players"] = nil, -- We are booked. Waiting for lobby to transfer the players.
     ["transition-pre"] = function (arena)
-        -- Players were teleported to arena.
-        -- Now wait for cutscene to finish
+        -- Players were teleported to arena. Waiting for cutscene to finish
         if arena.status_start_tick + constants.arena.timing["transition-pre"] < game.tick then
             -- The transition should be done.
             Arena.set_status(arena, "countdown")
         end
     end,
     ["countdown"] = function (arena)
-        -- Now we need to display a count down for the player
-        if arena.status_start_tick + constants.arena.timing["countdown"] < game.tick then
-            -- COUNTDOWN FINISHED! ACTUAL START!
-
+        if arena.status_fresh then 
             for _, player in pairs(arena.players) do
-                local player_state = arena.player_states[player.index]
+                player.play_sound{ path = "wdd-countdown-1" }
+            end
+        end
+        if arena.status_start_tick + 60 < game.tick then Arena.set_status(arena, "countdown-1") end
+    end,
+    ["countdown-1"] = function (arena)
+        if arena.status_fresh then 
+            for _, player in pairs(arena.players) do
+                player.play_sound{ path = "wdd-countdown-1" }
+            end
+        end
+        if arena.status_start_tick + 60 < game.tick then Arena.set_status(arena, "start") end
+    end,
+    ["start"] = function (arena)        
+            -- COUNTDOWN FINISHED! ACTUAL START!
+        for _, player in pairs(arena.players) do
+            local player_state = arena.player_states[player.index]
 
-                -- Players are still in the fake cars
-                -- Give them a real car (and not a static one)
-                -- And store it in the state! We will remove
+            player.play_sound{ path = "wdd-countdown-0" }
+
+            -- Players are still in the fake cars
+            -- Give them a real car (and not a static one)
+            -- And store it in the state! We will remove
+            player_state.vehicle = Effects.swap_vehicle(player, "wdd-car" )
+            if not player_state.vehicle then
+                -- It failed. Not sure how this would happen
+                -- Do a hail mary hack, otherwise fail
+                player.character.driving = true -- Hopefully this gets him into his car
                 player_state.vehicle = Effects.swap_vehicle(player, "wdd-car" )
                 if not player_state.vehicle then
-                    -- It failed. Not sure how this would happen
-                    -- Do a hail mary hack, otherwise fail
-                    player.character.driving = true -- Hopefully this gets him into his car
-                    player_state.vehicle = Effects.swap_vehicle(player, "wdd-car" )
-                    if not player_state.vehicle then
-                        error("Player "..player.name.." isn't in the static-car to swop from.")
-                    end
+                    error("Player "..player.name.." isn't in the static-car to swop from.")
                 end
             end
-            
-            -- Remove any references to the vehicles in the arena. Now we store them
-            -- In the player state. (Easier when swopping vechiles as effects)
-            arena.vehicles = { }
-
-            arena.round.tick_started = game.tick
-            arena.round.tick_ended = 0
-            arena.round.players_alive = #arena.players
-
-            Arena.set_status(arena, "playing")            
-            Arena.log(arena, "Started with "..#arena.players.." players")
-            game.print("Round in Arena: "..arena.name.." started!")
         end
+        
+        -- Remove any references to the vehicles in the arena. Now we store them
+        -- In the player state. (Easier when swopping vechiles as effects)
+        arena.vehicles = { }
+
+        arena.round.tick_started = game.tick
+        arena.round.tick_ended = 0
+        arena.round.players_alive = #arena.players
+
+        Arena.set_status(arena, "playing")            
+        Arena.log(arena, "Started with "..#arena.players.." players")
+        game.print("Round in Arena: "..arena.name.." started!")
     end,
     ["playing"] = function (arena)
         local tick = game.tick
@@ -300,13 +311,7 @@ local arena_state_handler = {
                 local vehicle = player.character.vehicle  
                 local player_state = arena.player_states[player.index]
 
-                if #arena.players == 1 then
-                    -- Just some way to check score while I'm on my own
-                    if tick % 60 == 0 then player_state.score = player_state.score + 1 end
-                end
-
-                if player_state.status == "playing" or player_state.status == "lost" and vehicle then
-                    
+                if player_state.status == "playing" or player_state.status == "lost" and vehicle then                    
                     if player_state.status == "playing" then
                         -- This player is still playing
                         arena.round.players_alive = arena.round.players_alive + 1
@@ -374,7 +379,11 @@ local arena_state_handler = {
 -- Call this function every tick
 function Arena.update(arena)
     local handler = arena_state_handler[arena.status]
+    local prev_state = arena.status
     if handler then handler(arena) end
+    if prev_state == arena.status then
+        arena.status_fresh = false
+    end
 end
 
 -- Handle things when a round ends.
@@ -444,7 +453,14 @@ function Arena.player_on_lost(arena, player)
 
     -- Now give all the other alive players one point
     for _, enemy in pairs(arena.players) do
+
+        -- Give points
         if enemy.index ~= player.index then
+
+            -- Since we're looping, play a sound to everyone
+            enemy.play_sound{ path = "wdd-player-die" }
+
+            -- Give a point to the player
             local enemy_state = arena.player_states[enemy.index]
             if enemy_state.status == "playing" then
                 enemy_state.score = enemy_state.score + 1
@@ -461,6 +477,11 @@ function Arena.on_script_trigger_effect(arena, event)
     if util.position_in_area(beacon.position, arena.area) then
         -- This effect happened in our arena!
         Effects.hit_effect_event(arena, beacon)
+
+        -- Play a ping for all players
+        for _, player in pairs(arena.players) do
+            player.play_sound{ path = "wdd-effect-activate" }
+        end
         return true
     end
 end
@@ -544,6 +565,7 @@ end
 function Arena.set_status(arena, status)
     Arena.log(arena, "Setting arena <"..arena.name.."> status to <"..status..">")
     arena.status_start_tick = game.tick
+    arena.status_fresh = true
     arena.status = status
 end
 

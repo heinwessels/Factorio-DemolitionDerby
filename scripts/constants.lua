@@ -29,7 +29,6 @@ return {
         start_zoom = 0.4,
         timing = {
             ["transition-pre"] = 1.5*60,   -- Cutscene from lobby to arena
-            ["countdown"] = 3*60,
             ["post-wait"] = 2*60,   -- Little period after the round ended            
         },
         frequency = {

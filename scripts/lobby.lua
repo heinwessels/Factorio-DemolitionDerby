@@ -160,6 +160,8 @@ function Lobby.state_machine(lobby)
         end        
     ---------------------------------------------------
     elseif lobby.status == "countdown" then
+        -- This is just a little buffer from between where all
+        -- players are ready and teleportation begins
 
         -- First check all the players are still in their cars
         -- TODO Do this with events rather
