@@ -40,7 +40,7 @@ function LobbyGui.build_interface(lobby, player)
             caption={"", {"lobby-gui.players-joined"}, ": "}, style="heading_3_label" }
     local player_count = player_count_flow.add{type="label", name="player_count", 
             caption=#lobby.players.."/"..lobby.max_players}
-    player_gui.elements.player_count_flow = player_count_flow
+    player_gui.elements.player_count = player_count
     
     -- Table of players
     local player_table_frame = content_frame.add{type="frame", name="player_table_frame", 
@@ -55,6 +55,8 @@ end
 function LobbyGui.refresh(lobby, player)
     
     local elements = lobby.player_states[player.index].gui.elements
+
+    elements.player_count.caption = #lobby.players.."/"..lobby.max_players
 
     local player_table = elements.player_table
     for _, child in pairs(player_table.children) do child.destroy() end
