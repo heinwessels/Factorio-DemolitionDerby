@@ -34,4 +34,9 @@ data:extend({
         type = "sound",
         filename = "__base__/sound/programmable-speaker/siren.ogg",
     },
+    {
+        name = "wdd-portal-swoosh",
+        type = "sound",
+        filename = "__base__/sound/lamp-activate.ogg",
+    },
 })

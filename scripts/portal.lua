@@ -29,6 +29,8 @@ function Portal.teleport_to(portal, player, duration)
             duration=constants.lobby.timing.portal_cutscene,
         }
     end
+
+    player.play_sound{ path = "wdd-portal-swoosh"}
     
     -- Create some smoke
     surface.create_trivial_smoke{name="smoke-fast", position=position}

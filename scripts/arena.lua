@@ -276,6 +276,7 @@ local arena_state_handler = {
                 if not player_state.vehicle then
                     error("Player "..player.name.." isn't in the static-car to swop from.")
                 end
+                Arena.log(arena, "ALERT! Did a hail mary on the vehicle swap for "..player.name)
             end
         end
         
