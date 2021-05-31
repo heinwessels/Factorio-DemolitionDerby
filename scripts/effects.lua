@@ -225,18 +225,21 @@ local apply_effects_handler = {
         local tick = ctx.tick
         local effect_constants = ctx.effect_constants
         if effect.fresh then
+            -- Find a target
+            effect.target = util.random_position_in_area(
+                util.area_grow(arena.area, -20) -- edge of blast should only reach border
+            )
+
             -- Play siren sound
             for _, player in pairs(arena.players) do
-                -- player.play_sound{ path = "wdd-nuke" }
-                arena.surface.play_sound{ path = "wdd-nuke" }
+                -- Play the sound at the location where the nuke is gonna drop
+                player.play_sound{ path = "wdd-nuke", position = effect.target }
             end
         elseif tick > effect.tick_started + effect_constants.warm_up_time then
             -- Handle main functionality here
 
             local surface = arena.surface
-            local target = util.random_position_in_area(
-                util.area_grow(arena.area, -20) -- edge of blast should only reach border
-            )
+            local 
 
             -- Create flair
             local flair = surface.create_entity{
