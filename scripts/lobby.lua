@@ -364,6 +364,23 @@ function Lobby.player_driving_state_changed(lobby, player, vehicle)
         end
     end
 
+    -- Check if the player climbed into a car with another player
+    -- already entered. (Now way to limit amount of seats)
+    -- Do this by checking if the player is this vehicle's driver
+    if vehicle.get_passenger() then
+        -- This player is a passenger. Get him out.
+        player.driving = false
+        player.create_local_flying_text{
+            text = {"lobby.no-passenger-allowed"},
+            position = {
+                player.position.x,
+                player.position.y - 2,
+            },
+            color = {r=1,g=0,b=0,a=1},
+        }
+        return true     -- This effect is handled
+    end
+
     -- If we reach this point then the event happened in this lobby
     -- and it's a legal player in this lobby. So set his ready status
     -- according to if he is in a car or not

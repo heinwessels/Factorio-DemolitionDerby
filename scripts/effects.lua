@@ -238,8 +238,7 @@ local apply_effects_handler = {
         elseif tick > effect.tick_started + effect_constants.warm_up_time then
             -- Handle main functionality here
 
-            local surface = arena.surface
-            local 
+            local surface = arena.surfaces
 
             -- Create flair
             local flair = surface.create_entity{
