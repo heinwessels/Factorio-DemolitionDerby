@@ -258,3 +258,30 @@ create_effect_beacon_for_both{
         scale = size_modifier,
     }
 }
+
+
+----------------------------------------------------------------------------------
+-- Tweak a few game things so that it caters more for this minigame
+----------------------------------------------------------------------------------
+
+-- Just make artillery a little stronger
+data.raw["artillery-projectile"]["artillery-projectile"].action.action_delivery.target_effects[1].action.radius = 5
+
+-- A green flair for the nuke
+data:extend({
+    util.merge{
+        data.raw["artillery-flare"]["artillery-flare"],
+        {
+            name = "nuke-flare",
+            pictures = {
+                filename = "__core__/graphics/shoot-cursor-green.png",
+                priority = "low",
+                width = 258,
+                height = 183,
+                frame_count = 1,
+                scale = 1,
+                flags = {"icon"}
+            }
+        }
+    },
+})

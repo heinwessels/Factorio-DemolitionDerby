@@ -238,12 +238,9 @@ local apply_effects_handler = {
                 util.area_grow(arena.area, -20) -- edge of blast should only reach border
             )
 
-            -- Play sound
-
             -- Create flair
-            -- TODO Green flair
             local flair = surface.create_entity{
-                name = "artillery-flare", 
+                name = "nuke-flare", 
                 position = target, 
                 height = 2,             -- Top of the fall
                 vertical_speed = 0.01,  -- How fast does it fall
