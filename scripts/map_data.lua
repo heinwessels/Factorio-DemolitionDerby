@@ -171,7 +171,8 @@ return {
     },
     spawn_location = {x=0, y=0},
     splash = {
-        position = {x=29, y=-560},
+        position = {x=-2, y=-613},
+        travel = {x=0, y=85},
         zoom = 0.25,
     }
 }

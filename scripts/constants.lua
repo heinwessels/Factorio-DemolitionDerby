@@ -1,7 +1,7 @@
 return {
     splash = {
-        enabled = false,
-        duration = 5*60,        -- Time splash should be shown
+        enabled = true,
+        duration = 7*60,        -- Time splash should be shown
         transition = 2*60,      -- Transition from splash to spawn
     },
     lobby = {

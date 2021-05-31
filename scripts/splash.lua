@@ -11,18 +11,29 @@ function Splash.show(world, player)
     if not world.splash then return end
     
     -- There is a splash screen! Show it boooi!
+    local splash = world.splash
     player.set_controller {
         type = defines.controllers.cutscene,
         waypoints =
         {
             {
                 position = {
-                    world.splash.position.x,
-                    world.splash.position.y
+                    splash.position.x - splash.travel.x/2,
+                    splash.position.y - splash.travel.y/2
                 },
-                transition_time = constants.splash.duration,
+                time_to_wait = constants.splash.duration / 2,
+                transition_time = constants.splash.duration / 2,
                 time_to_wait = 0,
-                zoom = world.splash.zoom,
+                zoom = splash.zoom,
+            },
+            {
+                position = {
+                    splash.position.x + splash.travel.x/2,
+                    splash.position.y + splash.travel.y/2
+                },
+                transition_time = constants.splash.duration / 2,
+                time_to_wait = 0,
+                zoom = splash.zoom,
             },
             {
                 target = player.character,
@@ -37,8 +48,8 @@ function Splash.show(world, player)
                 time_to_wait = 0
             }
         },
-        start_position = world.splash.position,
-        start_zoom = world.splash.zoom*0.9
+        start_position = splash.position,
+        start_zoom = splash.zoom*0.9
     }
 end
 
