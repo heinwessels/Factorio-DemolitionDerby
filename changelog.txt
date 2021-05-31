@@ -3,6 +3,7 @@ Version: 0.1.1
 Date: 31. 05. 2021
   Changes:
     - Nuke siren now plays at location where nuke will hit.
+    - Biters are no slightly faster.
   Bugfixes:
     - No longer allow passengers in lobby vehicles.
 ---------------------------------------------------------------------------------------------------

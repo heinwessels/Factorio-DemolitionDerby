@@ -53,7 +53,7 @@ return {
             ticks_to_live = 1.5*60, -- This will determine how many biters will spawn
             biter_life_ticks = 8*60,-- How long should biters live
             offset = 4,             -- How far behind vehicle should they spawn
-            speed_modifier = 0.9,   -- Relative to player speed
+            speed_modifier = 1,   -- Relative to player speed
         },
         artillery = {
             warm_up_time = 1*60,    -- How long before the shots start to fire
