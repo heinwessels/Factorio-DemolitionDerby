@@ -4,6 +4,7 @@ Date: 31. 05. 2021
   Changes:
     - Nuke siren now plays at location where nuke will hit.
     - Biters are no slightly faster.
+    - Re-enabled minimap to see other players in arena.
   Bugfixes:
     - No longer allow passengers in lobby vehicles.
 ---------------------------------------------------------------------------------------------------

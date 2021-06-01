@@ -99,7 +99,7 @@ function World.on_player_entered(world, event)
     player.game_view_settings.show_controller_gui = false
     player.game_view_settings.show_research_info = false
     player.game_view_settings.show_side_menu = false
-    player.game_view_settings.show_minimap = false
+    player.game_view_settings.show_minimap = true
 
 end
 
