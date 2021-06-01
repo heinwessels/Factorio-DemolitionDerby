@@ -25,6 +25,7 @@ return {
             x = 40,
             y = 10
         },
+        effect_spawn_chance = 4*60,     -- A effect will be spawned every n-ticks on average
         effect_density = 1/(50*50),     -- effects per area in tiles
         start_zoom = 0.4,
         timing = {

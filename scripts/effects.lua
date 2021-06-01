@@ -567,24 +567,28 @@ local effects_to_spawn = {
 -- <register_on_entity_destroyed> function.
 function Effects.update_effect_beacons(arena)
     if arena.number_of_effect_beacons < arena.ideal_number_of_effect_beacons then
-        -- There are less beacons than we desire. Add another one
-        -- and register it with the correct callback
+        -- There are less beacons than we desire. More should be spawned
 
-        local type_to_spawn = effects_to_spawn[math.random(#effects_to_spawn)]
-        local beacon = Effects.attempt_spawn_effect_beacon(
-            arena, type_to_spawn
-        )
-        if beacon then
-            -- We successfully created a placed a new entity!
+        -- Roll the dice and see if a new entity will be spawned
+        if math.random(0, constants.arena.effect_spawn_chance) == 0 then
 
-            -- Now register a callback so that we know when this beacon is destroyed
-            -- Either by a player driving over it, or by some other means
-            -- We receive an registration number. We will use this as key
-            local reg = script.register_on_entity_destroyed(beacon)
+            local type_to_spawn = effects_to_spawn[math.random(#effects_to_spawn)]
+            local beacon = Effects.attempt_spawn_effect_beacon(
+                arena, type_to_spawn
+            )
+            if beacon then
+                -- We successfully created a placed a new entity!
 
-            -- Add it to the table of effect beacons            
-            arena.number_of_effect_beacons = arena.number_of_effect_beacons + 1
-            arena.effect_beacons[reg] = beacon
+                -- Now register a callback so that we know when this beacon is destroyed
+                -- Either by a player driving over it, or by some other means
+                -- We receive an registration number. We will use this as key
+                local reg = script.register_on_entity_destroyed(beacon)
+
+                -- Add it to the table of effect beacons            
+                arena.number_of_effect_beacons = arena.number_of_effect_beacons + 1
+                arena.effect_beacons[reg] = beacon
+            end
+            
         end
     end
 end
