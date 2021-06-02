@@ -1,12 +1,14 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.1.1
-Date: 31. 05. 2021
+Version: 0.2.0
+Date: 02. 06. 2021
+  Features:
+    - Added a tips-and-tricks about who effects are applied to.
   Changes:
     - Nuke siren now plays at location where nuke will hit.
     - Biters are no slightly faster.
     - Re-enabled minimap to see other players in arena.
     - Effects are only created roughly every 2 seconds.
-    - Changed apply-effect sound.
+    - Added/modified some other sounds.
   Bugfixes:
     - No longer allow passengers in lobby vehicles.
 ---------------------------------------------------------------------------------------------------

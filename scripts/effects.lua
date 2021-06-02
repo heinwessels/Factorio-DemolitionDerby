@@ -733,10 +733,8 @@ end
 -- extend the ticks_to_live
 function Effects.add_effect(arena, player, effects)
 
-    -- Play a ping for all players
-    for _, player in pairs(arena.players) do
-        player.play_sound{ path = "wdd-effect-activate" }
-    end
+    -- Play a ping for all player that it's applied to    
+    player.play_sound{ path = "wdd-effect-activate" }
 
     -- Now add it to the player
     local player_state = arena.player_states[player.index]

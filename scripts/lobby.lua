@@ -280,7 +280,7 @@ function Lobby.check_portals(lobby)
                             player.position.x,
                             player.position.y - 2,
                         },
-                        color = {r=1,g=0,b=0,a=1},
+                        color = {r=1,g=1,b=1,a=1},
                     }
                 end
             end
@@ -356,7 +356,7 @@ function Lobby.player_driving_state_changed(lobby, player, vehicle)
                     player.position.x,
                     player.position.y - 2,
                 },
-                color = {r=1,g=0,b=0,a=1},
+                color = {r=1,g=1,b=1,a=1},
             }        
             return true -- Let world know we handled it
         else
@@ -376,8 +376,9 @@ function Lobby.player_driving_state_changed(lobby, player, vehicle)
                 player.position.x,
                 player.position.y - 2,
             },
-            color = {r=1,g=0,b=0,a=1},
+            color = {r=1,g=1,b=1,a=1},
         }
+        player.play_sound{ path="wdd-no-no" }
         return true     -- This effect is handled
     end
 

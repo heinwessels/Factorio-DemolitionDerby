@@ -44,4 +44,19 @@ data:extend({
         type = "sound",
         filename = "__base__/sound/lamp-activate.ogg",
     },
+    {
+        name = "wdd-no-no",
+        type = "sound",
+        filename = "__core__/sound/cannot-build.ogg",
+    },
+    {
+        name = "wdd-game-lost",
+        type = "sound",
+        filename = "__core__/sound/game-lost.ogg",
+    },
+    {
+        name = "wdd-game-lost",
+        type = "sound",
+        filename = "__core__/sound/game-won.ogg",
+    },
 })
