@@ -6,6 +6,7 @@ Date: 31. 05. 2021
     - Biters are no slightly faster.
     - Re-enabled minimap to see other players in arena.
     - Effects are only created roughly every 2 seconds.
+    - Changed apply-effect sound.
   Bugfixes:
     - No longer allow passengers in lobby vehicles.
 ---------------------------------------------------------------------------------------------------

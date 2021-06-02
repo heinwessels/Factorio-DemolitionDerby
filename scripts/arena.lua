@@ -294,11 +294,13 @@ local arena_state_handler = {
     end,
     ["playing"] = function (arena)
         local tick = game.tick
-        -- Add more effect beacons if required
-        Effects.update_effect_beacons(arena)
-
+        
         -- Update effect entities
         if tick % constants.arena.frequency.effect_entity == 0 then
+            -- Add more effect beacons if required
+            Effects.update_effect_beacons(arena)
+
+            -- Destry created entities if they've been living to long
             Effects.update_effect_entities(arena, tick)
         end
         
@@ -478,11 +480,6 @@ function Arena.on_script_trigger_effect(arena, event)
     if util.position_in_area(beacon.position, arena.area) then
         -- This effect happened in our arena!
         Effects.hit_effect_event(arena, beacon)
-
-        -- Play a ping for all players
-        for _, player in pairs(arena.players) do
-            player.play_sound{ path = "wdd-effect-activate" }
-        end
         return true
     end
 end

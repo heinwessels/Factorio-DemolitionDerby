@@ -1,5 +1,5 @@
 local wdd_util = require("scripts.wdd-util")
-Builder = { }
+local Builder = { }
 
 function Builder.create()
     return { 

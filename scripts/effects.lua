@@ -237,10 +237,9 @@ local apply_effects_handler = {
             end
         elseif tick > effect.tick_started + effect_constants.warm_up_time then
             -- Handle main functionality here
-
-            local surface = arena.surfaces
-
+            
             -- Create flair
+            local surface = arena.surface
             local flair = surface.create_entity{
                 name = "nuke-flare", 
                 position = target, 
@@ -570,7 +569,9 @@ function Effects.update_effect_beacons(arena)
         -- There are less beacons than we desire. More should be spawned
 
         -- Roll the dice and see if a new entity will be spawned
-        if math.random(0, constants.arena.effect_spawn_chance) == 0 then
+        if math.random(0, 
+            math.ceil(constants.arena.effect_spawn_chance / constants.arena.frequency.effect_entity)
+        ) == 0 then
 
             local type_to_spawn = effects_to_spawn[math.random(#effects_to_spawn)]
             local beacon = Effects.attempt_spawn_effect_beacon(
@@ -578,6 +579,10 @@ function Effects.update_effect_beacons(arena)
             )
             if beacon then
                 -- We successfully created a placed a new entity!
+
+                for _, player in pairs(arena.players) do 
+                    player.play_sound{ path = "wdd-effect-created" }
+                end
 
                 -- Now register a callback so that we know when this beacon is destroyed
                 -- Either by a player driving over it, or by some other means
@@ -640,6 +645,7 @@ function Effects.hit_effect_event(arena, beacon)
         local last_dash = util.string_find_last(beacon.name, "-")
         local effect_type = string.sub(beacon.name, 12, last_dash-1)
         local target_str = string.sub(beacon.name, last_dash+1, -1)
+        local target = nil
         if target_str == "enemy" then   -- Who should this effect be applied to?
             target = Effects.find_random_enemy(arena, player) or player
         else
@@ -726,6 +732,13 @@ end
 -- If that effect is already given to the player, simply
 -- extend the ticks_to_live
 function Effects.add_effect(arena, player, effects)
+
+    -- Play a ping for all players
+    for _, player in pairs(arena.players) do
+        player.play_sound{ path = "wdd-effect-activate" }
+    end
+
+    -- Now add it to the player
     local player_state = arena.player_states[player.index]
     for effect_type, effect in pairs(effects) do
         effect.position = player.position
@@ -741,7 +754,6 @@ function Effects.add_effect(arena, player, effects)
             effect.extended = false
             effect.fresh = true
             player_state.effects[effect_type] = effect
-            -- Effects.log(arena, "Adding <"..effect_type.."> effect on <"..player.name.."> to arena <"..arena.name)
         end
     end    
 end

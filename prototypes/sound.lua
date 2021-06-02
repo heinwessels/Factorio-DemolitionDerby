@@ -19,9 +19,14 @@ data:extend({
         filename = "__base__/sound/programmable-speaker/vibraphone-14.ogg",
     },
     {
+        name = "wdd-effect-created",
+        type = "sound",
+        filename = "__core__/sound/build-large.ogg",
+    },
+    {
         name = "wdd-effect-activate",
         type = "sound",
-        filename = "__base__/sound/fight/gun-turret-activate-03.ogg",
+        filename = "__base__/sound/spidertron/spidertron-activate.ogg",
     },
     {
         name = "wdd-player-die",

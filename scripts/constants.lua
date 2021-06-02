@@ -33,7 +33,7 @@ return {
             ["post-wait"] = 2*60,   -- Little period after the round ended            
         },
         frequency = {
-            effect_entity = 10,     -- How often effect entities are polled
+            effect_entity = 10,     -- How often effect entities are polled to possibly be spawned
         },
     },
     effects = {

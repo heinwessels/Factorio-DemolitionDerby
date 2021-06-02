@@ -1,6 +1,6 @@
 local Factorio_util = require("util")
 
-Util = { }
+local Util = { }
 
 function Util.merge(tables) return Factorio_util.merge(tables) end
 

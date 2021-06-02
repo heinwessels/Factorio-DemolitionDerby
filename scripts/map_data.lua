@@ -1,4 +1,4 @@
-util = require("util")
+local util = require("util")
 
 function create_arena(arena)
     return util.merge{
