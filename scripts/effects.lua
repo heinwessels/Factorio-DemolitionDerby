@@ -242,7 +242,7 @@ local apply_effects_handler = {
             local surface = arena.surface
             local flair = surface.create_entity{
                 name = "nuke-flare", 
-                position = target, 
+                position = effect.target, 
                 height = 2,             -- Top of the fall
                 vertical_speed = 0.01,  -- How fast does it fall
                 frame_speed = 1,        -- Don't think this does anything 
@@ -257,14 +257,14 @@ local apply_effects_handler = {
             -- Create projectile
             local speed = 1
             local offset_target = {
-                x = target.x,
-                y = target.y - speed*effect_constants.shell_travel_time
+                x = effect.target.x,
+                y = effect.target.y - speed*effect_constants.shell_travel_time
             }
             local nuke = surface.create_entity{
                 name = "atomic-rocket", 
                 position = offset_target, 
                 force = "enemy", 
-                target = target,
+                target = effect.target,
                 speed = speed
             }
             if nuke then
@@ -655,76 +655,9 @@ function Effects.hit_effect_event(arena, beacon)
         end
         
         -- Add the applicable effect
-        if effect_type == "speed_up" then
-            Effects.add_effect(arena, target, {
-                speed_up = {
-                    speed_modifier = 1.8,
-                    ticks_to_live = 4*60,
-                },
-            })
-        elseif effect_type == "tank" then
-            Effects.add_effect(arena, target, {
-                tank = {
-                    speed_modifier = 0.55,
-                    ticks_to_live = 5*60,
-                },
-            })
-        elseif effect_type == "slow_down" then
-            Effects.add_effect(arena, target, {
-                slow_down = {
-                    speed_modifier = 0.55,
-                    ticks_to_live = 5*60,
-                },
-            })
-        elseif effect_type == "no_trail" then
-            Effects.add_effect(arena, target, {
-                no_trail = {
-                    ticks_to_live = 5*60,
-                },                
-            })
-        elseif effect_type == "full_trail" then
-            Effects.add_effect(arena, target, {
-                full_trail = {
-                    ticks_to_live = 5*60,
-                },                
-            })
-        elseif effect_type == "worm" then
-            local effect_constants = constants.effects[effect_type]
-            Effects.add_effect(arena, target, {
-                worm = {
-                    ticks_to_live = effect_constants.ticks_to_live,
-                },                
-            })
-        elseif effect_type == "biters" then
-            local effect_constants = constants.effects[effect_type]
-            Effects.add_effect(arena, target, {
-                biters = {
-                    ticks_to_live = effect_constants.ticks_to_live,
-                },
-            })
-        elseif effect_type == "artillery" then
-            Effects.add_effect(arena, target, {
-                artillery = {
-                    ticks_to_live = 10*60,  -- Just some maximum amount of time to live
-                },                
-            })
-        elseif effect_type == "nuke" then
-            local effect_constants = constants.effects[effect_type]
-            Effects.add_effect(arena, target, {
-                nuke = {
-                    ticks_to_live = effect_constants.ticks_to_live,
-                },                
-            })
-        elseif effect_type == "invert" then
-            local effect_constants = constants.effects[effect_type]
-            Effects.add_effect(arena, target, {
-                invert = {
-                    ticks_to_live = effect_constants.ticks_to_live,
-                },                
-            })
-        else
-            error("Unrecognised effect")
-        end
+        effect = constants.effects[effect_type]
+        if not effect then error("Effect of type <"..effect_type.."> not recognised") end
+        Effects.add_effect(arena, target, {[effect_type]=effect})
     end
 end
 
