@@ -7,8 +7,7 @@ script.on_event(defines.events.on_tick, function (event)
 
     -- Have we set up what we want?
     if global.world == nil then
-        global.world = { }
-        global.world = World.create(global.world, map_data)
+        global.world = { }        
     end
 
     -- Update this world!
@@ -67,6 +66,5 @@ remote.add_interface("wdd", {
     end
 })
 
--- TO USE DEBUGGER LOG
--- require('__debugadapter__/debugadapter.lua')
--- __DebugAdapter.print(expr,alsoLookIn)
+-- GO TO EDITOR
+-- /editor remote.call("wdd", "editor")

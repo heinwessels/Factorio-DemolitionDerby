@@ -111,7 +111,9 @@ local function create_effect_beacon(config)
         }
     )
 
-    table.insert(picture.layers, config.picture)
+    for _, layer in pairs(config.picture) do
+        table.insert(picture.layers, layer)
+    end
 
     if not config.overlay then config.overlay = { } end
     for _, overlay in pairs(config.overlay) do
@@ -146,117 +148,127 @@ end
 
 create_effect_beacon_for_both{
     name = "speed_up",
-    icon = "__base__/graphics/icons/coin.png",
+    icon = "__base__/graphics/icons/coin.png",    
     picture = {
-        filename = "__base__/graphics/icons/car.png",
-        priority = "medium",
-        width = 64,
-        height = 64,
-        scale = size_modifier,
-    },    
+        {
+            filename = "__DemolitionDerby__/graphics/entities/effect-beacon/speed-up-fire.png",
+            priority = "medium",
+            width = 256,
+            height = 256,
+            scale = size_modifier / 4,  -- Divide for larger tech icon
+        },
+        {
+            filename = "__base__/graphics/technology/automobilism.png",
+            priority = "medium",
+            width = 256,
+            height = 256,
+            shift = {0.35, 0.35},
+            scale = size_modifier / 4,  -- Divide for larger tech icon
+        }
+    },
     type = "good",
 }
 create_effect_beacon_for_both{
     name = "tank",
     icon = "__base__/graphics/icons/coin.png",
-    picture = {
+    picture = {{
         filename = "__base__/graphics/icons/tank.png",
         priority = "medium",
         width = 64,
         height = 64,
         scale = size_modifier,
-    }
+    }}
 }
 create_effect_beacon_for_both{
     name = "slow_down",
     icon = "__base__/graphics/icons/coin.png",
-    picture = {
+    picture = {{
         filename = "__base__/graphics/icons/slowdown-capsule.png",
         priority = "medium",
         width = 64,
         height = 64,
         scale = size_modifier,
-    },
+    }},
 }
 create_effect_beacon_for_both{
     name = "no_trail",
     icon = "__base__/graphics/icons/coin.png",
-    picture = {
+    picture = {{
         filename = "__base__/graphics/icons/wall.png",
         priority = "medium",
         width = 64,
         height = 64,
         scale = size_modifier * 0.9,
-    },
+    }},
     overlay = {"not"},
 }
 create_effect_beacon_for_both{
     name = "full_trail",
     icon = "__base__/graphics/icons/coin.png",
-    picture = {
+    picture = {{
         filename = "__base__/graphics/icons/wall.png",
         priority = "medium",
         width = 64,
         height = 64,
         scale = size_modifier * 0.9,
-    },
+    }},
 }
 create_effect_beacon_for_both{
     name = "worm",
     icon = "__base__/graphics/icons/coin.png",
-    picture = {
+    picture = {{
         filename = "__base__/graphics/icons/behemoth-worm.png",
         priority = "medium",
         width = 64,
         height = 64,
         scale = size_modifier,
-    }
+    }}
 }
 create_effect_beacon_for_both{
     name = "biters",
     icon = "__base__/graphics/icons/coin.png",
-    picture = {
+    picture = {{
         filename = "__base__/graphics/icons/behemoth-biter.png",
         priority = "medium",
         width = 64,
         height = 64,
         scale = size_modifier,
-    }
+    }}
 }
 create_effect_beacon{
     name = "artillery",
     target = "all",
     icon = "__base__/graphics/icons/coin.png",
-    picture = {
+    picture = {{
         filename = "__base__/graphics/icons/artillery-turret.png",
         priority = "medium",
         width = 64,
         height = 64,
         scale = size_modifier,
-    }
+    }}
 }
 create_effect_beacon{
     name = "nuke",
     target = "all",
     icon = "__base__/graphics/icons/coin.png",
-    picture = {
+    picture = {{
         filename = "__base__/graphics/technology/atomic-bomb.png",
         priority = "medium",
         width = 256,
         height = 256,
         scale = size_modifier / 4,  -- Divide for larger tech icon
-    }
+    }}
 }
 create_effect_beacon_for_both{
     name = "invert",
     icon = "__base__/graphics/icons/coin.png",
-    picture = {
+    picture = {{
         filename = "__base__/graphics/icons/signal/signal_R.png",
         priority = "medium",
         width = 64,
         height = 64,
         scale = size_modifier,
-    }
+    }}
 }
 
 
