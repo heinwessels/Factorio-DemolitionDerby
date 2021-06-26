@@ -172,11 +172,11 @@ create_effect_beacon_for_both{
     name = "tank",
     icon = "__base__/graphics/icons/coin.png",
     picture = {{
-        filename = "__base__/graphics/icons/tank.png",
+        filename = "__base__/graphics/technology/tank.png",
         priority = "medium",
-        width = 64,
-        height = 64,
-        scale = size_modifier,
+        width = 256,
+        height = 256,
+        scale = size_modifier / 4 * 1.1,
     }}
 }
 create_effect_beacon_for_both{
@@ -263,12 +263,12 @@ create_effect_beacon_for_both{
     name = "invert",
     icon = "__base__/graphics/icons/coin.png",
     picture = {{
-        filename = "__base__/graphics/icons/signal/signal_R.png",
+        filename = "__DemolitionDerby__/graphics/entities/effect-beacon/steering-wheel.png",
         priority = "medium",
-        width = 64,
-        height = 64,
-        scale = size_modifier,
-    }}
+        width = 256,
+        height = 256,
+        scale = size_modifier / 4 * 0.85,  -- Scale to make it slightly smalle
+    },}
 }
 
 
