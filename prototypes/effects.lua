@@ -176,7 +176,7 @@ create_effect_beacon_for_both{
         priority = "medium",
         width = 256,
         height = 256,
-        scale = size_modifier / 4 * 1.1,
+        scale = size_modifier / 4 * 1.2,
     }}
 }
 create_effect_beacon_for_both{
@@ -217,22 +217,22 @@ create_effect_beacon_for_both{
     name = "worm",
     icon = "__base__/graphics/icons/coin.png",
     picture = {{
-        filename = "__base__/graphics/icons/behemoth-worm.png",
+        filename = "__DemolitionDerby__/graphics/entities/effect-beacon/worm.png",
         priority = "medium",
-        width = 64,
-        height = 64,
-        scale = size_modifier,
+        width = 256,
+        height = 256,
+        scale = size_modifier / 4 * 1.2,  -- Divide for larger tech icon
     }}
 }
 create_effect_beacon_for_both{
     name = "biters",
     icon = "__base__/graphics/icons/coin.png",
     picture = {{
-        filename = "__base__/graphics/icons/behemoth-biter.png",
+        filename = "__DemolitionDerby__/graphics/entities/effect-beacon/biter.png",
         priority = "medium",
-        width = 64,
-        height = 64,
-        scale = size_modifier,
+        width = 256,
+        height = 256,
+        scale = size_modifier / 4 * 1.1,  -- Divide for larger tech icon
     }}
 }
 create_effect_beacon{
@@ -240,11 +240,11 @@ create_effect_beacon{
     target = "all",
     icon = "__base__/graphics/icons/coin.png",
     picture = {{
-        filename = "__base__/graphics/icons/artillery-turret.png",
+        filename = "__base__/graphics/technology/artillery.png",
         priority = "medium",
-        width = 64,
-        height = 64,
-        scale = size_modifier,
+        width = 256,
+        height = 256,
+        scale = size_modifier / 4 * 1.1,
     }}
 }
 create_effect_beacon{
@@ -256,7 +256,7 @@ create_effect_beacon{
         priority = "medium",
         width = 256,
         height = 256,
-        scale = size_modifier / 4,  -- Divide for larger tech icon
+        scale = size_modifier / 4 * 1.1,  -- Divide for larger tech icon
     }}
 }
 create_effect_beacon_for_both{
