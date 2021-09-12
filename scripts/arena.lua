@@ -289,8 +289,7 @@ local arena_state_handler = {
         arena.round.players_alive = #arena.players
 
         Arena.set_status(arena, "playing")            
-        Arena.log(arena, "Started with "..#arena.players.." players")
-        game.print("Round in Arena: "..arena.name.." started!")
+        Arena.log(arena, "Started with "..#arena.players.." players")        
     end,
     ["playing"] = function (arena)
         local tick = game.tick
@@ -344,15 +343,9 @@ local arena_state_handler = {
             -- The game is over!
             arena.round.tick_ended = tick
             if not player_alive then 
-                -- There is no alive players left
-                if #arena.players > 1 then
-                    game.print("On Arena "..arena.name.." after "..util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds there was no winner!")
-                else
-                    game.print("On Arena "..arena.name.." "..arena.players[1].name.." played alone and lost after "..util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds!")
-                end
+                -- There is no alive players left                
                 Arena.log(arena, "Round over after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. There was no winner and "..#arena.players.." players.")
-            else                
-                game.print("On Arena "..arena.name.." the player "..player_alive.name.." emerged victorious after "..util.round((arena.round.tick_ended-arena.round.tick_started)/60, 1).." seconds!")
+            else
                 Arena.log(arena, "Round over after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. <"..player_alive.name.."> was the victor and there were "..#arena.players.." players.")
             end
 

@@ -179,8 +179,7 @@ function Lobby.state_machine(lobby)
                 Lobby.set_status(lobby, "waiting")
             end    
         else
-            -- Some player climbed out of their car. Stop countdown
-            game.print("Countdown stopped for "..lobby.name.."! All players not ready")
+            -- Some player climbed out of their car. Stop countdown            
             Lobby.set_status(lobby, "ready")
         end
     ---------------------------------------------------
@@ -224,8 +223,7 @@ function Lobby.state_machine(lobby)
                 Lobby.set_status(lobby, "busy")
             end
         else
-            -- Some player climbed out of their car. Stop countdown
-            game.print("Countdown stopped for "..lobby.name.."! All players not ready")
+            -- Some player climbed out of their car. Stop countdown            
             Lobby.set_status(lobby, "ready")
         end
     ---------------------------------------------------
