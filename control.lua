@@ -29,6 +29,12 @@ script.on_event(defines.events.on_script_trigger_effect,
 script.on_event(defines.events.on_entity_destroyed,
     function (event) World.on_entity_destroyed(global.world, event) end
 )
+script.on_event(defines.events.on_cutscene_waypoint_reached,
+    function (event) World.on_cutscene_waypoint_reached(global.world, event) end
+)
+script.on_event("crash-site-skip-cutscene",
+    function (event) World.on_skip_cutscene(global.world, event) end
+)
 
 -- It is possible to define the name and table inside the call
 remote.add_interface("wdd", {

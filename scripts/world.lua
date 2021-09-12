@@ -110,6 +110,15 @@ function World.on_player_left(world, event)
 
     World.log("Player <"..player.name.."> left. Last position <"..util.to_string(player.position)..">.")
 
+    -- Pull player from any cutscene to make sure 
+    -- there's no leftover character
+    if player.controller_type == defines.controllers.cutscene then
+        player.exit_cutscene()
+        -- It's okay if it was splash and the gui label remains
+        -- It will be destroyed next time the player joins.
+    end
+
+    -- Remove player from arenas and lobbies
     for index, lobby in pairs(world.lobbies) do
         Lobby.on_player_left(lobby, player)
     end
@@ -179,6 +188,22 @@ function World.on_entity_destroyed(world, event)
     for _, arena in pairs(world.arenas) do
         if Arena.on_entity_destroyed(arena, event) then return end
     end
+end
+
+-- This will be called on every splash, portal and transition
+-- to/from arena, but this is only to remove the skip splash
+-- label. So send it straight there
+function World.on_cutscene_waypoint_reached(world, event)    
+    Splash.on_cutscene_waypoint_reached(event)
+end
+
+-- The player can skip the splash when he joins
+-- the game. We refine this here a little, and
+-- simply tell Splash to skip if watching.
+function World.on_skip_cutscene(world, event)
+    if event.player_index ~= 1 then return end
+    local player = game.get_player(event.player_index)        
+    Splash.cancel_if_watching(player)
 end
 
 function World.log(msg)

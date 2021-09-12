@@ -1,9 +1,11 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.2
 Date: ??. ??. 2021
+  Features:
+    - Improved some graphics.
+    - Can now skip splash cutscene
   Changes:
     - Increase tank effect time from 5 to 10 seconds.
-    - Improved some beacon graphic.
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.1
 Date: 02. 06. 2021
