@@ -53,7 +53,6 @@ remote.add_interface("wdd", {
         for _, player in pairs(game.players) do
             player.game_view_settings.show_controller_gui = enable
             player.game_view_settings.show_research_info = enable
-            player.game_view_settings.show_side_menu = enable
             player.game_view_settings.show_minimap = enable
         end
     end,

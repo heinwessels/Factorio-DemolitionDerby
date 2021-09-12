@@ -289,7 +289,7 @@ local apply_effects_handler = {
                 effect.last_shot_fired = 0  -- But we will do it next tick for simplicity
             end
         else
-            -- Player drove through artillary again.
+            -- Player drove through artillery again.
             if effect.extended == true then
                 effect.shots_left = effect.shots_left
                         + util.size_of_area(arena.area) * effect_constants.coverage_density
@@ -323,7 +323,7 @@ local apply_effects_handler = {
                         ) -- Should dissapear when shell hits
                     end
 
-                    -- Create the artillary shell mid air!
+                    -- Create the artillery shell mid air!
                     local speed = 1
                     local offset_target = {
                         x = target.x - speed*effect_constants.shell_travel_time,

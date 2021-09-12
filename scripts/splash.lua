@@ -40,6 +40,7 @@ function Splash.destroy_label(player)
     end
 end
 
+-- All ends of splash will end here.
 function Splash.cancel_if_watching(player)
     if Splash.is_watching(player) then
         -- This player was busy watching the splash. Cancel it safely
@@ -49,6 +50,9 @@ function Splash.cancel_if_watching(player)
 
         -- Remove the label too
         Splash.destroy_label(player)
+
+        -- Welcome the player
+        player.print({"general.welcome-msg"})
     end
 end
 
@@ -63,8 +67,8 @@ function Splash.on_cutscene_waypoint_reached(event)
     -- Player is watching splash. If he reached the 
     -- last waypoint then remove the label    
     -- NOTE: For some reason returned index starts at 0? Hence -1
-    if event.waypoint_index == Splash.number_of_waypoints-1 then 
-        Splash.destroy_label(player)
+    if event.waypoint_index == Splash.number_of_waypoints-1 then
+        Splash.cancel_if_watching(player)
     end
 end
 

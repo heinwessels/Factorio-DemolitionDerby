@@ -88,19 +88,20 @@ function World.on_player_entered(world, event)
     player.character.driving = false    -- Ensure that he's not in a vehicle
     util.teleport_safe(player, world.spawn_location)
 
+    -- Hide some GUI elements
+    -- This must be done before the splash, otherwise the gui
+    -- settings is only applied to the cutscene controller
+    player.game_view_settings.show_controller_gui = false
+    player.game_view_settings.show_research_info = false
+    player.game_view_settings.show_side_menu = true -- Make sure this is enabled for tips
+    player.game_view_settings.show_minimap = false
+    
     -- Here is the splashy boi.
     -- After it ends player will automatically be
     -- at his character at spawn
     if constants.splash.enabled and world.splash then
         Splash.show(world, player)
     end
-
-    -- Hide some GUI elements
-    player.game_view_settings.show_controller_gui = false
-    player.game_view_settings.show_research_info = false
-    player.game_view_settings.show_side_menu = false
-    player.game_view_settings.show_minimap = false
-
 end
 
 function World.on_player_left(world, event)
