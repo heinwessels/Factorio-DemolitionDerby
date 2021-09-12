@@ -5,6 +5,7 @@ Date: ??. ??. 2021
     - Improved some graphics.
     - Can now skip splash cutscene.
     - Improved Tips-And-Tricks.
+    - Players permissions reduced drastically to minimize bugs and trolss.
   Changes:
     - Increase tank effect time from 5 to 10 seconds.
 ---------------------------------------------------------------------------------------------------

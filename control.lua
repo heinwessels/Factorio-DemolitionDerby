@@ -14,6 +14,9 @@ script.on_event(defines.events.on_tick, function (event)
     World.on_tick(global.world, event) 
 end)
 
+script.on_configuration_changed(
+    function (event) World.on_configuration_changed(event) end
+)
 script.on_event(defines.events.on_player_joined_game, 
     function (event) World.on_player_entered(global.world, event) end
 )

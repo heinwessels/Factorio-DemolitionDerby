@@ -5,6 +5,7 @@ local Lobby = require("scripts.lobby")
 local constants = require("scripts.constants")
 local util = require("scripts.wdd-util")
 local Splash = require("scripts.splash")
+local Permissions = require("scripts.permissions")
 
 local World = { }
 
@@ -88,6 +89,10 @@ function World.on_player_entered(world, event)
     player.character.driving = false    -- Ensure that he's not in a vehicle
     util.teleport_safe(player, world.spawn_location)
 
+    -- Modify his permissions so that he cannot
+    -- mess with things they shouldn't
+    Permissions.add_player(player)
+
     -- Hide some GUI elements
     -- This must be done before the splash, otherwise the gui
     -- settings is only applied to the cutscene controller
@@ -118,6 +123,11 @@ function World.on_player_left(world, event)
         -- It's okay if it was splash and the gui label remains
         -- It will be destroyed next time the player joins.
     end
+
+    -- Remove player from permissions group
+    -- I don't know if it's required.
+    -- Just being safe I guess
+    Permissions.remove_player(player)
 
     -- Remove player from arenas and lobbies
     for index, lobby in pairs(world.lobbies) do
@@ -205,6 +215,11 @@ function World.on_skip_cutscene(world, event)
     if event.player_index ~= 1 then return end
     local player = game.get_player(event.player_index)        
     Splash.cancel_if_watching(player)
+end
+
+function World.on_configuration_changed(event)    
+    -- Setup the permission group for the players    
+    Permissions.create_player_permission_group()
 end
 
 function World.log(msg)
