@@ -48,7 +48,7 @@ data:extend({
         {
             name = "wdd-border",
             minable = {result = "wdd-border"},
-            max_health = 100000000,
+            max_health = 1000000000,
             resistances = {
                 {
                     type = "fire",
@@ -56,7 +56,10 @@ data:extend({
                 },
                 {
                     type = "impact",
-                    percent = 100,
+                    -- Immunity cannot be 100%
+                    -- otherwise attack_reaction won't 
+                    -- trigger
+                    percent = 99,
                 },
                 {
                     type = "explosion",
@@ -82,25 +85,20 @@ data:extend({
                     -- Using electricity because it sounds cool
                     -- This means that tanks can be resistant to
                     -- impacts, but still die at the border wall.
-
-                    -- TODO Get this to actually work!
-                    -- TODO Add some cool effects?
                     range = 2,
-                    -- damage_type = "impact",       -- Damage that triggers the reaction
-                    reaction_modifier = 100000000,
-                    action =
-                    {
+                    action = {
                         type = "direct",
-                        action_delivery =
-                        {
+                        action_delivery = {
                             type = "instant",
-                            target_effects =
-                            {                                
+                            target_effects = {
                                 type = "damage",
-                                damage = {amount = 1000000, type = "electric"}
-                            }
+                                damage = {
+                                    amount = 5000,
+                                    type = "electric"
+                                }
+                            },                            
                         }
-                    },
+                    },                    
                 }
             },
         }

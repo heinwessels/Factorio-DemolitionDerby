@@ -217,9 +217,10 @@ function World.on_skip_cutscene(world, event)
     Splash.cancel_if_watching(player)
 end
 
-function World.on_configuration_changed(event)    
-    -- Setup the permission group for the players    
-    Permissions.create_player_permission_group()
+function World.on_configuration_changed(event)
+
+    Permissions.setup_permissions()
+    
 end
 
 function World.log(msg)

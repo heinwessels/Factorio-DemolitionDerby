@@ -17,6 +17,7 @@ data:extend({
             name = "wdd-car",
             energy_source = {type = "void"},
             minable = {result = "wdd-car"},
+            alert_when_damaged = false,
             max_health = 100,
             resistances = {
                 {
@@ -41,7 +42,7 @@ data:extend({
                 {
                     type = "electric",
                     percent = 0,
-                    decrease = -5000  -- die instantly
+                    decrease = -5000  -- die instantly on border wall
                 },
                 {
                     type = "explosion",
@@ -96,17 +97,17 @@ data:extend({
             energy_source = {type = "void"},
             burner = nil,
             minable = {result = "wdd-tank"},
+            alert_when_damaged = false,
             max_health = 2000,
             resistances = {
                 {
                     type = "electric",
                     percent = 0,
-                    decrease = -5000  -- die instantly on border wall TODO
+                    decrease = -5000  -- die instantly on border wall
                 },
                 {
                     type = "impact",
-                    -- percent = 100,   -- Imune
-                    percent = 50,       -- TODO Must still die when hit border until reaction is fixed
+                    percent = 100,   -- Imune
                 },
                 {
                     type = "fire",

@@ -11,7 +11,7 @@ function Builder.create()
         --  idle
 
         iterator = 0,   -- Keeps track of location of clean/build/etc
-        build_area = { },   -- Slighyly smaller than area to not include walls
+        area_to_clean = { },   -- Slighyly smaller than area to not include walls
     }
 end
 
@@ -36,10 +36,10 @@ function Builder.iterate(arena)
 
     if builder.state == "starting" then
         -- Just set things up.
-        builder.iterator = 0        
-        builder.build_area = {
-            left_top={x=math.floor(area.left_top.x+1), y=math.floor(area.left_top.y+1)},
-            right_bottom={x=math.ceil(area.right_bottom.x-1), y=math.ceil(area.right_bottom.y-1)}
+        builder.iterator = 0
+        builder.area_to_clean = { -- Area slightly bigger than arena
+            left_top={x=math.floor(area.left_top.x-1), y=math.floor(area.left_top.y-1)},
+            right_bottom={x=math.ceil(area.right_bottom.x+1), y=math.ceil(area.right_bottom.y+1)}
         }
         Builder.set_state(arena, "cleaning")
     elseif builder.state == "cleaning" then
@@ -47,14 +47,18 @@ function Builder.iterate(arena)
         -- Calculate area to clean this round
         local area = {
             {
-                x=builder.build_area.left_top.x+builder.iterator, 
-                y=builder.build_area.left_top.y
+                x=builder.area_to_clean.left_top.x+builder.iterator, 
+                y=builder.area_to_clean.left_top.y
             },
             {
-                x=builder.build_area.left_top.x+builder.iterator+1, 
-                y=builder.build_area.right_bottom.y
+                x=builder.area_to_clean.left_top.x+builder.iterator+1, 
+                y=builder.area_to_clean.right_bottom.y
             }
         }
+        
+        -- Cache border walls max health
+        local border_max_health = game.get_filtered_entity_prototypes{
+            {filter="name", name ="wdd-border"}}["wdd-border"].max_health
 
         -- Clean out all rocks, trees, vehicles and trails
         for _, entity in pairs(surface.find_entities_filtered{
@@ -70,7 +74,11 @@ function Builder.iterate(arena)
                 "fire", -- This is for worm spit
             },
         }) do
-            if entity.name ~= "wdd-border" then
+            if entity.name == "wdd-border" then
+                -- We need to fix up the border walls
+                -- They might get damaged in collisions
+                entity.health = border_max_health
+            else
                 entity.destroy{raise_destroy=false}
             end
         end
@@ -96,7 +104,7 @@ function Builder.iterate(arena)
 
         -- Set builder to clean next section
         builder.iterator = builder.iterator + 1
-        if builder.iterator >= (builder.build_area.right_bottom.x-builder.build_area.left_top.x) then
+        if builder.iterator >= (builder.area_to_clean.right_bottom.x-builder.area_to_clean.left_top.x) then
             Builder.set_state(arena, "building")
             builder.iterator = 0
         end
@@ -104,7 +112,7 @@ function Builder.iterate(arena)
     elseif builder.state == "building" then
         -- Now build
 
-        -- Add the vehicles
+        -- Add the vehicles for the next round
         local surface = arena.surface
         for _, position in pairs(arena.starting_locations) do            
             local vehicle = surface.create_entity{

@@ -6,6 +6,7 @@ Date: ??. ??. 2021
     - Can now skip splash cutscene.
     - Improved Tips-And-Tricks.
     - Players permissions reduced drastically to minimize bugs and trolss.
+    - Tank can now drive through trail walls left by players indefinitely.
   Changes:
     - Increase tank effect time from 5 to 10 seconds.
 ---------------------------------------------------------------------------------------------------
