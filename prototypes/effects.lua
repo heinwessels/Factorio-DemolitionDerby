@@ -79,6 +79,7 @@ data:extend({
 ----------------------------------------------------------------------------------
 local function create_effect_beacon(config)
     -- type = "good" or "bad" or "bad-not-stripe" (will have a stripe overlay saying NOT)
+
     if string.match(config.name, "wdd-") then error("`wdd-` preposition added automatically.") end
     local name = "wdd-effect-"..config.name.."-"..config.target
     data:extend({
@@ -97,10 +98,10 @@ local function create_effect_beacon(config)
                 minable = {result = name},                
             }
         },
-    })
+    })    
 
+    -- Create the entity graphics
     local picture = { layers = { } }
-
     table.insert(picture.layers, 
         {
             filename = "__DemolitionDerby__/graphics/entities/effect-beacon/effect-beacon-"..config.target..".png",
@@ -110,11 +111,10 @@ local function create_effect_beacon(config)
             scale = size_modifier,
         }
     )
-
     for _, layer in pairs(config.picture) do
+        if layer.width ~= layer.height then error("Graphic not square: <"..layer.filename..">") end
         table.insert(picture.layers, layer)
     end
-
     if not config.overlay then config.overlay = { } end
     for _, overlay in pairs(config.overlay) do
         table.insert(picture.layers, 
@@ -127,10 +127,24 @@ local function create_effect_beacon(config)
             }
         )
     end
-
     data.raw["land-mine"][name].picture_safe = picture
     data.raw["land-mine"][name].picture_set = picture
     data.raw["land-mine"][name].picture_set_enemy = picture
+
+    -- Create icon from picture data
+    local icons = { }
+    for _, layer in pairs(picture.layers) do
+        -- we assueme that the layer graphic is square
+        local scale = 32 / layer.width * (layer.icon_scale or 1)
+        table.insert(icons, 
+            {
+                icon = layer.filename,
+                icon_size = layer.width, -- we check that width==height
+                scale = scale
+            }
+        )
+    end
+    data.raw["land-mine"][name].icons = icons
 end
 
 -- Create this effect beacon for player and enemy
@@ -177,6 +191,7 @@ create_effect_beacon_for_both{
         width = 256,
         height = 256,
         scale = size_modifier / 4 * 1.2,
+        icon_scale = 1.2
     }}
 }
 create_effect_beacon_for_both{
@@ -198,7 +213,8 @@ create_effect_beacon_for_both{
         priority = "medium",
         width = 64,
         height = 64,
-        scale = size_modifier * 0.9,
+        scale = size_modifier * 0.8,
+        icon_scale = 0.8
     }},
     overlay = {"not"},
 }
@@ -210,7 +226,8 @@ create_effect_beacon_for_both{
         priority = "medium",
         width = 64,
         height = 64,
-        scale = size_modifier * 0.9,
+        scale = size_modifier * 0.8,
+        icon_scale = 0.8
     }},
 }
 create_effect_beacon_for_both{
@@ -267,10 +284,14 @@ create_effect_beacon_for_both{
         priority = "medium",
         width = 256,
         height = 256,
-        scale = size_modifier / 4 * 0.85,  -- Scale to make it slightly smalle
+        scale = size_modifier / 4 * 0.8,  -- Scale to make it slightly smaller
+        icon_scale = 0.8
     },}
 }
 
+-- Remove the base effect used to create all the real ones
+data.raw["item"]["wdd-effect-base"] = nil
+data.raw["land-mine"]["wdd-effect-base"] = nil
 
 ----------------------------------------------------------------------------------
 -- Tweak a few game things so that it caters more for this minigame
