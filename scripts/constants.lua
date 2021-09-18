@@ -30,7 +30,7 @@ return {
         start_zoom = 0.4,
         timing = {
             ["transition-pre"] = 1.5*60,   -- Cutscene from lobby to arena
-            ["post-wait"] = 2*60,   -- Little period after the round ended            
+            ["post-wait"] = 3*60,   -- Little period after the round ended            
         },
         frequency = {
             effect_entity = 10,     -- How often effect entities are polled to possibly be spawned

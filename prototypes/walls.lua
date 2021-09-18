@@ -5,27 +5,29 @@ data:extend({
         data.raw["wall"]["stone-wall"],
         {
             name = "wdd-trail",
-            resistances = {
+            dying_explosion = "grenade-explosion",  -- Bigger boom
+            resistances = {                
                 {
-                    type = "physical",
-                    decrease = 3,
-                    percent = 20
-                },
-                {
+                    -- Needs to be strong, but not too much
+                    -- Needs to destroy cars on impact
+                    -- But tanks destroys them with impact                    
                     type = "impact",
-                    decrease = 45,
+                    decrease = 50,
                 },
                 {
-                    type = "fire",
-                    percent = 100
-                },
-                {
+                    -- Want it so that effect explosios
+                    -- and car crashes removes a lot of
+                    -- the walls.
                     type = "explosion",
                     decrease = -5000,   -- Die instantly
                 },
                 {
+                    type = "fire",
+                    percent = 100       -- Immune
+                },
+                {
                     type = "laser",
-                    decrease = -5000,   -- Die instantly
+                    percent = 100,      -- immune
                 },
                 {
                     type = "acid",
@@ -48,6 +50,10 @@ data:extend({
         {
             name = "wdd-border",
             minable = {result = "wdd-border"},
+            -- Might receive some impact damage
+            -- from vehicles, but should never die.
+            -- Regenerate health automatically!
+            healing_per_tick = 100, -- per tick
             max_health = 1000000000,
             resistances = {
                 {

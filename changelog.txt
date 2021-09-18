@@ -7,6 +7,7 @@ Date: ??. ??. 2021
     - Improved Tips-And-Tricks.
     - Players permissions reduced drastically to minimize bugs and trolss.
     - Tank can now drive through trail walls left by players indefinitely.
+    - Bigger explosions and fire on dying that destroys trails in vicinity.
   Changes:
     - Increase tank effect time from 5 to 10 seconds.
 ---------------------------------------------------------------------------------------------------

@@ -19,6 +19,35 @@ data:extend({
             minable = {result = "wdd-car"},
             alert_when_damaged = false,
             max_health = 100,
+            dying_explosion = "big-explosion",    -- Bigger boom
+            dying_trigger_effect = {
+                {
+                    -- Create an explosion on death
+                    -- that will destory the trails in
+                    -- the vacinity
+                    type = "nested-result",
+                    action =
+                    {
+                        type = "area",
+                        radius = 5,
+                        action_delivery =
+                        {
+                            type = "instant",
+                            target_effects = {
+                                {
+                                    type = "damage",
+                                    damage = { amount = 50000, type = "explosion"}
+                                },                                
+                            }
+                        }
+                    }
+                },
+                {
+                    type = "create-fire",
+                    entity_name = "fire-flame",
+                    initial_ground_flame_count = 5,
+                }
+            },
             resistances = {
                 {
                     type = "fire",
@@ -53,7 +82,7 @@ data:extend({
         }
     },
 })
-data.raw.car["wdd-car"].sound_no_fuel = nil    -- We will never have fuel. disable the sound
+data.raw.car["wdd-car"].sound_no_fuel = nil     -- We will never have fuel. disable the sound
 data:extend({
     ----------------------------------------------------------------------------------
     -- CAR THAT CANNOT DRIVE
@@ -99,6 +128,35 @@ data:extend({
             minable = {result = "wdd-tank"},
             alert_when_damaged = false,
             max_health = 2000,
+            dying_explosion = "massive-explosion",  -- Bigger boom
+            dying_trigger_effect = {
+                {
+                    -- Create an explosion on death
+                    -- that will destory the trails in
+                    -- the vacinity
+                    type = "nested-result",
+                    action =
+                    {
+                        type = "area",
+                        radius = 8, -- Bigger than car
+                        action_delivery =
+                        {
+                            type = "instant",
+                            target_effects = {
+                                {
+                                    type = "damage",
+                                    damage = { amount = 50000, type = "explosion"}
+                                },                                
+                            }
+                        }
+                    }
+                },
+                {
+                    type = "create-fire",
+                    entity_name = "fire-flame",
+                    initial_ground_flame_count = 10,
+                }
+            },
             resistances = {
                 {
                     type = "electric",

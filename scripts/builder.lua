@@ -55,11 +55,7 @@ function Builder.iterate(arena)
                 y=builder.area_to_clean.right_bottom.y
             }
         }
-        
-        -- Cache border walls max health
-        local border_max_health = game.get_filtered_entity_prototypes{
-            {filter="name", name ="wdd-border"}}["wdd-border"].max_health
-
+    
         -- Clean out all rocks, trees, vehicles and trails
         for _, entity in pairs(surface.find_entities_filtered{
             area = area,
@@ -74,11 +70,7 @@ function Builder.iterate(arena)
                 "fire", -- This is for worm spit
             },
         }) do
-            if entity.name == "wdd-border" then
-                -- We need to fix up the border walls
-                -- They might get damaged in collisions
-                entity.health = border_max_health
-            else
+            if entity.name ~= "wdd-border" then
                 entity.destroy{raise_destroy=false}
             end
         end
