@@ -27,7 +27,7 @@ return {
         },
         effect_spawn_chance = 2*60,     -- A effect will be spawned every n-ticks on average
         effect_density = 1/(50*50),     -- effects per area in tiles
-        start_zoom = 0.4,
+        start_zoom = 0.5,
         timing = {
             ["transition-pre"] = 1.5*60,   -- Cutscene from lobby to arena
             ["post-wait"] = 3*60,   -- Little period after the round ended            
@@ -41,6 +41,7 @@ return {
             offset = 3,     -- Distance to draw behind the car
             period = 90,    -- Duty cycle period in ticks of drawing
             gap = 25,       -- Part of the duty cycle that should not be a trail
+            ignore_in_gui = true,
         },
         no_trail = {
             ticks_to_live = 5*60,

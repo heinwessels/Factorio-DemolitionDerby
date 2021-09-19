@@ -634,45 +634,46 @@ function Effects.hit_effect_event(arena, beacon)
         limit = 1, -- TODO HANDLE MORE!
     }
     local player = nil
-    if vehicle_in_range then
-        local vehicle = vehicle_in_range[1]
-        if not vehicle then return end  -- This beacon was likely destroyed by non-player
-        local driver = vehicle.get_driver()
-        if not driver then return end   -- Just silently ignore if something goes wrong
-        player = vehicle.get_driver().player
-        
-        -- Unpack effect beacon
-        local last_dash = util.string_find_last(beacon.name, "-")
-        local effect_type = string.sub(beacon.name, 12, last_dash-1)
-        local target_str = string.sub(beacon.name, last_dash+1, -1)
-        local target = nil
-        if target_str == "enemy" then   -- Who should this effect be applied to?
-            target = Effects.find_random_enemy(arena, player) or player
-        else
-            -- This is either "player" or "all"
-            -- It it's all it simply means who will do the execution
-            target = player
-        end
-        
-        -- Add the applicable effect
-        effect = constants.effects[effect_type]
-        if not effect then error("Effect of type <"..effect_type.."> not recognised") end
-        Effects.add_effect(arena, target, {[effect_type]=effect})
+    if not vehicle_in_range then error("No vehicle found to apply effect to!") end
+    local vehicle = vehicle_in_range[1]
+    if not vehicle then return end  -- This beacon was likely destroyed by non-player
+    local driver = vehicle.get_driver()
+    if not driver then return end   -- Just silently ignore if something goes wrong
+    player = vehicle.get_driver().player
+    
+    -- Unpack effect beacon
+    local last_dash = util.string_find_last(beacon.name, "-")
+    local effect_type = string.sub(beacon.name, 12, last_dash-1)
+    local target_str = string.sub(beacon.name, last_dash+1, -1)
+    local target = nil
+    if target_str == "enemy" then   -- Who should this effect be applied to?
+        target = Effects.find_random_enemy(arena, player) or player
+    else
+        -- This is either "player" or "all"
+        -- It it's all it simply means who will do the execution
+        target = player
     end
+    
+    -- Add the applicable effect
+    effect = constants.effects[effect_type]
+    if not effect then error("Effect of type <"..effect_type.."> not recognised") end
+    Effects.add_effect(arena, target, {[effect_type]=effect}, target_str)
 end
 
 -- Adds a table of effects to a player
 -- If that effect is already given to the player, simply
 -- extend the ticks_to_live
-function Effects.add_effect(arena, player, effects)
+function Effects.add_effect(arena, player, effects, source)
 
     -- Play a ping for all player that it's applied to    
     player.play_sound{ path = "wdd-effect-activate" }
-
-    -- Now add it to the player
+    
     local player_state = arena.player_states[player.index]
     for effect_type, effect in pairs(effects) do
+
+        -- Add this effect to player
         effect.position = player.position
+        effect.source = source or "player"  -- if none is supplied assume player
         local player_effect = player_state.effects[effect_type]
         if player_effect and player_effect.ticks_to_live then
             -- Player already has this effect applied. Extend time            

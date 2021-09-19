@@ -8,6 +8,7 @@ Date: ??. ??. 2021
     - Players permissions reduced drastically to minimize bugs and trolss.
     - Tank can now drive through trail walls left by players indefinitely.
     - Bigger explosions and fire on dying that destroys trails in vicinity.
+    - GUI now shows applied effects, and sorts according to score.
   Changes:
     - Increase tank effect time from 5 to 10 seconds.
 ---------------------------------------------------------------------------------------------------

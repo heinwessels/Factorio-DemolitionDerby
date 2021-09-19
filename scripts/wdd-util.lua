@@ -3,6 +3,7 @@ local Factorio_util = require("util")
 local Util = { }
 
 function Util.merge(tables) return Factorio_util.merge(tables) end
+function Util.deepcopy(tables) return Factorio_util.table.deepcopy(tables) end
 
 -- Remove all nils from an array
 function Util.compact_array(t)

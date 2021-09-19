@@ -2,18 +2,49 @@
 -- You don't need to understand how these work to follow along
 local styles = data.raw["gui-style"].default
 
-styles["gui_players_table"] = {
+styles["gui_players_table_lobby"] = {
     type = "table_style",
     column_widths = {        
-        { -- player name
+        { -- Player name
             column = 1,
             width = 130
         },
-        { -- extra
+        { -- Rounds playec
             column = 2,
-            width = 40
+            width = 45
         },
-        { -- score
+        { -- Total Score
+            column = 3,
+            width = 35
+        }
+    },
+
+    horizontal_spacing = 0,
+    left_cell_padding = 8,
+    top_cell_padding = 2,
+    right_cell_padding = 8,
+    bottom_cell_padding = 2,
+    apply_row_graphical_set_per_column = true,
+    default_row_graphical_set = {position = {208, 17},  corner_size = 8},
+    hovered_graphical_set = {position = {34, 17}, corner_size = 8},
+    clicked_graphical_set = {position = {51, 17}, corner_size = 8},
+    selected_graphical_set = {position = {51, 17}, corner_size = 8},
+    selected_hovered_graphical_set = {position = {369, 17}, corner_size = 8},
+    selected_clicked_graphical_set = {position = {352, 17}, corner_size = 8}
+}
+
+styles["gui_players_table_arena"] = {
+    type = "table_style",
+    column_widths = {        
+        { -- Player Name
+            column = 1,
+            width = 90
+        },
+        { -- Effects applied
+            column = 2,
+            width = 80
+        },
+        { -- Current (Arena) Score
             column = 3,
             width = 40
         }
@@ -59,4 +90,22 @@ styles["ugg_deep_frame"] = {
     left_margin = 0,
     right_margin = 0,
     bottom_margin = 0
+}
+
+styles["wdd_player_playing"] = {
+    type = "label_style",
+    parent = "label",
+    font_color = {0, 1, 0}
+}
+
+styles["wdd_player_lost"] = {
+    type = "label_style",
+    parent = "label",    
+    font_color = {1, 0, 0}
+}
+
+styles["wdd_player_inactive"] = {
+    type = "label_style",
+    parent = "label",
+    font_color = {0.7, 0.7, 0.7}
 }

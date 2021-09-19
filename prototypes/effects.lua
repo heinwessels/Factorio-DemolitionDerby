@@ -9,7 +9,6 @@ data:extend({
     {
         type = "item",
         name = "wdd-effect-base",
-        icon = "__base__/graphics/icons/coin.png",
         icon_size = 64, icon_mipmaps = 4,
         subgroup = "gun",
         order = "f[land-mine]",
@@ -70,7 +69,19 @@ data:extend({
                     }
                 }
             }
-        }
+        },
+        resistances =
+        {
+            {
+                type = "fire",
+                percent = 100       -- immune
+            },
+            {
+                type = "explosion",
+                percent = 0,
+                decrease = -5000  -- die instantly
+            },
+        },
     },
 })
 
@@ -145,6 +156,8 @@ local function create_effect_beacon(config)
         )
     end
     data.raw["land-mine"][name].icons = icons
+    data.raw["item"][name].icons = icons
+    data.raw["item"][name].place_result = name
 end
 
 -- Create this effect beacon for player and enemy
