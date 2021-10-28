@@ -82,9 +82,10 @@ return {
             ticks_to_live = 10*60,  -- Just some maximum amount of time to live
         },
         nuke = {
-            warm_up_time = 6*60,    -- How long before the shot is fired
-            shell_travel_time = 4*60,
-            ticks_to_live = 15*60
+            warm_up_time = 3*60,    -- How long before the shot is fired
+            shell_travel_time = 3*60,
+            player_proximity = 20,   -- How close nuke will drop to player
+            ticks_to_live = 10*60
         },
         invert = {
             ticks_to_live = 5*60,

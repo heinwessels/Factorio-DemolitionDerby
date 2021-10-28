@@ -52,7 +52,6 @@ function Util.random_position_in_area(area)
     }
 end
 
--- Is the position within the area?
 function Util.middle_of_area(area)
     return {
         x=(area.left_top.x + (area.right_bottom.x - area.left_top.x)/2),
@@ -69,6 +68,33 @@ function Util.area_grow(area, growth)
         right_bottom = { 
             x = area.right_bottom.x + growth,
             y = area.right_bottom.y + growth
+        }
+    }
+end
+
+function Util.area_intersect(a, b)
+    return {
+        left_top = {
+            x = math.max(a.left_top.x, b.left_top.x),
+            y = math.max(a.left_top.y, b.left_top.y)
+        },
+        right_bottom = {
+            x = math.min(a.right_bottom.x, b.right_bottom.x),
+            y = math.min(a.right_bottom.y, b.right_bottom.y)
+        }
+    }
+end
+
+function Util.area_around_position(position, width, height)
+    height = height or width
+    return {
+        left_top = { 
+            x = position.x - width / 2, 
+            y = position.y - height / 2
+        },
+        right_bottom = {
+            x = position.x + width / 2, 
+            y = position.y + height / 2
         }
     }
 end

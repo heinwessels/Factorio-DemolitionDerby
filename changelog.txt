@@ -11,6 +11,7 @@ Date: ??. ??. 2021
     - GUI now shows applied effects, and sorts according to score.
   Changes:
     - Increase tank effect time from 5 to 10 seconds.
+    - Nuke time decreased. Now drops close to activation position.
   Bugfixes:
     - Fixed case where effects can become corrupted.
 ---------------------------------------------------------------------------------------------------

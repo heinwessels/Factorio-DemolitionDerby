@@ -225,9 +225,14 @@ local apply_effects_handler = {
         local tick = ctx.tick
         local effect_constants = ctx.effect_constants
         if effect.fresh then
-            -- Find a target
+            
+            -- Find a target close to player
+            -- but at least n tiles from border
             effect.target = util.random_position_in_area(
-                util.area_grow(arena.area, -20) -- edge of blast should only reach border
+                util.area_intersect(
+                    util.area_grow(arena.area, -20), -- edge of blast should only reach border
+                    util.area_around_position(player.position, effect_constants.player_proximity * 2)
+                )
             )
 
             -- Play siren sound
