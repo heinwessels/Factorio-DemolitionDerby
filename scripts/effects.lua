@@ -226,60 +226,108 @@ local apply_effects_handler = {
         local effect_constants = ctx.effect_constants
         if effect.fresh then
             
-            -- Find a target close to player
-            -- but at least n tiles from border
-            effect.target = util.random_position_in_area(
-                util.area_intersect(
-                    util.area_grow(arena.area, -20), -- edge of blast should only reach border
-                    util.area_around_position(player.position, effect_constants.player_proximity * 2)
-                )
-            )
+            -- Create a table to store nuke orders in
+            effect.orders = {}
 
-            -- Play siren sound
+            -- Add first nuke order
+            table.insert(effect.orders, {tick_started = tick})
+            
+            -- Play siren sound only once,
+            -- even if extended
             for _, player in pairs(arena.players) do
                 -- Play the sound at the location where the nuke is gonna drop
                 player.play_sound{ path = "wdd-nuke", position = effect.target }
             end
-        elseif tick > effect.tick_started + effect_constants.warm_up_time then
-            -- Handle main functionality here
-            
-            -- Create flair
-            local surface = arena.surface
-            local flair = surface.create_entity{
-                name = "nuke-flare", 
-                position = effect.target, 
-                height = 2,             -- Top of the fall
-                vertical_speed = 0.01,  -- How fast does it fall
-                frame_speed = 1,        -- Don't think this does anything 
-                movement = {0, 0}
-            }
-            if flair then
-                Effects.add_effect_entity(arena, flair, 
-                    tick + effect_constants.shell_travel_time
-                ) -- Should dissapear when shell hits
-            end
 
-            -- Create projectile
-            local speed = 1
-            local offset_target = {
-                x = effect.target.x,
-                y = effect.target.y - speed*effect_constants.shell_travel_time
-            }
-            local nuke = surface.create_entity{
-                name = "atomic-rocket", 
-                position = offset_target, 
-                force = "enemy", 
-                target = effect.target,
-                speed = speed
-            }
-            if nuke then
-                Effects.add_effect_entity(arena, nuke,
-                    tick + effect_constants.shell_travel_time*2    -- By this time it should've hit anyway
+        elseif effect.extended then
+
+            -- Add another nuke to fire
+            table.insert(effect.orders, {tick_started = tick})
+
+        end
+        
+        -- Handle each lined up nuke
+        for _, order in pairs(effect.orders) do
+
+            -- Make sure this order has a target
+            -- This will be called immediatelly meaning
+            -- it will be close to the activation position
+            if not order.target then
+                -- Find a target close to player
+                -- but at least n tiles from border
+                order.target = util.random_position_in_area(
+                    util.area_intersect(
+                        util.area_grow(arena.area, -20), -- edge of blast should only reach border
+                        util.area_around_position(player.position, effect_constants.player_proximity * 2)
+                    )
                 )
             end
 
-            -- Remove this effect
-            effect.mark_for_deletion = true
+            -- Has this nuke order launched?
+            -- Has enough time passed to show the flair 
+            -- and launch the projectile?            
+            if not order.launched and 
+                    tick > order.tick_started + effect_constants.warm_up_time 
+            then
+                 -- Create flair
+                local surface = arena.surface
+                local flair = surface.create_entity{
+                    name = "nuke-flare", 
+                    position = order.target, 
+                    height = 2,             -- Top of the fall
+                    vertical_speed = 0.01,  -- How fast does it fall
+                    frame_speed = 1,        -- Don't think this does anything 
+                    movement = {0, 0}
+                }
+                if flair then
+                    -- Mark flair for deletion
+                    Effects.add_effect_entity(arena, flair, 
+                        tick + effect_constants.shell_travel_time
+                    ) -- Should dissapear when shell hits
+
+                    -- We will use a reference to this flair
+                    -- to keep track of active orders.
+                    order.flair = flair
+                end
+
+                -- Create projectile
+                local speed = 1
+                local offset_target = {
+                    x = order.target.x,
+                    y = order.target.y - speed*effect_constants.shell_travel_time
+                }
+                local nuke = surface.create_entity{
+                    name = "atomic-rocket", 
+                    position = offset_target, 
+                    force = "enemy", 
+                    target = order.target,
+                    speed = speed
+                }
+                if nuke then
+                    Effects.add_effect_entity(arena, nuke,
+                        tick + effect_constants.shell_travel_time*2    -- By this time it should've hit anyway
+                    )
+                end
+
+                -- Remember we launched it so that we don't launch twice!
+                order.launched = true
+            end
+
+            -- Clean up orders and clear effect when empty
+            local index = 1
+            while index <= #effect.orders do
+                -- If order outdated?  
+                local order = effect.orders[index]
+                if order.launched and not order.flair.valid then
+                    table.remove(effect.orders, index)
+                else
+                    index = index + 1
+                end
+            end
+            if #effect.orders == 0 then
+                -- No orders left. Remove effect
+                effect.mark_for_deletion = true
+            end
         end
     end,
     ["artillery"] = function (arena, player, effect, ctx)
