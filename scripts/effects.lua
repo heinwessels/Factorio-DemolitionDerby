@@ -669,7 +669,11 @@ function Effects.add_effect(arena, player, effects, source)
     player.play_sound{ path = "wdd-effect-activate" }
     
     local player_state = arena.player_states[player.index]
-    for effect_type, effect in pairs(effects) do
+    for effect_type, effect_to_apply in pairs(effects) do
+
+        -- Deepcopy for no weird shenanigans!
+        -- Otherwise when extending will change constants :/
+        local effect = util.deepcopy(effect_to_apply)
 
         -- Add this effect to player
         effect.position = player.position
