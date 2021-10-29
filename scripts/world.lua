@@ -73,6 +73,7 @@ function World.on_player_entered(world, event)
     local player = game.get_player(event.player_index)    
 
     World.log("Player <"..player.name.."> joined. Initial position <"..util.to_string(player.position)..">.")
+    World.log("There are now "..#game.connected_players.." players online")
 
     -- Set up some global things
     if not global.players then global.players = {} end
@@ -115,6 +116,7 @@ function World.on_player_left(world, event)
     if not player then return end
 
     World.log("Player <"..player.name.."> left. Last position <"..util.to_string(player.position)..">.")
+    World.log("There are now "..#game.connected_players.." players online")
 
     -- Pull player from any cutscene to make sure 
     -- there's no leftover character
