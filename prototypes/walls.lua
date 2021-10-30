@@ -22,6 +22,10 @@ data:extend({
                     decrease = -5000,   -- Die instantly
                 },
                 {
+                    type = "poison",
+                    decrease = -5000,   -- Die instantly in vehicle explosions
+                },
+                {
                     type = "fire",
                     percent = 100       -- Immune
                 },
@@ -77,6 +81,10 @@ data:extend({
                 },
                 {
                     type = "acid",
+                    percent = 100,
+                },
+                {
+                    type = "poison",
                     percent = 100,
                 },
                 {

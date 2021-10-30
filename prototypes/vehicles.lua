@@ -36,7 +36,10 @@ data:extend({
                             target_effects = {
                                 {
                                     type = "damage",
-                                    damage = { amount = 50000, type = "explosion"}
+                                    -- exploding vehicles emit "poison" damage. This
+                                    -- is so that the explosion will not damage other
+                                    -- vehicles, but only destroy trails and biters
+                                    damage = { amount = 50000, type = "poison"}
                                 },                                
                             }
                         }
@@ -52,6 +55,10 @@ data:extend({
                 {
                     type = "fire",
                     percent = 100       -- immune
+                },
+                {
+                    type = "poison",
+                    percent = 100       -- immune to vehicle explosions
                 },
                 {
                     type = "acid",
@@ -145,7 +152,10 @@ data:extend({
                             target_effects = {
                                 {
                                     type = "damage",
-                                    damage = { amount = 50000, type = "explosion"}
+                                    -- exploding vehicles emit "poison" damage. This
+                                    -- is so that the explosion will not damage other
+                                    -- vehicles, but only destroy trails and biters
+                                    damage = { amount = 50000, type = "poison"}
                                 },                                
                             }
                         }
@@ -166,6 +176,10 @@ data:extend({
                 {
                     type = "impact",
                     percent = 100,   -- Imune
+                },
+                {
+                    type = "poison",
+                    percent = 100       -- immune to vehicle explosions
                 },
                 {
                     type = "fire",

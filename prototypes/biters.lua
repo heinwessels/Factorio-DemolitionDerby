@@ -19,6 +19,10 @@ data:extend({
                 {
                     type = "explosion",
                     decrease = -5000,   -- Die instantly
+                },
+                {
+                    type = "poison",
+                    decrease = -5000,   -- Die instantly in vehicle explosions
                 }
             },
         }
@@ -37,6 +41,14 @@ data:extend({
                 {
                     type = "explosion",
                     decrease = -5000,   -- Die instantly
+                },
+                {
+                    type = "poison",
+                    decrease = -5000,   -- Die instantly in vehicle explosions
+                },
+                {
+                    type = "poison",
+                    decrease = -5000,   -- Die instantly in vehicle explosions
                 }
             },
         }
