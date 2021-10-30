@@ -80,12 +80,12 @@ return {
             probability = 2,
         },
         artillery = {
-            warm_up_time = 1*60,    -- How long before the shots start to fire
-            shell_travel_time = 3*60,-- How long must the shells travel?
-            period = 0.4*60,       -- Period at which to fire shots
-            shots_per_sound = 5,    -- How many shots to fire for each sound played
-            coverage_density = 1/(30*30), -- effects per area in tiles
-            ticks_to_live = 10*60,  -- Just some maximum amount of time to live
+            warm_up_time = 1*60,        -- How long before the shots start to fire
+            shell_travel_time = 3*60,   -- How long must the shells travel?
+            period = 0.4*60,            -- Period at which to fire shots
+            shots_per_sound = 5,        -- How many shots to fire for each sound played
+            coverage_density = 1/(20*20), -- effects per area in tiles
+            ticks_to_live = 10*60,      -- Just some maximum amount of time to live
             probability = 2,
         },
         nuke = {

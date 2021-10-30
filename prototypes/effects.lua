@@ -89,7 +89,9 @@ data:extend({
 -- The function used to create new effects
 ----------------------------------------------------------------------------------
 local function create_effect_beacon(config)
-    -- type = "good" or "bad" or "bad-not-stripe" (will have a stripe overlay saying NOT)
+    -- The morality will determine what colour circle will go 
+    -- with which target ("player" or "enemy")
+    -- config.morality = "good" [default] or "bad" or "neutral"
 
     if string.match(config.name, "wdd-") then error("`wdd-` preposition added automatically.") end
     local name = "wdd-effect-"..config.name.."-"..config.target
@@ -109,13 +111,23 @@ local function create_effect_beacon(config)
                 minable = {result = name},                
             }
         },
-    })    
+    })
+
+    -- Determine circle colour based on target and morality
+    local morality = config.morality or "good"
+    local color = "green"
+    if morality == "neutral" then
+        color = "blue"
+    elseif (morality == "bad" and config.target == "player") or 
+            (morality == "good" and config.target == "enemy") then
+        color = "red"
+    end
 
     -- Create the entity graphics
     local picture = { layers = { } }
     table.insert(picture.layers, 
         {
-            filename = "__DemolitionDerby__/graphics/entities/effect-beacon/effect-beacon-"..config.target..".png",
+            filename = "__DemolitionDerby__/graphics/entities/effect-beacon/effect-beacon-"..color..".png",
             priority = "medium",
             width = 64,
             height = 64,
@@ -172,10 +184,8 @@ end
 -- Now create the effect beacons we want
 ----------------------------------------------------------------------------------
 
-
 create_effect_beacon_for_both{
     name = "speed_up",
-    icon = "__base__/graphics/icons/coin.png",    
     picture = {
         {
             filename = "__DemolitionDerby__/graphics/entities/effect-beacon/speed-up-fire.png",
@@ -193,11 +203,9 @@ create_effect_beacon_for_both{
             scale = size_modifier / 4,  -- Divide for larger tech icon
         }
     },
-    type = "good",
 }
 create_effect_beacon_for_both{
     name = "tank",
-    icon = "__base__/graphics/icons/coin.png",
     picture = {{
         filename = "__base__/graphics/technology/tank.png",
         priority = "medium",
@@ -209,7 +217,6 @@ create_effect_beacon_for_both{
 }
 create_effect_beacon_for_both{
     name = "slow_down",
-    icon = "__base__/graphics/icons/coin.png",
     picture = {{
         filename = "__base__/graphics/icons/slowdown-capsule.png",
         priority = "medium",
@@ -217,10 +224,10 @@ create_effect_beacon_for_both{
         height = 64,
         scale = size_modifier,
     }},
+    morality = "bad",
 }
 create_effect_beacon_for_both{
     name = "no_trail",
-    icon = "__base__/graphics/icons/coin.png",
     picture = {{
         filename = "__base__/graphics/icons/wall.png",
         priority = "medium",
@@ -230,10 +237,10 @@ create_effect_beacon_for_both{
         icon_scale = 0.8
     }},
     overlay = {"not"},
+    morality = "bad",
 }
 create_effect_beacon_for_both{
     name = "full_trail",
-    icon = "__base__/graphics/icons/coin.png",
     picture = {{
         filename = "__base__/graphics/icons/wall.png",
         priority = "medium",
@@ -245,7 +252,6 @@ create_effect_beacon_for_both{
 }
 create_effect_beacon_for_both{
     name = "worm",
-    icon = "__base__/graphics/icons/coin.png",
     picture = {{
         filename = "__DemolitionDerby__/graphics/entities/effect-beacon/worm.png",
         priority = "medium",
@@ -256,7 +262,6 @@ create_effect_beacon_for_both{
 }
 create_effect_beacon_for_both{
     name = "biters",
-    icon = "__base__/graphics/icons/coin.png",
     picture = {{
         filename = "__DemolitionDerby__/graphics/entities/effect-beacon/biter.png",
         priority = "medium",
@@ -268,30 +273,29 @@ create_effect_beacon_for_both{
 create_effect_beacon{
     name = "artillery",
     target = "all",
-    icon = "__base__/graphics/icons/coin.png",
     picture = {{
         filename = "__base__/graphics/technology/artillery.png",
         priority = "medium",
         width = 256,
         height = 256,
         scale = size_modifier / 4 * 1.1,
-    }}
+    }},
+    morality = "neutral",
 }
 create_effect_beacon{
     name = "nuke",
     target = "all",
-    icon = "__base__/graphics/icons/coin.png",
     picture = {{
         filename = "__base__/graphics/technology/atomic-bomb.png",
         priority = "medium",
         width = 256,
         height = 256,
         scale = size_modifier / 4 * 1.1,  -- Divide for larger tech icon
-    }}
+    }},
+    morality = "neutral",
 }
 create_effect_beacon_for_both{
     name = "invert",
-    icon = "__base__/graphics/icons/coin.png",
     picture = {{
         filename = "__DemolitionDerby__/graphics/entities/effect-beacon/steering-wheel.png",
         priority = "medium",
@@ -299,7 +303,8 @@ create_effect_beacon_for_both{
         height = 256,
         scale = size_modifier / 4 * 0.8,  -- Scale to make it slightly smaller
         icon_scale = 0.8
-    },}
+    },},
+    morality = "bad",
 }
 
 -- Remove the base effect used to create all the real ones

@@ -339,7 +339,7 @@ function Lobby.player_driving_state_changed(lobby, player, vehicle)
     if not util.position_in_area(player.position, lobby.area) then return end
 
     -- Log that this happened, because this is error prone
-    Lobby.log(lobby, "Driving state change. Player: "..player.name..". Vehicle: "..((vehicle and vehicle.name) or "nil"))
+    -- Lobby.log(lobby, "Driving state change. Player: "..player.name..". Vehicle: "..((vehicle and vehicle.name) or "nil"))
 
     -- Is he one of the players in the lobby?
     -- (this should not be possible, but it should be robust)

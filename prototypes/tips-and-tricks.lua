@@ -33,7 +33,7 @@ data:extend(
                 
                 local x = -8
                 surface.create_entity{ name = "wdd-effect-tank-player", position = {x, -4} }
-                surface.create_entity{ name = "wdd-effect-invert-enemy", position = {x, 0} }
+                surface.create_entity{ name = "wdd-effect-invert-player", position = {x, 0} }
                 surface.create_entity{ name = "wdd-effect-artillery-all", position = {x, 4} }
 
                 local label = function(text, position)
@@ -47,9 +47,9 @@ data:extend(
                 end
                 
                 local dx = 3
-                label({"tips-and-tricks-util.affects-player"}, {x+dx, -5})
-                label({"tips-and-tricks-util.affects-enemy"}, {x+dx, -1})
-                label({"tips-and-tricks-util.affects-all"}, {x+dx, 3})
+                label({"tips-and-tricks-util.affects-good"}, {x+dx, -5})
+                label({"tips-and-tricks-util.affects-bad"}, {x+dx, -1})
+                label({"tips-and-tricks-util.affects-neutral"}, {x+dx, 3})
             ]]
         },
     },
@@ -95,9 +95,9 @@ data:extend(
                 create_entry{entity="wdd-effect-full_trail-player", position = {good_x, 8}, text={"tips-and-tricks-util.full_trail"} }
                 
                 local other_x = good_x + 17
-                create_entry{entity="wdd-effect-slow_down-enemy", position = {other_x, -4}, text={"tips-and-tricks-util.slow_down"} }
-                create_entry{entity="wdd-effect-invert-enemy", position = {other_x, 0}, text={"tips-and-tricks-util.invert"} }
-                create_entry{entity="wdd-effect-no_trail-enemy", position = {other_x, -8}, text={"tips-and-tricks-util.no_trail"} }
+                create_entry{entity="wdd-effect-slow_down-player", position = {other_x, -4}, text={"tips-and-tricks-util.slow_down"} }
+                create_entry{entity="wdd-effect-invert-player", position = {other_x, 0}, text={"tips-and-tricks-util.invert"} }
+                create_entry{entity="wdd-effect-no_trail-player", position = {other_x, -8}, text={"tips-and-tricks-util.no_trail"} }
                 create_entry{entity="wdd-effect-artillery-all", position = {other_x, 4}, text={"tips-and-tricks-util.artillery"} }
                 create_entry{entity="wdd-effect-nuke-all", position = {other_x, 8}, text={"tips-and-tricks-util.nuke"} }
             ]]

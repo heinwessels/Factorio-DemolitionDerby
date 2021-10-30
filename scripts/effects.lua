@@ -732,7 +732,7 @@ end
 -- extend the ticks_to_live
 function Effects.add_effect(arena, player, effects, source)
 
-    -- Play a ping for all player that it's applied to    
+    -- Play a ping for player that it's applied to    
     player.play_sound{ path = "wdd-effect-activate" }
     
     local player_state = arena.player_states[player.index]
@@ -764,8 +764,9 @@ end
 -- Removes a specific effect from a player if it's applied to him
 function Effects.remove_effect(arena, player, effect_type)
     local player_state = arena.player_states[player.index]
+    player.play_sound{ path = "wdd-effect-deactivate" }
     if not player_state.effects[effect_type] then return end
-    -- Effects.log(arena, "Removing <"..effect_type.."> effect from "..player.name.." in arena <"..arena.name.."> (total "..#player_state.effects..")")
+    -- Effects.log(arena, "Removing <"..effect_type.."> effect from "..player.name.." (total "..#player_state.effects..")")
     player_state.effects[effect_type] = nil    -- Delete
 end
 

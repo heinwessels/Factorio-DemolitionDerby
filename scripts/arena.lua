@@ -498,7 +498,7 @@ function Arena.player_driving_state_changed(arena, player, vehicle)
     if not util.position_in_area(player.position, arena.area) then return end
     
     -- Log that this happened, because this is error prone
-    Arena.log(arena, "Driving state change. Player: "..player.name..". Vehicle: "..((vehicle and vehicle.name) or "nil"))
+    -- Arena.log(arena, "Driving state change. Player: "..player.name..". Vehicle: "..((vehicle and vehicle.name) or "nil"))
 
     -- Did it happen to one of the known players?
     local player_state = arena.player_states[player.index]

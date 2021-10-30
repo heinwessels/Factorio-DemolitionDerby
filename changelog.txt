@@ -11,10 +11,12 @@ Date: ??. ??. 2021
     - GUI now shows applied effects, and sorts according to score.
     - Different effects can now have different probabilities to spawn.
   Changes:
+    - Effect colours now depict if it's usually good or bad, not who it will affect.
     - Increase tank effect time from 5 to 10 seconds.
     - Worms now die in explosions and fire.
     - Nuke time decreased. Now drops close to activation position.
     - Biters live slightly longer and see further.
+    - Increased coverage of artillery.
   Bugfixes:
     - Fixed case where effects can become corrupted.
     - Nuke effects can now stack.

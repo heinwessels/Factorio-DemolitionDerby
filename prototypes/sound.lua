@@ -29,6 +29,11 @@ data:extend({
         filename = "__base__/sound/spidertron/spidertron-activate.ogg",
     },
     {
+        name = "wdd-effect-deactivate",
+        type = "sound",
+        filename = "__base__/sound/spidertron/spidertron-deactivate.ogg",
+    },
+    {
         name = "wdd-player-die",
         type = "sound",
         filename = "__base__/sound/fight/medium-explosion-1.ogg",

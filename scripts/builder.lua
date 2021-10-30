@@ -129,7 +129,7 @@ function Builder.set_state(arena, state)
 end
 
 function Builder.log(arena, msg)
-    log("Builder <"..arena.name..">: "..msg)
+    -- log("Builder <"..arena.name..">: "..msg)
 end
 
 return Builder
