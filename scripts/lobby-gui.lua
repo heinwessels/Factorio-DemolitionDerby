@@ -106,7 +106,7 @@ function LobbyGui.refresh(lobby, player)
             name = player.name,
             player = player,
             player_arena_state = player_arena_state,
-            rounds = "TODO",
+            rounds_played = player_lobby_state.rounds_played,
             total_score = player_lobby_state.score,
             arena_score = player_arena_state and player_arena_state.score or "-",
             state = player_arena_state and player_arena_state.status or "idle" -- Idle means not in arena
@@ -150,8 +150,8 @@ function LobbyGui.refresh(lobby, player)
             player_table.add{type="label", caption=effects_str}
             player_table.add{type="label", caption=data.arena_score}
         else
-            player_table.add{type="label", caption=data.round}
-            player_table.add{type="label", caption=data.lobby_score}
+            player_table.add{type="label", caption=data.rounds_played}
+            player_table.add{type="label", caption=data.total_score}
         end
     end
 end

@@ -102,6 +102,7 @@ function Lobby.add_player(lobby, player)
             lobby.player_states[player.index] = {
                 gui = { },
                 score = 0,  -- This score will be persistent while in this lobby
+                rounds_played = 0,
                 ready = false,
             }
 
@@ -196,6 +197,10 @@ function Lobby.state_machine(lobby)
                 for _, player in pairs(lobby.players) do                
                     local position = player.position    -- Remember where player was
                     
+                    -- Increase amount of rounds played.
+                    local player_state = lobby.player_states[player.index]
+                    player_state.rounds_played = player_state.rounds_played + 1
+
                     -- Get vehicle index
                     local car_index = nil
                     for index, vehicle in pairs(lobby.vehicles) do

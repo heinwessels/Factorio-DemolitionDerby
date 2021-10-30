@@ -358,7 +358,9 @@ local apply_effects_handler = {
                 local shots_fired_now = 0
                 while effect.shots_left > 0 and shots_fired_now < effect_constants.shots_per_sound do
                     -- Fire a random shot!
-                    local target = util.random_position_in_area(arena.area)
+                    local target = util.random_position_in_area(
+                        util.area_grow(arena.area, -5) -- slightly away from edge
+                    ) 
                     
                     -- First create a flair
                     -- It doesn't do anything. Only shows players where it will hit
