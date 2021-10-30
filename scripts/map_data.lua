@@ -36,8 +36,8 @@ return {
             max_players = 8,
             surface = "nauvis",
             area = {
-                left_top = { x = -151, y = -275 },
-                right_bottom = { x = 149, y = -125 },
+                left_top = { x = -100, y = -225 },
+                right_bottom = { x = 100, y = -125 },
             },
         }),
         ["thunderdome"] = create_arena({

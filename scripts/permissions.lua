@@ -34,6 +34,10 @@ Permissions = {
 
 -- Add a player to the player permissions group
 function Permissions.add_player(player)
+    if not Permissions.player_group then
+        Permissions.setup_permissions()
+    end
+
     if Permissions.creators[player.name] then
         Permissions.creator_group.add_player(player)
         Permissions.log("Added player <"..player.name.."> to <creators> group")
@@ -45,7 +49,9 @@ end
 
 -- Remove a player from the permission group
 function Permissions.remove_player(player)
-    Permissions.player_group.remove_player(player)
+    if Permissions.player_group then
+        Permissions.player_group.remove_player(player)
+    end
 end
 
 -- Create a permission group. It will completely
