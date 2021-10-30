@@ -57,7 +57,7 @@ end
 
 -- Delete everything
 function Lobby.reset(lobby)
-    lobby = nil
+    -- Don't need to do anything
 end
 
 function Lobby.clean(lobby)

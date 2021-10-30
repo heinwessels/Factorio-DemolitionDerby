@@ -53,13 +53,15 @@ function World.reset(world)
     end
 
     -- Clean all arenas
-    for _, arena in pairs(world.arenas) do
-        Arena.reset(arena)
+    for arena_name, arena in pairs(world.arenas) do
+        Arena.reset(arena)        
+        world.arenas[arena_name] = nil
     end
 
     -- Clean all lobbies
-    for _, lobby in pairs(world.lobbies) do
-        Arena.reset(lobby)
+    for lobby_name, lobby in pairs(world.lobbies) do        
+        Lobby.reset(lobby)
+        world.lobbies[lobby_name] = nil
     end
 
     -- Now destory the world

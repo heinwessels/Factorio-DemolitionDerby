@@ -95,7 +95,7 @@ end
 
 -- Delete everything
 function Arena.reset(arena)
-    arena = nil
+    -- Don't need to do anything
 end
 
 -- Add player to arena to be played
