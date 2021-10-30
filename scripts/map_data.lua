@@ -33,7 +33,7 @@ return {
         }),
         ["sledgehammer"] = create_arena({
             name = "sledgehammer",
-            max_players = 8,
+            max_players = 4,
             surface = "nauvis",
             area = {
                 left_top = { x = -100, y = -225 },
@@ -51,11 +51,11 @@ return {
         }),
         ["bellville"] = create_arena({
             name = "bellville",
-            max_players = 8,
+            max_players = 4,
             surface = "nauvis",
             area = {
-                left_top = { x = -150, y = 125 },
-                right_bottom = { x = 150, y = 275 },
+                left_top = { x = -100, y = 125 },
+                right_bottom = { x = 100, y = 225 },
             },
         }),
     },
