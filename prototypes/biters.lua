@@ -6,7 +6,10 @@ data:extend({
     util.merge{
         data.raw["unit"]["behemoth-biter"],
         {
-            name = "wdd-biter",
+            name = "wdd-biter",            
+            -- Biters should see further to attack easier
+            -- the vanilla value is 30
+            vision_distance = 50,
             resistances = {
                 {
                     type = "physical",

@@ -469,10 +469,17 @@ local apply_effects_handler = {
     end,
     ["biters"] = function (arena, player, effect, ctx)
         -- Stops player from drawing trail behind him
-        if not ctx.timed_out then
-            local tick = ctx.tick
-            local effect_constants = ctx.effect_constants
-            if not effect.last_spawn_time then effect.last_spawn_time = tick end
+        local tick = ctx.tick
+        local effect_constants = ctx.effect_constants
+        if effect.fresh then
+            effect.last_spawn_time = tick
+            effect.biters = { }
+            effect.biters_to_spawn = effect_constants.biters_to_spawn
+        elseif effect.extended then
+            effect.biters_to_spawn = 
+                effect.biters_to_spawn + effect_constants.biters_to_spawn
+        end
+        if not ctx.timed_out and effect.biters_to_spawn > 0 then
             if effect.last_spawn_time + effect_constants.period < tick then
                 -- Enough time has passed
                 effect.last_spawn_time = tick
@@ -498,7 +505,7 @@ local apply_effects_handler = {
                 end
 
                 -- Spawn biter
-                biter = surface.create_entity{
+                local biter = surface.create_entity{
                     name = "wdd-biter",
                     position = position,
                 }
@@ -519,10 +526,30 @@ local apply_effects_handler = {
                         distraction = defines.distraction.none
                     }
                     biter.set_command(command)
-                    biter.speed = constants.arena.vehicle_speed * effect_constants.speed_modifier
-                    
+                    biter.speed = constants.arena.vehicle_speed * effect_constants.speed_modifier                    
                     Effects.add_effect_entity(arena, biter, tick + effect_constants.biter_life_ticks, true)
+                    
+                    -- Remember that we spawned a biter
+                    effect.biters_to_spawn = effect.biters_to_spawn - 1
+                    table.insert(effect.biters, biter)
                 end
+            end
+        else
+            -- Effect has not timed out and there are no more biters to spawn
+            -- Mark this effect for deletion if all biters are dead
+            local index = 1
+            while index <= #effect.biters do
+                -- Is biter still alive?
+                local biter = effect.biters[index]
+                if not biter.valid then
+                    table.remove(effect.biters, index)
+                else
+                    index = index + 1
+                end
+            end
+            if #effect.biters == 0 then
+                -- No biters left. Remove effect
+                effect.mark_for_deletion = true
             end
         end
     end,

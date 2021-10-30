@@ -72,10 +72,11 @@ return {
         },
         biters = {
             period = 0.25*60,       -- Every how long should a biter be released
-            ticks_to_live = 1.5*60, -- This will determine how many biters will spawn
-            biter_life_ticks = 8*60,-- How long should biters live
+            biters_to_spawn = 5,
+            biter_life_ticks = 10*60,-- How long should biters live
             offset = 4,             -- How far behind vehicle should they spawn
             speed_modifier = 1,     -- Relative to player speed
+            ticks_to_live = 10*60, 
             probability = 2,
         },
         artillery = {

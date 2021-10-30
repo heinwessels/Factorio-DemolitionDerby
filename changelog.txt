@@ -14,6 +14,7 @@ Date: ??. ??. 2021
     - Increase tank effect time from 5 to 10 seconds.
     - Worms now die in explosions and fire.
     - Nuke time decreased. Now drops close to activation position.
+    - Biters live slightly longer and see further.
   Bugfixes:
     - Fixed case where effects can become corrupted.
     - Nuke effects can now stack.
