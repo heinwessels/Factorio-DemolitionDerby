@@ -444,7 +444,7 @@ local apply_effects_handler = {
 
                     -- Add worm
                     local worm = surface.create_entity{
-                        name = "behemoth-worm-turret",                        
+                        name = "wdd-worm",
                         position = position,
                     }
                     if worm == nil then

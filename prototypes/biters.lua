@@ -24,4 +24,22 @@ data:extend({
         }
     },
 
+    -- Make my own worm
+    util.merge{
+        data.raw["turret"]["behemoth-worm-turret"],
+        {
+            name = "wdd-worm",
+            resistances = {                
+                {
+                    type = "fire",
+                    decrease = -5000,   -- Die instantly
+                },
+                {
+                    type = "explosion",
+                    decrease = -5000,   -- Die instantly
+                }
+            },
+        }
+    },
+
 })

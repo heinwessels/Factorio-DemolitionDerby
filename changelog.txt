@@ -12,6 +12,7 @@ Date: ??. ??. 2021
     - Different effects can now have different probabilities to spawn.
   Changes:
     - Increase tank effect time from 5 to 10 seconds.
+    - Worms now die in explosions and fire.
     - Nuke time decreased. Now drops close to activation position.
   Bugfixes:
     - Fixed case where effects can become corrupted.
