@@ -60,13 +60,13 @@ end
 -- to/from arena, but this is only to remove the skip splash
 -- label. First determine if the player is actually watching
 -- the splash, and then if it's the last waypoint that's reached.
-function Splash.on_cutscene_waypoint_reached(event)    
-    if event.player_index ~= 1 then return end
+function Splash.on_cutscene_waypoint_reached(event)        
     local player = game.get_player(event.player_index)
     if not Splash.is_watching(player) then return end
     -- Player is watching splash. If he reached the 
     -- last waypoint then remove the label    
-    -- NOTE: For some reason returned index starts at 0? Hence -1
+    -- NOTE: For some reason returned index starts at 0. Hence -1
+    -- Bug report [Won't fix]: https://forums.factorio.com/viewtopic.php?f=58&t=99926&p=552385#p552385
     if event.waypoint_index == Splash.number_of_waypoints-1 then
         Splash.cancel_if_watching(player)
     end

@@ -213,8 +213,7 @@ end
 -- The player can skip the splash when he joins
 -- the game. We refine this here a little, and
 -- simply tell Splash to skip if watching.
-function World.on_skip_cutscene(world, event)
-    if event.player_index ~= 1 then return end
+function World.on_skip_cutscene(world, event)    
     local player = game.get_player(event.player_index)        
     Splash.cancel_if_watching(player)
 end
