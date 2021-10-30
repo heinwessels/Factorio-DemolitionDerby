@@ -9,6 +9,7 @@ Date: ??. ??. 2021
     - Tank can now drive through trail walls left by players indefinitely.
     - Bigger explosions and fire on dying that destroys trails in vicinity.
     - GUI now shows applied effects, and sorts according to score.
+    - Different effects can now have different probabilities to spawn.
   Changes:
     - Increase tank effect time from 5 to 10 seconds.
     - Nuke time decreased. Now drops close to activation position.

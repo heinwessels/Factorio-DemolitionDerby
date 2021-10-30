@@ -142,7 +142,7 @@ function LobbyGui.refresh(lobby, player)
             -- Build effects string
             local effects_str = ""
             for effect_type, effect in pairs(data.player_arena_state.effects) do
-                if not effect_constants[effect_type].ignore_in_gui then
+                if not effect_constants[effect_type].ignore then
                     effects_str = effects_str.."[img=item/wdd-effect-"..effect_type.."-"..effect.source.."]"
                 end
             end

@@ -593,26 +593,6 @@ function Effects.on_entity_destroyed(arena, reg, unit_number)
     -- will know to try the next arena
 end
 
-local effects_to_spawn = {
-    "speed_up-player",
-    "speed_up-enemy",
-    "tank-player",
-    "tank-enemy",
-    "invert-player",
-    "invert-enemy",
-    "slow_down-player",
-    "slow_down-enemy",
-    "no_trail-player",
-    "no_trail-enemy",
-    "full_trail-player",
-    "full_trail-enemy",
-    "worm-player",
-    "worm-enemy",
-    "biters-player",
-    "biters-enemy",
-    "artillery-all",
-    "nuke-all",
-}
 -- Here the effect beacons are updated. If there are less than the ideal number
 -- then we add more. The length it cached, so it's easy to check.
 -- It's known when an effect beacon was destroyed using the 
@@ -626,9 +606,14 @@ function Effects.update_effect_beacons(arena)
             math.ceil(constants.arena.effect_spawn_chance / constants.arena.frequency.effect_entity)
         ) == 0 then
 
-            local type_to_spawn = effects_to_spawn[math.random(#effects_to_spawn)]
+            -- Determine which effect beacon to spawn
+            local type_probability = arena.effect_probability_table[math.random(arena.effect_probability_table_size)]
+            local type_to_spawn = type_probability.type
+            local target = type_probability.targets[math.random(#type_probability.targets)]
+
+            -- Spawn effect beacon
             local beacon = Effects.attempt_spawn_effect_beacon(
-                arena, type_to_spawn
+                arena, type_to_spawn.."-"..target
             )
             if beacon then
                 -- We successfully created a placed a new entity!
@@ -840,6 +825,46 @@ function Effects.vehicle_remove_sticker(vehicle, sticker_name)
         if sticker.name == sticker_name then            
             sticker.destroy()
             return
+        end
+    end
+end
+
+-- Build the probability table to use when choosing
+-- and effect to spawn. Probability is defined as an integer >= 1
+-- All probabilities are added together and the is then <n/total>
+-- Behind the scenes everything is multiplied by two 
+function Effects.build_effetc_probability_table(arena)
+
+    -- Reset the table and start from scratch
+    -- TODO this isn't very efficient
+    arena.effect_probability_table = {}
+    arena.effect_probability_table_size = 0
+
+    -- Build a lookup table
+    for effect_type, effect in pairs(constants.effects) do
+        if not effect.ignore then
+            -- Determine the probability for this effect
+            local probability = effect.probability or 1
+
+            -- What different targets are there?
+            -- Also store it in table for easy later use
+            local base_name = "wdd-effect-"..effect_type.."-"
+            local targets = {"all"}
+            if #game.get_filtered_entity_prototypes({{filter="name", name=base_name.."all"}})==0 then
+                targets = {"player", "enemy"}
+            end
+
+            -- Add the effect to the table <probability> 
+            -- amount of times
+            for index = 1, probability do
+                arena.effect_probability_table_size = arena.effect_probability_table_size + 1
+                table.insert(arena.effect_probability_table, 
+                    {
+                        type = effect_type,
+                        targets = targets                    
+                    }
+                )
+            end
         end
     end
 end

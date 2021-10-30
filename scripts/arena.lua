@@ -173,6 +173,7 @@ function Arena.start_round(arena, lobby)
     Effects.flush_effect_entities(arena)    -- Just make sure again there is nothing left
     arena.ideal_number_of_effect_beacons = util.size_of_area(arena.area) * constants.arena.effect_density
     arena.lobby = lobby
+    Effects.build_effetc_probability_table(arena)
 
     -- Reset the effect beacons cache
     -- The table should be empty, but we don't care if it's not
@@ -554,7 +555,7 @@ function Arena.create_default_starting_locations(arena)
 end
 
 function Arena.set_status(arena, status)
-    Arena.log(arena, "Setting arena <"..arena.name.."> status to <"..status..">")
+    Arena.log(arena, "Setting status to <"..status..">")
     arena.status_start_tick = game.tick
     arena.status_fresh = true
     arena.status = status
