@@ -21,7 +21,17 @@ end
 function Portal.teleport_to(portal, player, duration)
     local surface = player.surface
     local position = player.position -- Remember position for cutscene
-    util.teleport_safe(player, util.middle_of_area(portal.area))    
+    
+    util.teleport_safe(player, util.middle_of_area(portal.area))
+
+    -- Temporarily enable `game_view_settings.show_controller_gui`
+    -- because of the following bug:
+    -- https://forums.factorio.com/viewtopic.php?f=7&t=100508
+    -- Closing the gui using `player.opened = nil` does not work
+    -- because it's in the same tick
+    player.game_view_settings.show_controller_gui = true
+
+    -- Start the cutscene
     if constants.lobby.timing.portal_cutscene then
         Cutscene.transition_to{
             player=player,
@@ -30,7 +40,7 @@ function Portal.teleport_to(portal, player, duration)
         }
     end
 
-    player.play_sound{ path = "wdd-portal-swoosh"}
+    player.play_sound{ path = "wdd-portal-swoosh" }
     
     -- Create some smoke
     surface.create_trivial_smoke{name="smoke-fast", position=position}
