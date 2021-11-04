@@ -3,6 +3,7 @@ Version: 0.3.1
 Date: 04. 11. 2021
   Changes:
     - While playing on your own you'll now get points based on time (not transfered to lobby)
+    - Add sound at round end.
   Bugfixes:
     - Now correctly resets state on reset.
     - Can no longer exit car in round start countdown.

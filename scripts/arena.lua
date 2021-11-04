@@ -379,7 +379,11 @@ local arena_state_handler = {
 
             -- TODO Show some victory thing
             -- TODO Show score!
-            -- TODO Play nice sound
+            
+            for _, player in pairs(arena.players) do
+                -- Play a sound for the character
+                player.play_sound{ path = "wdd-round-end" }
+            end
 
             Arena.set_status(arena, "post-wait")
         end        
@@ -420,7 +424,7 @@ function Arena.end_round(arena)
     local surface = arena.surface
     local lobby = arena.lobby
     for _, player in pairs(arena.players) do
-        local player_state = arena.player_states[player.index]
+        local player_state = arena.player_states[player.index]        
 
         if player.character and player.character.vehicle then
             -- If player was in a car get him out
@@ -452,7 +456,7 @@ function Arena.end_round(arena)
 
         else
             util.teleport_safe(player, global.world.spawn_location)
-        end
+        end        
 
         -- Create a cutscene to transition the player
         Cutscene.transition_to{

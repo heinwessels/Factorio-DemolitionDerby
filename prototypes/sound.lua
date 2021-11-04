@@ -2,6 +2,11 @@ util = require("util")
 
 data:extend({   
     {
+        name = "wdd-round-end",
+        type = "sound",
+        filename = "__core__/sound/achievement-unlocked.ogg",
+    },
+    {
         name = "wdd-artillery-shoot",
         type = "sound",
         filename = "__base__/sound/fight/artillery-shoots-1.ogg",
