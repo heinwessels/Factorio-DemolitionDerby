@@ -294,6 +294,14 @@ local arena_state_handler = {
         arena.round.tick_ended = 0
         arena.round.players_alive = #arena.players
 
+        -- Create a system where a single player can also get points
+        -- but it will not transfer to the lobby
+        if #arena.players == 1 then
+            arena.round.single_player = true
+        else
+            arena.round.single_player = false
+        end
+
         Arena.set_status(arena, "playing")            
         Arena.log(arena, "Started with "..#arena.players.." players")        
     end,
@@ -327,6 +335,14 @@ local arena_state_handler = {
                         
                         -- Force player to always be moving
                         vehicle.speed = constants.arena.vehicle_speed
+
+                        -- Add points if single player
+                        if arena.round.single_player then
+                            if (tick - arena.round.tick_started) % 300 == 0 then
+                                -- A point every 5 seconds
+                                player_state.score = player_state.score + 1
+                            end
+                        end
                     end
 
                     -- Apply any effects
@@ -366,7 +382,7 @@ local arena_state_handler = {
             -- TODO Play nice sound
 
             Arena.set_status(arena, "post-wait")
-        end
+        end        
     end,
     ["post-wait"] = function (arena)
         -- This just a little cool down after the round ended
@@ -428,9 +444,11 @@ function Arena.end_round(arena)
         if lobby then
             util.teleport_safe(player, lobby.spawn_location)
 
-            -- Update his lobby score
-            local lobby_state = lobby.player_states[player.index]
-            lobby_state.score = lobby_state.score + player_state.score
+            -- Update his lobby score if it wasn't single player
+            if not arena.round.single_player then
+                local lobby_state = lobby.player_states[player.index]
+                lobby_state.score = lobby_state.score + player_state.score
+            end
 
         else
             util.teleport_safe(player, global.world.spawn_location)
