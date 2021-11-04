@@ -505,7 +505,7 @@ function Arena.player_driving_state_changed(arena, player, vehicle)
     if not player_state then return true end -- Just ignore it, and notify world it's handled
     
     -- This is something we should handel
-    if (arena.status == "playing" or arena.status == "countdown") and 
+    if (arena.status ~= "ready" and arena.status ~= "empty") and 
             (player_state.status == "playing" or player_state.status == "idle") then
         -- We only really care if player is playing
         -- AND if the arena is playing

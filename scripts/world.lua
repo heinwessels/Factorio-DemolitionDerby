@@ -171,8 +171,9 @@ function World.on_player_driving_changed_state(world, event)
     for _, arena in pairs(world.arenas) do
         -- This player is playing in this arena
         -- This could be either:
-        --  Player tried to climb out of his car
-        --  Player crashed and lost
+        --      Player tried to climb out of his car
+        --      Driving state changed on vehicle swop
+        --      Player crashed and lost
         if Arena.player_driving_state_changed(arena, player, vehicle) then
             return  -- Event location found. Stop looking for other locations
         end
