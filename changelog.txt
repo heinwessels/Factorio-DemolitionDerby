@@ -5,6 +5,7 @@ Date: 04. 11. 2021
     - Now correctly resets state on reset.
     - Can no longer exit car in round start countdown.
     - GUIs don't get stuck when Tips-And-Tricks is open during portal woosh. (Thanks KRS!)
+    - Arena will now stop gracefully if last player leaves the server. (Thanks KRS!)
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.0
 Date: 30. 10. 2021

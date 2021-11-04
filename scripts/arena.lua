@@ -129,7 +129,7 @@ function Arena.add_player(arena, player, vehicle_index)
     Arena.log(arena, "Added player "..player.name)
 end
 
--- When a player left
+-- When a player left the game
 function Arena.on_player_left(arena, player)
     for index, player_in_arena in pairs(arena.players) do
         if player.index == player_in_arena.index then
@@ -145,9 +145,14 @@ function Arena.on_player_left(arena, player)
                 local vehicle = player_state.vehicle                
                 vehicle.die()
 
-                -- TODO Carefully stop his effects
+                -- The effects will all be destroyed in
+                -- data when destroying his state. Any
+                -- entities left will be destroyed 
+                -- automatically by the Effect Entities
+                -- Manager
             end
             
+            -- Remove information we have about this player
             arena.player_states[player.index] = nil
             table.remove(arena.players, index)
             return
@@ -335,9 +340,15 @@ local arena_state_handler = {
 
         -- Check if the round is over, etc.
         local should_end = false
-        if #arena.players == 1 and arena.round.players_alive == 0 then
+        local num_players = #arena.players
+        if num_players == 1 and arena.round.players_alive == 0 then
             should_end = true
-        elseif #arena.players > 1 and arena.round.players_alive <= 1 then
+        elseif num_players > 1 and arena.round.players_alive <= 1 then
+            should_end = true
+        elseif num_players == 0 then
+            -- This will handel the case if the last player left
+            -- the game. Then there will be no players alive, and
+            -- the round will end.
             should_end = true
         end
         if should_end then

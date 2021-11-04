@@ -233,6 +233,7 @@ function Lobby.state_machine(lobby)
         end
     ---------------------------------------------------
     elseif lobby.status == "busy" then
+        -- The game is running
         local arena = lobby.arena
         if arena.status == "done" then
             -- The arena round is done
@@ -241,7 +242,11 @@ function Lobby.state_machine(lobby)
 
             -- Now reset the arena reference
             lobby.arena = nil
-        end    
+        end
+
+        -- Note: The all players left while playing
+        -- the arena should notice, and stop the round
+        -- by itself.
     ---------------------------------------------------
     end
 end
