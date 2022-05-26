@@ -292,15 +292,6 @@ function Lobby.check_portals(lobby)
                     }
                 end
             end
-        else
-                -- Part of bug above where Tips-And-Tricks get stuck
-                -- which is handled in portal.lua. Here is a little
-                -- piece of how bad portals are structured.
-                -- TODO Refactor and bring this check into portal.lua!
-                -- Simply force gui_settings off again
-                -- This will interfere with Stringweasel when in
-                -- editor mod and going through portals, but meh.                
-                player.game_view_settings.show_controller_gui = false
         end
     end
 

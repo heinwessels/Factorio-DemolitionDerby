@@ -24,13 +24,6 @@ function Portal.teleport_to(portal, player, duration)
     
     util.teleport_safe(player, util.middle_of_area(portal.area))
 
-    -- Temporarily enable `game_view_settings.show_controller_gui`
-    -- because of the following bug:
-    -- https://forums.factorio.com/viewtopic.php?f=7&t=100508
-    -- Closing the gui using `player.opened = nil` does not work
-    -- because it's in the same tick
-    player.game_view_settings.show_controller_gui = true
-
     -- Start the cutscene
     if constants.lobby.timing.portal_cutscene then
         Cutscene.transition_to{
