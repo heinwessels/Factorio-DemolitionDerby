@@ -197,9 +197,13 @@ function World.on_script_trigger_effect(world, event)
     end
 end
 
--- This also triggers when an effect beacon is hit, but will
--- only trigger after the entity is destoyed (for any reason)
--- This is only used to clean up the cache of effect beacons
+-- This event will fire on two occations.
+--    * When an effect beacon is hit, and will trigger after the 
+--      entity is destoyed (for any reason)
+--      This is used to clean up the cache of effect beacons
+--    * When a vehicle a player is driving is destroyed, which will be used to
+--      determine when a player lost the round.
+-- This is all handled by the arena iteself
 function World.on_entity_destroyed(world, event)
     for _, arena in pairs(world.arenas) do
         if Arena.on_entity_destroyed(arena, event) then return end

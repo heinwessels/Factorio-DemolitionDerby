@@ -3,6 +3,8 @@ Version: 0.3.2
 Date: ??.??.????
   Changes:
     - Removed hacky workaround after fix in basegame (100508).
+  Bugfixes:
+    - Rework mechanism not detecting player losing anymore due to wont-fix vanilla regression (102511).
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.1
 Date: 04. 11. 2021

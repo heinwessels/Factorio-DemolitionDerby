@@ -123,16 +123,20 @@ local apply_effects_handler = {
     end,
     ["tank"] = function (arena, player, effect, ctx)
         -- Turn into tank and go slower
+        local vehicle = ctx.player_state.vehicle
         if not ctx.timed_out then            
-            local vehicle = ctx.player_state.vehicle
             vehicle.speed = vehicle.speed * effect.speed_modifier
             if not string.match(vehicle.name, "tank") then
                 -- Haven't swapped vehicles yet. Do it now.
+                Effects.deregister_vehicle_destroyed(arena, vehicle)
                 ctx.player_state.vehicle = Effects.swap_vehicle(player, "wdd-tank")
+                Effects.register_vehicle_destroyed(arena, player, ctx.player_state.vehicle)
             end
         else
             -- Timed out, swap back to normal vehicle
+            Effects.deregister_vehicle_destroyed(arena, vehicle)
             ctx.player_state.vehicle = Effects.swap_vehicle(player, "wdd-car")
+            Effects.register_vehicle_destroyed(arena, player, ctx.player_state.vehicle)
         end
     end,
     ["invert"] = function (arena, player, effect, ctx)
@@ -141,15 +145,19 @@ local apply_effects_handler = {
         if not ctx.timed_out then            
             if string.sub(vehicle.name, -8, -1) ~= "inverted" then
                 -- Player isn't driving the inverted version
+                Effects.deregister_vehicle_destroyed(arena, vehicle)
                 ctx.player_state.vehicle = 
                         Effects.swap_vehicle(player, vehicle.name.."-inverted")
+                Effects.register_vehicle_destroyed(arena, player, ctx.player_state.vehicle)
             end
         else
             -- Timed out, swap back to normal vehicle
             if string.sub(vehicle.name, -8, -1) == "inverted" then
                 -- but only if it actually still have the inverted vehicle
+                Effects.deregister_vehicle_destroyed(arena, vehicle)
                 ctx.player_state.vehicle = 
                         Effects.swap_vehicle(player, string.sub(vehicle.name, 1, -10))
+                Effects.register_vehicle_destroyed(arena, player, ctx.player_state.vehicle)
             end
         end
     end,
@@ -793,6 +801,32 @@ function Effects.find_random_enemy(arena, player)
     return enemies[math.random(#enemies)]
 end
 
+-- Registers a vehicle to the registered list of entities
+-- that raises an event when destroyed. It adds it to the internal
+-- game handler and remembers the registation key
+--  NOTE: This function belongs in arena.lua, but do to my limited
+--  Lua skills and lack of time I don't want to try and figure out
+--  this circular dependency
+function Effects.register_vehicle_destroyed(arena, player, vehicle)
+    local key = script.register_on_entity_destroyed(vehicle)
+    arena.registerd_vehicles[key] = {player=player, vehicle=vehicle}
+end
+
+-- Deregisters a vehicle from the registered list of entities
+-- that raises an event when destroyed. It doesn't really
+-- deregister though, rather we stop listening to that entity
+--  NOTE: This function belongs in arena.lua, but do to my limited
+--  Lua skills and lack of time I don't want to try and figure out
+--  this circular dependency
+function Effects.deregister_vehicle_destroyed(arena, vehicle)
+    for key, ctx in pairs(arena.registerd_vehicles) do
+        if ctx.vehicle == vehicle then
+            arena.registerd_vehicles[key] = nil
+            return -- Important because we just broke the iterator
+        end
+    end
+end
+
 -- Will remove the vehicle the player is currently driving,
 -- spawn the new vehicle and continue driving seemlessly.
 function Effects.swap_vehicle(player, vehicle_name)
@@ -863,7 +897,7 @@ end
 -- and effect to spawn. Probability is defined as an integer >= 1
 -- All probabilities are added together and the is then <n/total>
 -- Behind the scenes everything is multiplied by two 
-function Effects.build_effetc_probability_table(arena)
+function Effects.build_effect_probability_table(arena)
 
     -- Reset the table and start from scratch
     -- TODO this isn't very efficient

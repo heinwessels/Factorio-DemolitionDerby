@@ -35,9 +35,14 @@ function Arena.create(arena)
             effect_entity_entries = { }, -- Entities the arena keeps track of and destroys on time
             number_of_effect_entities = 0,   -- Cache the size
 
-            vehicles = { }, -- Vehicles in starting locations. As soon as a
+            parked_vehicles = { }, -- Vehicles in starting locations. As soon as a
                             -- game starts this goes to { } and each player's
                             -- vehicle is stored in his player_state
+
+            registerd_vehicles = { },   -- This contains a table with destroy event keys to determine when this
+                                        -- vehicle is destryed. If the actual vehicle is required it can be
+                                        -- found in the player state during play, or in <vehicles> while not in play
+                                        -- Format: {key, ctx={player, vehicle}}
         
             -- Possible statusses
             -- empty        -> Only defined, not built or ready
@@ -85,6 +90,8 @@ function Arena.clean(arena)
     Effects.flush_effect_entities(arena)
 
     -- Clear the state
+    arena.registerd_vehicles = { }
+    arena.vehicles = { }
     arena.effect_beacons = { } -- Builder will destroy them anyway
     arena.player_states = { }
     arena.players = { }
@@ -119,12 +126,10 @@ function Arena.add_player(arena, player, vehicle_index)
     -- Teleport player into his vehicle
     player.character.driving = false    -- Get the guy out of his car in the lobby
     if not vehicle_index then vehicle_index = #arena.players end
-    local vehicle = arena.vehicles[vehicle_index]  -- This is still the static vehicle
+    local vehicle = arena.parked_vehicles[vehicle_index]  -- This is still the static vehicle
     player_state.vehicle = vehicle
     player.teleport(vehicle.position)
     vehicle.set_driver(player)
-
-    -- TODO Create handles for destroying of vehicles
 
     Arena.log(arena, "Added player "..player.name)
 end
@@ -178,7 +183,7 @@ function Arena.start_round(arena, lobby)
     Effects.flush_effect_entities(arena)    -- Just make sure again there is nothing left
     arena.ideal_number_of_effect_beacons = util.size_of_area(arena.area) * constants.arena.effect_density
     arena.lobby = lobby
-    Effects.build_effetc_probability_table(arena)
+    Effects.build_effect_probability_table(arena)
 
     -- Reset the effect beacons cache
     -- The table should be empty, but we don't care if it's not
@@ -203,9 +208,9 @@ function Arena.start_round(arena, lobby)
 
     -- Remove unused vehicles
     local surface = arena.surface
-    for _, vehicle in pairs(arena.vehicles) do
+    for _, vehicle in pairs(arena.parked_vehicles) do
         if vehicle and vehicle.valid and not vehicle.get_driver() then
-            vehicle.destroy()
+            vehicle.die() -- Because it's more fun than destroying
         end
     end
     
@@ -232,7 +237,7 @@ local arena_state_handler = {
             Arena.set_status(arena, "ready")
 
             -- There's new vehicles. Get references to it
-            arena.vehicles = arena.surface.find_entities_filtered{
+            arena.parked_vehicles = arena.surface.find_entities_filtered{
                 name = "wdd-car-static", --It's static until the game begins
                 area = arena.area   -- This is quite a large area
             }
@@ -284,11 +289,16 @@ local arena_state_handler = {
                 end
                 Arena.log(arena, "ALERT! Did a hail mary on the vehicle swap for "..player.name)
             end
+
+            -- Register player's vehicle with an destroyed event handler so that we can keep 
+            -- track of it. It will have to be updated as well every time the player
+            -- swaps vehicles
+            Effects.register_vehicle_destroyed(arena, player, player_state.vehicle)
         end
         
         -- Remove any references to the vehicles in the arena. Now we store them
         -- In the player state. (Easier when swopping vechiles as effects)
-        arena.vehicles = { }
+        arena.parked_vehicles = { }
 
         arena.round.tick_started = game.tick
         arena.round.tick_ended = 0
@@ -511,14 +521,32 @@ function Arena.on_script_trigger_effect(arena, event)
     end
 end
 
--- An effect beacon was destroyed. It's not sure yet if
--- it was in this arena. Send this to effects to see how
--- to handle it
+-- This event will fire on two occations.
+--    * When an effect beacon is hit, and will trigger after the 
+--      entity is destoyed (for any reason)
+--      This is used to clean up the cache of effect beacons
+--    * When a vehicle a player is driving is destroyed, which will be used to
+--      determine when a player lost the round.
+--    * When a player vehicle is swapped. This case does not have to be 
+--      handled, because this event is only fired after the tick, meaning the
+--      swap will be complete with only the new vehicle registered. Therefore
+--      this event will be ignored.
 function Arena.on_entity_destroyed(arena, event)
-    return Effects.on_entity_destroyed(arena, 
+    local registered_ctx = arena.registerd_vehicles[event.registration_number]
+    if registered_ctx and registered_ctx.player and registered_ctx.player.valid then
+        -- One of this arena's players' cars
+        -- was destroyed. He likely lost lol
+        -- Also checking if valid, because it might be that
+        -- the player left the game and the car still exists. In that 
+        
+        Arena.player_on_lost(arena, registered_ctx.player)
+        return
+    end
+    
+    if Effects.on_entity_destroyed(arena, 
         event.registration_number,
         event.unit_number
-    )
+    ) then return end
 end
 
 -- Player likely accidentally pressed enter while playing.
@@ -552,10 +580,10 @@ function Arena.player_driving_state_changed(arena, player, vehicle)
                 player_state.vehicle.set_driver(player)
             
             elseif not vehicle then
-                -- Player is not driving anymore and his vehicle doesn't exist.
-                -- This means he lost the match. This means we need to do
-                -- some stuff.
-                Arena.player_on_lost(arena, player)
+                -- This was where we previously detected that a player
+                -- lost. However due to a "Not a bug" regression it's
+                -- no longer possible. See:
+                --  https://forums.factorio.com/viewtopic.php?t=102511
             end
         end
     end

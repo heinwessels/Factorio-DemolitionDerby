@@ -74,5 +74,6 @@ remote.add_interface("wdd", {
     end
 })
 
--- GO TO EDITOR
+-- Some nice commands
 -- /editor remote.call("wdd", "editor")
+-- /c remote.call("wdd", "clean")
