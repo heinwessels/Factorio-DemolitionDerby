@@ -2,7 +2,7 @@
 
 Weasel's Demolition Derby is a last-man-standing minigame where the last player alive gains the most points. You and your friends are placed in an arena inside your vehicles, and once the round starts you can never stop driving. You're goal is to out-drive your friends and force them to crash. To your advantage (or disadvantage) are various special effects that are triggered by driving through beacons. The most important aspect is that as you drive you leave behind a trail of walls which will kill a player on impact.
 
-`This mod is heavily inspired by a browser game "Achtung, De Kurwe" which my friends and I played when we should've been studying.`
+`This mod is heavily inspired by a browser game "Achtung, die Kurve!" which my friends and I played when we should've been studying.`
 
 ![](https://raw.githubusercontent.com/heinwessels/Factorio-DemolitionDerby/main/modpage/media/mutual-crash.mp4)
 # How It Works

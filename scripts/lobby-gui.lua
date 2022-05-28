@@ -108,7 +108,7 @@ function LobbyGui.refresh(lobby, player)
             player_arena_state = player_arena_state,
             rounds_played = player_lobby_state.rounds_played,
             total_score = player_lobby_state.score,
-            arena_score = player_arena_state and player_arena_state.score or "-",
+            arena_score = player_arena_state and player_arena_state.score or 0,
             state = player_arena_state and player_arena_state.status or "idle" -- Idle means not in arena
         })
     end
@@ -141,9 +141,11 @@ function LobbyGui.refresh(lobby, player)
             
             -- Build effects string
             local effects_str = ""
-            for effect_type, effect in pairs(data.player_arena_state.effects) do
-                if not effect_constants[effect_type].ignore then
-                    effects_str = effects_str.."[img=item/wdd-effect-"..effect_type.."-"..effect.source.."]"
+            if data.state == "playing" then
+                for effect_type, effect in pairs(data.player_arena_state.effects) do
+                    if not effect_constants[effect_type].ignore then
+                        effects_str = effects_str.."[img=item/wdd-effect-"..effect_type.."-"..effect.source.."]"
+                    end
                 end
             end
 
