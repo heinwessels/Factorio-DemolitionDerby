@@ -204,7 +204,7 @@ function Arena.start_round(arena, lobby)
         })
 
         -- Make sure player is in the correct force
-        player.force = "player"        
+        player.force = "player"
     end
 
     -- Remove unused vehicles
@@ -276,8 +276,10 @@ local arena_state_handler = {
             -- COUNTDOWN FINISHED! ACTUAL START!
         for _, player in pairs(arena.players) do
             local player_state = arena.player_states[player.index]
-
+            
+            -- Notify the player that the round is starting
             player.play_sound{ path = "wdd-countdown-0" }
+            player.print( {"wdd.round-start"} )
 
             -- Players are still in the fake cars
             -- Give them a real car (and not a static one)
@@ -373,6 +375,7 @@ local arena_state_handler = {
         local num_players = #arena.players
         if num_players == 1 and arena.round.players_alive == 0 then
             should_end = true
+            player_alive = arena.players[1] -- You can't lose in single player
         elseif num_players > 1 and arena.round.players_alive <= 1 then
             should_end = true
         elseif num_players == 0 then
@@ -503,6 +506,11 @@ function Arena.player_on_lost(arena, player)
     -- Remove his character entity (the little man on the screen)
     local character = util.player_to_spectator(player)
     character.die() -- The body will remain there... nice
+
+    if arena.status ~= "playing" then
+        -- The game is over so there is nothing left to do
+        return
+    end
 
     for _, enemy in pairs(arena.players) do
 
