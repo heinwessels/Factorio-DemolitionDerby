@@ -394,9 +394,6 @@ local arena_state_handler = {
                 Arena.log(arena, "Round over after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. <"..player_alive.name.."> was the victor and there were "..#arena.players.." players.")
             end
             
-            -- TODO Show some victory thing
-            -- TODO Show score!
-            
             for _, player in pairs(arena.players) do
                 -- Play a sound for the character
                 player.play_sound{ path = "wdd-round-end" }
@@ -407,6 +404,11 @@ local arena_state_handler = {
                 else
                     -- Nobody won this round, meaning everyone died at the same time
                     player.print({"wdd.nobody-won"})
+
+                    -- Clear their score because nobody won. It might be that
+                    -- they were not the first to die in the last crash, meaning
+                    -- they might have a stray point
+                    arena.player_states[player.index].score = 0
                 end
             end
 
