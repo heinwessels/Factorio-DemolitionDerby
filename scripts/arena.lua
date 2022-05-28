@@ -145,10 +145,11 @@ function Arena.on_player_left(arena, player)
             
             local player_state = arena.player_states[player.index]
             if player_state.status == "playing" then
-                -- Player is still playing. 
-                -- He already left the game though.
-                -- So just destroy his vehicle
+                -- Player was still playing and has already left the game.
+                -- First deregister his vehicle destruction handler, and
+                -- then destroy the vehicle
                 local vehicle = player_state.vehicle                
+                Effects.deregister_vehicle_destroyed(arena, vehicle)
                 vehicle.die()
 
                 -- The effects will all be destroyed in
