@@ -8,7 +8,8 @@ Date: ??.??.????
   Bugfixes:
     - Rework mechanism not detecting player losing anymore due to wont-fix vanilla regression (102511).
     - Fix crash when player joins lobby during active game.
-    - Fix winner not being teleported back to lobby at end of round.
+    - Fix crash when player joins lobby during active game.
+    - Fix possible crash in collision when player character is killed. Character is now invincible!
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.1
 Date: 04. 11. 2021
