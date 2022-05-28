@@ -50,6 +50,7 @@ function Arena.create(arena)
             -- waiting-for-players -> Lobby has booked this arena, and is waiting for players
             -- transition-pre  -> Players are moved. Waiting for cutscene to finish
             -- countdown     -> 3, 2, 1, START!
+            -- countdown-1   -> 3, 2, 1, START!
             -- playing      -> Currently playing a round
             -- post-wait    -> After the round there will be a while of nothing.
             -- done         -> Done playing. Waiting for something to happen before clean
@@ -221,7 +222,10 @@ function Arena.create_player_state(arena, player)
     arena.player_states[player.index] = {
         effects = { },      -- What effects are applied to this player?
         score = { },        -- Score of this player"
-        status = "idle",    -- nothing has been done to this player
+        status = "idle",    -- Can be:
+                            --  idle: nothing has been done to this player
+                            --  playing: currently in a game and playing
+                            --  lost: lost and now spectating ongoing game
         player = player,    -- Reference to connected player
         vehicle = nil,      -- Reference to players vehicle while playing
         score = 0,          -- Score for a specific round
@@ -409,8 +413,9 @@ local arena_state_handler = {
     ["post-wait"] = function (arena)
         -- This just a little cool down after the round ended
         if game.tick > (arena.round.tick_ended + constants.arena.timing["post-wait"]) then
-            Arena.end_round(arena)  -- This will move players back to the lobby
-            Arena.set_status(arena, "done")
+            Arena.set_status(arena, "done") -- Set the status first to disable arena mechanisms
+                                            -- to start cleaning.
+            Arena.end_round(arena)          -- This will move players back to the lobby
         end
     end,
     ["done"] = function (arena)
@@ -577,7 +582,14 @@ function Arena.player_driving_state_changed(arena, player, vehicle)
     if not player_state then return true end -- Just ignore it, and notify world it's handled
     
     -- This is something we should handel
-    if (arena.status ~= "ready" and arena.status ~= "empty") and 
+    local arena_states_to_register_events = {
+            ["transition-pre"]  = true,
+            ["countdown"]       = true,
+            ["countdown-1"]       = true,
+            ["playing"]         = true,
+            ["post-wait"]       = true,
+    }
+    if arena_states_to_register_events[arena.status] and 
             (player_state.status == "playing" or player_state.status == "idle") then
         -- We only really care if player is playing
         -- AND if the arena is playing

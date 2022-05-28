@@ -247,6 +247,9 @@ function Lobby.state_machine(lobby)
         -- Note: The all players left while playing
         -- the arena should notice, and stop the round
         -- by itself.
+
+        -- Once the game is over the arena will teleport
+        -- the players back into the lobby
     ---------------------------------------------------
     end
 end
