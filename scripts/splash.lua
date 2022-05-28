@@ -52,7 +52,7 @@ function Splash.cancel_if_watching(player)
         Splash.destroy_label(player)
 
         -- Welcome the player
-        player.print({"general.welcome-msg"})
+        player.print({"wdd.welcome-msg"})
     end
 end
 

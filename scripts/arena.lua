@@ -386,13 +386,21 @@ local arena_state_handler = {
             else
                 Arena.log(arena, "Round over after "..(arena.round.tick_ended-arena.round.tick_started).." ticks. <"..player_alive.name.."> was the victor and there were "..#arena.players.." players.")
             end
-
+            
             -- TODO Show some victory thing
             -- TODO Show score!
             
             for _, player in pairs(arena.players) do
                 -- Play a sound for the character
                 player.play_sound{ path = "wdd-round-end" }
+
+                -- Show every player who the winner was
+                if player_alive then
+                    player.print({"", {"wdd.player-won"}, " ", {"wdd.player-won-rand-"..math.random(1,10), player_alive.name}})
+                else
+                    -- Nobody won this round, meaning everyone died at the same time
+                    player.print({"wdd.nobody-won"})
+                end
             end
 
             Arena.set_status(arena, "post-wait")
@@ -491,8 +499,11 @@ function Arena.player_on_lost(arena, player)
     local character = util.player_to_spectator(player)
     character.die() -- The body will remain there... nice
 
-    -- Now give all the other alive players one point
     for _, enemy in pairs(arena.players) do
+
+        -- Print a message showing a player died. This will 
+        -- include the player who died as well
+        enemy.print({"", {"wdd.player-lost"}, " ", {"wdd.player-lost-rand-"..math.random(1,20), player.name}})
 
         -- Give points
         if enemy.index ~= player.index then
