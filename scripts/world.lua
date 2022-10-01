@@ -231,6 +231,18 @@ function World.on_configuration_changed(event)
     
 end
 
+-- Ensure that the current world has valid
+-- arenas and is not some players base.
+-- We will hard error if that happens.
+function World.verify()
+    if game.surfaces.nauvis.count_entities_filtered{
+        name = "wdd-border",
+        limit = 1,
+    } == 0 then
+        error("This world is not certified for Weasel's Demolition Derby! Please load a valid world instead, or disable Weasel's Demolition Derby until you're ready for another rumble in the jungle!")
+    end
+end
+
 function World.log(msg)
     log("World: "..msg)
 end

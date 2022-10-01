@@ -3,6 +3,7 @@ Version: 0.3.2
 Date: 28. 05. 2022
   Features:
     - Added big countdown letters.
+    - Verify world has an valid arena to prevent this mod accidentally staying active after done playing.
   Changes:
     - All arenas are now covered by radar.
 ---------------------------------------------------------------------------------------------------
