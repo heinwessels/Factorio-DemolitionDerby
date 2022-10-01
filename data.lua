@@ -4,6 +4,7 @@ require("prototypes.walls")
 require("prototypes.biters")
 require("prototypes.gui-styles")
 require("prototypes.sound")
+require("prototypes.fonts")
 require("prototypes.tips-and-tricks")
 
 -- require("prototypes.coloured-tiles")  -- Only used when blueprinting splash

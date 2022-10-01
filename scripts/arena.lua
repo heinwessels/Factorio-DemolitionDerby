@@ -261,6 +261,12 @@ local arena_state_handler = {
         if arena.status_fresh then 
             for _, player in pairs(arena.players) do
                 player.play_sound{ path = "wdd-countdown-1" }
+                player.create_local_flying_text{
+                    text = {"wdd.countdown", 2},
+                    position = player.position,
+                    speed = 0,
+                    time_to_live = 50,
+                }
             end
         end
         if arena.status_start_tick + 60 < game.tick then Arena.set_status(arena, "countdown-1") end
@@ -269,6 +275,12 @@ local arena_state_handler = {
         if arena.status_fresh then 
             for _, player in pairs(arena.players) do
                 player.play_sound{ path = "wdd-countdown-1" }
+                player.create_local_flying_text{
+                    text = {"wdd.countdown", 1},
+                    position = player.position,
+                    speed = 0,
+                    time_to_live = 50,
+                }
             end
         end
         if arena.status_start_tick + 60 < game.tick then Arena.set_status(arena, "start") end
@@ -281,6 +293,12 @@ local arena_state_handler = {
             -- Notify the player that the round is starting
             player.play_sound{ path = "wdd-countdown-0" }
             player.print( {"wdd.round-start"} )
+            player.create_local_flying_text{
+                text = {"wdd.countdown", {"wdd.countdown-start"}},
+                position = player.position,
+                speed = 0,
+                time_to_live = 50,
+            }
 
             -- Players are still in the fake cars
             -- Give them a real car (and not a static one)
