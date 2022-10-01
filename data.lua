@@ -41,3 +41,7 @@ data.raw.character.character.resistances = {
         percent = 100       -- immune
     },
 }
+
+
+-- Allow single radar to reveal all arenas
+data.raw.radar.radar.max_distance_of_nearby_sector_revealed = 15
