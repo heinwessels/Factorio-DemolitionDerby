@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.3.2
-Date: 28. 05. 2022
+Version: 0.4.0
+Date: 02. 10. 2022
   Features:
     - Added big countdown letters.
     - Verify world has an valid arena to prevent this mod accidentally staying active after done playing.
@@ -8,6 +8,7 @@ Date: 28. 05. 2022
     - Add custom thanks message when server is hosted by RedMew. (Thanks RedMew!)
   Changes:
     - All arenas are now covered by radar.
+    - Slightly changed splash.
   Bugfixes:
     - Admin players now also have full permissions.
 ---------------------------------------------------------------------------------------------------

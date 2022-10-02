@@ -90,8 +90,8 @@ function Splash.show(world, player)
     local waypoints = {
         {
             position = {
-                splash.position.x - splash.travel.x/2,
-                splash.position.y - splash.travel.y/2
+                splash.position.x + splash.travel.x/2,
+                splash.position.y + splash.travel.y/2
             },
             time_to_wait = constants.splash.duration / 2,
             transition_time = constants.splash.duration / 2,
@@ -100,8 +100,8 @@ function Splash.show(world, player)
         },
         {
             position = {
-                splash.position.x + splash.travel.x/2,
-                splash.position.y + splash.travel.y/2
+                splash.position.x - splash.travel.x/2,
+                splash.position.y - splash.travel.y/2
             },
             transition_time = constants.splash.duration / 2,
             time_to_wait = 0,
