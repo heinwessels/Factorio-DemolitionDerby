@@ -103,4 +103,87 @@ data:extend(
             ]]
         },
     },
+    {
+        type = "tips-and-tricks-item",
+        name = "vehicle-types",
+        order = "a-[basic]-a[3 ]",
+        starting_status = "unlocked",
+        trigger =
+        {
+            type = "time-elapsed",
+            ticks = 60 * 10,
+        },
+        simulation = {
+            init = [[
+                game.camera_zoom = 0.6
+                local surface = game.surfaces.nauvis
+                
+                local width = 18
+                local height = 14
+
+                for x = -width,width do
+                    if math.abs(x) == width then
+                        for y = -height,height do
+                            surface.create_entity{name="wdd-border", position={x,y}}
+                        end
+                    end
+                    surface.create_entity{name="wdd-border", position={x,-height}}
+                    surface.create_entity{name="wdd-border", position={x,height}}
+                end
+                
+                local car_trail = surface.create_entity{
+                    name = "wdd-car", 
+                    position = {10, 12},
+                    direction = defines.direction.north
+                }
+                car_trail.speed = 0.3
+
+                local car = surface.create_entity{
+                    name = "wdd-car", 
+                    position = {-10, -6},
+                    direction = defines.direction.east
+                }
+                
+                local tank = surface.create_entity{
+                    name = "wdd-tank", 
+                    position = {-10, 6},
+                    direction = defines.direction.east
+                }
+                
+                local label = function(text, position)
+                    rendering.draw_text{
+                        text=text,
+                        surface=surface, 
+                        target= position,
+                        scale = 4,
+                        color = {1, 1, 1, 1}
+                    }
+                end
+                
+                
+                script.on_event(defines.events.on_tick, function (event) 
+                    local offset = 3
+                    if car_trail.valid then
+                        surface.create_entity{name="wdd-trail", position={
+                            car_trail.position.x, car_trail.position.y + offset
+                        }}
+                    end
+                    if game.tick > 120 then
+                        if car.valid then
+                            car.speed = 0.3
+                            surface.create_entity{name="wdd-trail", position={
+                                car.position.x - offset, car.position.y
+                            }}
+                        end
+                        if tank.valid then
+                            tank.speed = 0.3
+                            surface.create_entity{name="wdd-trail", position={
+                                tank.position.x - offset, tank.position.y
+                            }}
+                        end
+                    end
+                end)
+            ]]
+        },
+    },
 })
