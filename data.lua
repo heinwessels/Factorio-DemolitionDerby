@@ -46,3 +46,17 @@ data.raw.character.character.resistances = {
 
 -- Allow single radar to reveal all arenas
 data.raw.radar.radar.max_distance_of_nearby_sector_revealed = 15
+
+-- The RedMew sprite for when it's run on their servers.
+-- I can add graphics cause it's a mod with data stage :D
+data:extend{{
+    type = "sprite",
+    name = "redmew-cat",
+    filename = "__DemolitionDerby__/graphics/redmew-cat.png",
+    priority = "extra-high-no-scale",
+    width = 256,
+    height = 256,
+    flags = {"gui-icon"},
+    mipmap_count = 2,
+    scale = 0.5
+}}

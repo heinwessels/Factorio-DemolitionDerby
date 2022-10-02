@@ -53,6 +53,11 @@ function Splash.cancel_if_watching(player)
 
         -- Welcome the player
         player.print({"wdd.welcome-msg"})
+
+        -- Custom RedMew support to show that they are hosting.
+        if remote.interfaces["redmew"] and remote.interfaces["redmew"]["active"] then
+            player.print({"wdd.welcome-msg-redmew"})
+        end
     end
 end
 

@@ -5,6 +5,7 @@ Date: 28. 05. 2022
     - Added big countdown letters.
     - Verify world has an valid arena to prevent this mod accidentally staying active after done playing.
     - Added Tips-and-Tricks to show tanks drive through anything.
+    - Add custom thanks message when server is hosted by RedMew. (Thanks RedMew!)
   Changes:
     - All arenas are now covered by radar.
   Bugfixes:
