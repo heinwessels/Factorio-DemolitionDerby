@@ -146,7 +146,7 @@ end
 function World.on_tick(world, event)
 
     -- The rest should only work if the world is active
-    if not world.enabled then return end
+    if not world or not world.enabled then return end
 
     for index, lobby in pairs(world.lobbies) do
         Lobby.update(lobby, index)

@@ -4,17 +4,16 @@ local map_data = require("scripts.map_data")
 
 -- Setup Handlers
 script.on_event(defines.events.on_tick, function (event) 
-
-    -- Have we set up what we want?
-    if global.world == nil then
-        global.world = { }        
-    end
-
     -- Update this world!
     World.on_tick(global.world, event) 
 end)
 
-script.on_init(function (event) World.verify() end)
+script.on_init(function (event) 
+    World.verify()
+
+    global.world = { }  -- Placeholder
+    World.create(global.world, map_data)
+end)
 
 script.on_configuration_changed(
     function (event) World.verify() World.on_configuration_changed(event) end
