@@ -10,7 +10,6 @@ local Permissions = {
 
 Permissions = {
     player_allowed_actions = {
-        
         [defines.input_action.change_riding_state]=true,
         [defines.input_action.open_gui]=true,
         [defines.input_action.open_mod_item]=true,
@@ -26,6 +25,8 @@ Permissions = {
         [defines.input_action.write_to_console]=true,
         [defines.input_action.custom_input]=true,
     },
+
+    -- I always have full access :P
     creators = {
         ["stringweasel"] = true,
         ["Stringweasel"] = true,
@@ -38,7 +39,8 @@ function Permissions.add_player(player)
         Permissions.setup_permissions()
     end
 
-    if Permissions.creators[player.name] then
+    -- Admins and creators always have full access
+    if Permissions.creators[player.name] or player.admin then
         Permissions.creator_group.add_player(player)
         Permissions.log("Added player <"..player.name.."> to <creators> group")
     else
