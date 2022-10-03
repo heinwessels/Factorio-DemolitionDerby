@@ -154,16 +154,7 @@ end
 -- a spectator back his body.
 function Util.player_from_spectator(player)
     if player.character then return end
-    local character = player.surface.create_entity{
-        name = "character",
-        position = player.position,
-        force = "player",
-    }
-    player.associate_character(character)
-    player.set_controller{
-        type = defines.controllers.character, 
-        character = character,                
-    }
+    player.create_character()
 end
 
 function Util._table_print (tt, done)

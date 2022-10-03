@@ -3,10 +3,7 @@
 -- This will elimate many weird bugs that can be 
 -- caused by unintended behaviour.
 
-local Permissions = {
-    player_group = nil,
-    creator_group = nil,
-}
+local Permissions = { }
 
 Permissions = {
     player_allowed_actions = {
@@ -33,20 +30,17 @@ Permissions = {
     }
 }
 
--- Add a player to the player permissions group
+-- Add a player to the correct permissions group
 function Permissions.add_player(player)
-    if not Permissions.player_group then
-        Permissions.setup_permissions()
+
+    local group = "players"
+    if Permissions.creators[player.name] or player.admin then
+        -- Admins and creators always have full access
+        group = "creators"
     end
 
-    -- Admins and creators always have full access
-    if Permissions.creators[player.name] or player.admin then
-        Permissions.creator_group.add_player(player)
-        Permissions.log("Added player <"..player.name.."> to <creators> group")
-    else
-        Permissions.player_group.add_player(player)
-        Permissions.log("Added player <"..player.name.."> to <players> group")
-    end
+    game.permissions.get_group(group).add_player(player)
+    Permissions.log("Added player <"..player.name.."> to <"..group.."> group")
 end
 
 -- Remove a player from the permission group
@@ -62,9 +56,9 @@ function Permissions.create_player_permission_group()
     local permissions = game.permissions
 
     -- Create group if it does not already exist
-    local group = permissions.get_group("player")
+    local group = permissions.get_group("players")
     if not group then
-        group = permissions.create_group("player")
+        group = permissions.create_group("players")
     end
 
     -- Overwrite all permissions
@@ -74,9 +68,6 @@ function Permissions.create_player_permission_group()
             Permissions.player_allowed_actions[permission] or false
         )
     end
-
-    -- Save it to the state
-    Permissions.player_group = group
 end
 
 -- Create a permission group. It will completely
@@ -85,24 +76,22 @@ function Permissions.create_creator_permission_group()
     local permissions = game.permissions
 
     -- Create group if it does not already exist
-    local group = permissions.get_group("creator")
+    local group = permissions.get_group("creators")
     if not group then
-        group = permissions.create_group("creator")
+        group = permissions.create_group("creators")
     end
 
     -- Overwrite all permissions
     for _, permission in pairs(defines.input_action) do
         group.set_allows_action(permission, true)
     end
-
-    -- Save it to the state
-    Permissions.creator_group = group
 end
 
 -- Add a player to the player permissions group
 function Permissions.setup_permissions()
     Permissions.create_player_permission_group()
     Permissions.create_creator_permission_group()
+    Permissions.log("Created permission groups")
 end
 
 function Permissions.log(msg)

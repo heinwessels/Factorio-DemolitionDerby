@@ -13,32 +13,37 @@ script.on_init(function (event)
 
     global.world = { }  -- Placeholder
     World.create(global.world, map_data)
+
+    -- Hacky, but this isn't called, and 
+    -- we need to setup some stuff.
+    World.on_configuration_changed(event) 
 end)
 
-script.on_configuration_changed(
-    function (event) World.verify() World.on_configuration_changed(event) end
-)
-script.on_event(defines.events.on_player_joined_game, 
-    function (event) World.on_player_entered(global.world, event) end
-)
-script.on_event(defines.events.on_player_left_game,
-    function (event) World.on_player_left(global.world, event) end
-)
-script.on_event(defines.events.on_player_driving_changed_state,
-    function (event) World.on_player_driving_changed_state(global.world, event) end
-)
-script.on_event(defines.events.on_script_trigger_effect, 
-    function (event) World.on_script_trigger_effect(global.world, event) end
-)
-script.on_event(defines.events.on_entity_destroyed,
-    function (event) World.on_entity_destroyed(global.world, event) end
-)
-script.on_event(defines.events.on_cutscene_waypoint_reached,
-    function (event) World.on_cutscene_waypoint_reached(global.world, event) end
-)
-script.on_event("crash-site-skip-cutscene",
-    function (event) World.on_skip_cutscene(global.world, event) end
-)
+script.on_configuration_changed(function (event) 
+    World.verify() 
+    World.on_configuration_changed(event) 
+end)
+script.on_event(defines.events.on_player_joined_game,  function (event)
+    World.on_player_entered(global.world, event)
+end)
+script.on_event(defines.events.on_player_left_game, function (event)
+    World.on_player_left(global.world, event)
+end)
+script.on_event(defines.events.on_player_driving_changed_state, function (event)
+    World.on_player_driving_changed_state(global.world, event)
+end)
+script.on_event(defines.events.on_script_trigger_effect,  function (event)
+    World.on_script_trigger_effect(global.world, event)
+end)
+script.on_event(defines.events.on_entity_destroyed, function (event)
+    World.on_entity_destroyed(global.world, event)
+end)
+script.on_event(defines.events.on_cutscene_waypoint_reached, function (event)
+    World.on_cutscene_waypoint_reached(global.world, event)
+end)
+script.on_event("crash-site-skip-cutscene", function (event)
+    World.on_skip_cutscene(global.world, event)
+end)
 
 -- It is possible to define the name and table inside the call
 remote.add_interface("wdd", {
@@ -75,6 +80,6 @@ remote.add_interface("wdd", {
     end
 })
 
--- Some nice commands
--- /editor remote.call("wdd", "editor")
--- /c remote.call("wdd", "clean")
+-- -- Some nice commands
+-- -- /editor remote.call("wdd", "editor")
+-- -- /c remote.call("wdd", "clean")

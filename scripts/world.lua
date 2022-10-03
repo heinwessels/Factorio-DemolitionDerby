@@ -14,6 +14,7 @@ function World.create(world, map_data)
     world.arenas = { }
     world.lobbies = { }
     world.enabled = false
+    world.permissions = nil
 
     if map_data ~= nil then        
         world.spawn_location = map_data.spawn_location
@@ -76,10 +77,6 @@ function World.on_player_entered(world, event)
 
     World.log("Player <"..player.name.."> joined. Initial position <"..util.to_string(player.position)..">.")
     World.log("There are now "..#game.connected_players.." players online")
-
-    -- Set up some global things
-    if not global.players then global.players = {} end
-    if not global.players[player.index] then global.players[player.index] = { } end
 
     -- Some random settings
     player.force = "player"
@@ -226,9 +223,9 @@ function World.on_skip_cutscene(world, event)
 end
 
 function World.on_configuration_changed(event)
-
+    -- Recreate permissions any time the mod
+    -- changes. Might be that we changed something
     Permissions.setup_permissions()
-    
 end
 
 -- Ensure that the current world has valid
