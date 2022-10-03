@@ -15,13 +15,13 @@ function World.create(world, map_data)
     world.lobbies = { }
     world.enabled = false
     world.permissions = nil
-
+    
     if map_data ~= nil then        
         world.spawn_location = map_data.spawn_location
         world.enabled = true
         world.splash = map_data.splash
         world.players_in_splash = {} -- Table with unit number as key, and tick started as value
-
+        
         for _, lobby in pairs(map_data.lobbies) do
             world.lobbies[lobby.name] = Lobby.create(lobby)
         end
@@ -29,6 +29,9 @@ function World.create(world, map_data)
             world.arenas[arena.name] = Arena.create(arena)
         end
     end
+    
+    Splash.create(world)
+
     return world
 end
 
@@ -222,7 +225,9 @@ function World.on_skip_cutscene(world, event)
     Splash.cancel_if_watching(player)
 end
 
-function World.on_configuration_changed(event)
+function World.on_configuration_changed(world, event)
+    Splash.create(world)
+    
     -- Recreate permissions any time the mod
     -- changes. Might be that we changed something
     Permissions.setup_permissions()

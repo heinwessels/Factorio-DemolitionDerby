@@ -1,12 +1,62 @@
 local wdd_util = require("scripts.wdd-util")
 local constants = require("scripts.constants")
 
-local Splash = { }
+local Splash = {
+    -- I store this here because the `on_cutscene_waypoint_reached`
+    -- can be called when a player is joining, and the Splash waypoits
+    -- is not setup yet. Whhhhhyyyy though, I need to go sleep
+    number_of_waypoints = 4
+}
+
+function Splash.create(world)
+    -- To keep track of players watching
+    global.splash = global.splash or { players = {} }
+
+    -- Create the waypoints
+    local splash = world.splash
+    Splash.waypoints = {
+        {
+            position = {
+                splash.position.x + splash.travel.x/2,
+                splash.position.y + splash.travel.y/2
+            },
+            time_to_wait = constants.splash.duration / 2,
+            transition_time = constants.splash.duration / 2,
+            time_to_wait = 0,
+            zoom = splash.zoom,
+        },
+        {
+            position = {
+                splash.position.x - splash.travel.x/2,
+                splash.position.y - splash.travel.y/2
+            },
+            transition_time = constants.splash.duration / 2,
+            time_to_wait = 0,
+            zoom = splash.zoom,
+        },
+        {
+            target = nil, -- Set to player
+            transition_time = constants.splash.transition,
+            zoom = 0.5,
+            time_to_wait = 0
+        },
+        {
+            target = nil, -- Set to player
+            transition_time = 0.5*60,
+            zoom = 1,
+            time_to_wait = 0
+        }
+
+        if number_of_waypoints ~= #Splash.waypoints then
+            error("Mismatch in number of splash waypoints. Expect "..#Splash.waypoints.." but read "..number_of_waypoints)
+        end
+    }
+end
 
 -- Returns true if player if we think
 -- the player is watching the splash
 function Splash.is_watching(player)
-    return (player.gui.screen.skip_cutscene_label and true) or false
+    return global.splash.players[player.index]
 end
 
 -- Add's a little label at the bottom of the screen
@@ -48,6 +98,9 @@ function Splash.cancel_if_watching(player)
             player.exit_cutscene()
         end
 
+        -- Remember player is no longer watching
+        global.splash.players[player.index] = nil
+
         -- Remove the label too
         Splash.destroy_label(player)
 
@@ -68,6 +121,7 @@ end
 function Splash.on_cutscene_waypoint_reached(event)        
     local player = game.get_player(event.player_index)
     if not Splash.is_watching(player) then return end
+    
     -- Player is watching splash. If he reached the 
     -- last waypoint then remove the label    
     -- NOTE: For some reason returned index starts at 0. Hence -1
@@ -81,54 +135,27 @@ end
 function Splash.show(world, player) 
     if not constants.splash.enabled then return end
     if not world.splash then return end
-    
+
     -- Tell the player he can skip it if he wants
     Splash.create_skip_label(player)
 
-    -- Create the waypoints
-    local splash = world.splash
-    local waypoints = {
-        {
-            position = {
-                splash.position.x + splash.travel.x/2,
-                splash.position.y + splash.travel.y/2
-            },
-            time_to_wait = constants.splash.duration / 2,
-            transition_time = constants.splash.duration / 2,
-            time_to_wait = 0,
-            zoom = splash.zoom,
-        },
-        {
-            position = {
-                splash.position.x - splash.travel.x/2,
-                splash.position.y - splash.travel.y/2
-            },
-            transition_time = constants.splash.duration / 2,
-            time_to_wait = 0,
-            zoom = splash.zoom,
-        },
-        {
-            target = player.character,
-            transition_time = constants.splash.transition,
-            zoom = 0.5,
-            time_to_wait = 0
-        },
-        {
-            target = player.character,
-            transition_time = 0.5*60,
-            zoom = 1,
-            time_to_wait = 0
-        }
-    }
-    Splash.number_of_waypoints = #waypoints
+    -- Aim the waypoints at this particular player
+    local waypoints = wdd_util.deepcopy(Splash.waypoints)
+    waypoints[3].target = player.character
+    waypoints[4].target = player.character    
 
     -- There is a splash screen! Show it boooi!
     player.set_controller {
         type = defines.controllers.cutscene,
         waypoints = waypoints,
-        start_position = splash.position,
-        start_zoom = splash.zoom*0.9
+        start_position = world.splash.position,
+        start_zoom = world.splash.zoom*0.9
     }
+
+    -- Remember player is watching. Only do this after
+    -- everything is setup so that the event isn't
+    -- called with a broken Splash
+    global.splash.players[player.index] = true
 end
 
 return Splash
