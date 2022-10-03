@@ -101,40 +101,22 @@ end
 
 
 -- When two players are teleported to exactly the same
--- spot they will get stuck on top of another. This
--- Will first try to spawn at the correct location.
--- If this doesn't work it will try to spawn randomly
--- in the area of <size> around player
-function Util.teleport_safe(player, position, size)
-    if not size then size = {x=5, y=5} end
+-- spot they will get stuck on top of another. Make 
+-- sure they don't overlap.
+function Util.teleport_safe(player, position)
     local surface = player.surface
 
-    -- First try to spawn exactly at the desired location
-    local obstruction = surface.find_entity("character", position)
-    if not obstruction then
-        player.teleport(position)
-        return
+    -- This will always return because we will make sure not
+    -- to teleport to stupid locations. I hope.
+    local safe_position = surface.find_non_colliding_position(
+        "character", position, 10, 0.3)
+
+    if not safe_position then
+        -- Just in case it happens during development
+        error("Could not find safe position at: "..serpent.line(position))
     end
 
-    -- If we're here it didn't work. Now try to spawn randomly 
-    -- at some location
-    local tries = 10
-    while tries > 0 do
-        local random_position = {
-            x = position.x + (math.random(0, size.x)-size.x/2),   -- Random location with 0.1 tile resolution
-            y = position.y + (math.random(0, size.y)-size.y/2),
-        }
-        obstruction = surface.find_entity("character", random_position)
-        if not obstruction then
-            player.teleport(random_position)
-            return
-        end
-    end
-    error([[
-        Could not find a valid safe place to teleport player ]]..player.name..[[.
-        Attempted to teleport to ]]..Util.to_string(position)..[[ 
-        with size ]]..Util.to_string(size)..[[
-    ]])
+    player.teleport(safe_position)    
 end
 
 -- Turn the player into a spectator.
@@ -154,7 +136,16 @@ end
 -- a spectator back his body.
 function Util.player_from_spectator(player)
     if player.character then return end
-    player.create_character()
+    local character = player.surface.create_entity{
+        name = "character",
+        position = player.position,
+        force = "player",
+    }
+    player.associate_character(character)
+    player.set_controller{
+        type = defines.controllers.character, 
+        character = character,                
+    }
 end
 
 function Util._table_print (tt, done)
