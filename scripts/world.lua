@@ -10,6 +10,7 @@ local Permissions = require("scripts.permissions")
 local World = { }
 
 function World.create(world, map_data)
+    World.log("Creating world...")
     world = { }
     world.arenas = { }
     world.lobbies = { }
@@ -32,6 +33,7 @@ function World.create(world, map_data)
     
     Splash.create(world)
 
+    World.log("World created")
     return world
 end
 
@@ -41,15 +43,18 @@ function World.enable(world, enable)
 end
 
 function World.clean(world)
+    World.log("Cleaning world...")
     for _, lobby in pairs(world.lobbies) do
         Lobby.clean(lobby)
     end
     for _, arena in pairs(world.arenas) do
         Arena.clean(arena)
     end
+    World.log("World cleaned")
 end
 
 function World.reset(world)
+    World.log("Resetting world...")
     
     -- Move all players to spawn
     for _, player in pairs(game.players) do
@@ -67,6 +72,8 @@ function World.reset(world)
         Lobby.reset(lobby)
         world.lobbies[lobby_name] = nil
     end
+
+    World.log("World reset")
 
     -- Now destory the world
     -- It will be created again in the next tick
