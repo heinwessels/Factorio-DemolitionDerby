@@ -5,6 +5,7 @@ Date: 03. 10. 2022
     - Improve teleport_safe code to rather use function provided by Factorio.
   Bugfixes:
     - Fix permission management which is the more likely cause of the desync.
+    - Fix possible crash when new player joins while existing player views the splash.
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.1
 Date: 02. 10. 2022

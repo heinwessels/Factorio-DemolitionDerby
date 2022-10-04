@@ -11,46 +11,6 @@ local Splash = {
 function Splash.create(world)
     -- To keep track of players watching
     global.splash = global.splash or { players = {} }
-
-    -- Create the waypoints
-    local splash = world.splash
-    Splash.waypoints = {
-        {
-            position = {
-                splash.position.x + splash.travel.x/2,
-                splash.position.y + splash.travel.y/2
-            },
-            time_to_wait = constants.splash.duration / 2,
-            transition_time = constants.splash.duration / 2,
-            time_to_wait = 0,
-            zoom = splash.zoom,
-        },
-        {
-            position = {
-                splash.position.x - splash.travel.x/2,
-                splash.position.y - splash.travel.y/2
-            },
-            transition_time = constants.splash.duration / 2,
-            time_to_wait = 0,
-            zoom = splash.zoom,
-        },
-        {
-            target = nil, -- Set to player
-            transition_time = constants.splash.transition,
-            zoom = 0.5,
-            time_to_wait = 0
-        },
-        {
-            target = nil, -- Set to player
-            transition_time = 0.5*60,
-            zoom = 1,
-            time_to_wait = 0
-        }
-
-        if number_of_waypoints ~= #Splash.waypoints then
-            error("Mismatch in number of splash waypoints. Expect "..#Splash.waypoints.." but read "..number_of_waypoints)
-        end
-    }
 end
 
 -- Returns true if player if we think
@@ -121,12 +81,14 @@ end
 function Splash.on_cutscene_waypoint_reached(event)        
     local player = game.get_player(event.player_index)
     if not Splash.is_watching(player) then return end
+    local splash_data = global.splash.players[player.index]
+    if not splash_data then return end
     
     -- Player is watching splash. If he reached the 
     -- last waypoint then remove the label    
     -- NOTE: For some reason returned index starts at 0. Hence -1
     -- Bug report [Won't fix]: https://forums.factorio.com/viewtopic.php?f=58&t=99926&p=552385#p552385
-    if event.waypoint_index == Splash.number_of_waypoints-1 then
+    if event.waypoint_index == #splash_data.waypoints-1 then
         Splash.cancel_if_watching(player)
     end
 end
@@ -140,22 +102,54 @@ function Splash.show(world, player)
     Splash.create_skip_label(player)
 
     -- Aim the waypoints at this particular player
-    local waypoints = wdd_util.deepcopy(Splash.waypoints)
-    waypoints[3].target = player.character
-    waypoints[4].target = player.character    
+    -- Create the waypoints
+    local splash = world.splash
+    local waypoints = {
+        {
+            position = {
+                splash.position.x + splash.travel.x/2,
+                splash.position.y + splash.travel.y/2
+            },
+            time_to_wait = constants.splash.duration / 2,
+            transition_time = constants.splash.duration / 2,
+            time_to_wait = 0,
+            zoom = splash.zoom,
+        },
+        {
+            position = {
+                splash.position.x - splash.travel.x/2,
+                splash.position.y - splash.travel.y/2
+            },
+            transition_time = constants.splash.duration / 2,
+            time_to_wait = 0,
+            zoom = splash.zoom,
+        },
+        {
+            target = player.character,
+            transition_time = constants.splash.transition,
+            zoom = 0.5,
+            time_to_wait = 0
+        },
+        {
+            target = player.character,
+            transition_time = 0.5*60,
+            zoom = 1,
+            time_to_wait = 0
+        }
+    }
 
     -- There is a splash screen! Show it boooi!
     player.set_controller {
         type = defines.controllers.cutscene,
         waypoints = waypoints,
         start_position = world.splash.position,
-        start_zoom = world.splash.zoom*0.9
+        start_zoom = world.splash.zoom * 0.9
     }
 
     -- Remember player is watching. Only do this after
     -- everything is setup so that the event isn't
     -- called with a broken Splash
-    global.splash.players[player.index] = true
+    global.splash.players[player.index] = { waypoints = waypoints }
 end
 
 return Splash
