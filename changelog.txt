@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.3
-Date: ??. 10. 2022
+Date: 05. 10. 2022
   Features:
     - Add runtime setting: vehicle speed modifier
     - Spawn some of the effect beacons before round start to entice the player.
