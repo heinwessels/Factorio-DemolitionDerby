@@ -221,6 +221,14 @@ function Arena.start_round(arena, lobby)
             vehicle.die() -- Because it's more fun than destroying
         end
     end
+
+    -- Create some starting beacons. Do this at the end so that the 
+    -- required tables are already set up.
+    local number_of_start_beacons = 
+        arena.ideal_number_of_effect_beacons * constants.arena.starting_effects_percentage
+    for _=1,number_of_start_beacons do
+        Effects.spawn_random_effect_beacons(arena)
+    end    
     
     Arena.set_status(arena, "transition-pre")
 end

@@ -645,34 +645,36 @@ function Effects.update_effect_beacons(arena)
         if math.random(0, 
             math.ceil(constants.arena.effect_spawn_chance / constants.arena.frequency.effect_entity)
         ) == 0 then
-
-            -- Determine which effect beacon to spawn
-            local type_probability = arena.effect_probability_table[math.random(arena.effect_probability_table_size)]
-            local type_to_spawn = type_probability.type
-            local target = type_probability.targets[math.random(#type_probability.targets)]
-
-            -- Spawn effect beacon
-            local beacon = Effects.attempt_spawn_effect_beacon(
-                arena, type_to_spawn.."-"..target
-            )
-            if beacon then
-                -- We successfully created a placed a new entity!
-
-                for _, player in pairs(arena.players) do 
-                    player.play_sound{ path = "wdd-effect-created" }
-                end
-
-                -- Now register a callback so that we know when this beacon is destroyed
-                -- Either by a player driving over it, or by some other means
-                -- We receive an registration number. We will use this as key
-                local reg = script.register_on_entity_destroyed(beacon)
-
-                -- Add it to the table of effect beacons            
-                arena.number_of_effect_beacons = arena.number_of_effect_beacons + 1
-                arena.effect_beacons[reg] = beacon
-            end
-            
+            Effects.spawn_random_effect_beacons(arena)
         end
+    end
+end
+
+function Effects.spawn_random_effect_beacons(arena)
+    -- Determine which effect beacon to spawn
+    local type_probability = arena.effect_probability_table[math.random(arena.effect_probability_table_size)]
+    local type_to_spawn = type_probability.type
+    local target = type_probability.targets[math.random(#type_probability.targets)]
+
+    -- Spawn effect beacon
+    local beacon = Effects.attempt_spawn_effect_beacon(
+        arena, type_to_spawn.."-"..target
+    )
+    if beacon then
+        -- We successfully created a placed a new entity!
+
+        for _, player in pairs(arena.players) do 
+            player.play_sound{ path = "wdd-effect-created" }
+        end
+
+        -- Now register a callback so that we know when this beacon is destroyed
+        -- Either by a player driving over it, or by some other means
+        -- We receive an registration number. We will use this as key
+        local reg = script.register_on_entity_destroyed(beacon)
+
+        -- Add it to the table of effect beacons            
+        arena.number_of_effect_beacons = arena.number_of_effect_beacons + 1
+        arena.effect_beacons[reg] = beacon
     end
 end
 

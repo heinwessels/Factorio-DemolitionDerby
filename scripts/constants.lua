@@ -25,6 +25,7 @@ return {
             x = 40,
             y = 10
         },
+        starting_effects_percentage = 0.2, -- Percentage of effects beacons that will be spawned before start
         effect_spawn_chance = 2*60,     -- A effect will be spawned every n-ticks on average
         effect_density = 1/(50*50),     -- effects per area in tiles        
         start_zoom = 0.5,
