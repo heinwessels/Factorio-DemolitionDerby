@@ -26,10 +26,15 @@ function Arena.create(arena)
             players = { },
             player_states = { },
             effects = { },  -- Current effects scattered in arena
+
+            settings = { 
+                speed_modifier = nil,
+            },
             
             ideal_number_of_effect_beacons = 
                     util.size_of_area(arena.area) * constants.arena.effect_density,
             number_of_effect_beacons = 0,
+            effect_probability_table = { }, -- table used to choose which effect to spawn next
             effect_beacons = { },   -- Array of all effect beacons part of this arena (array of references)
 
             effect_entity_entries = { }, -- Entities the arena keeps track of and destroys on time
@@ -182,6 +187,7 @@ function Arena.start_round(arena, lobby)
     end
 
     -- Setup and update some variables
+    Arena.build_settings_table(arena)
     Effects.flush_effect_entities(arena)    -- Just make sure again there is nothing left
     arena.ideal_number_of_effect_beacons = util.size_of_area(arena.area) * constants.arena.effect_density
     arena.lobby = lobby
@@ -369,7 +375,7 @@ local arena_state_handler = {
                         player_alive = player -- If round end, this will contain the victor
                         
                         -- Force player to always be moving
-                        vehicle.speed = constants.arena.vehicle_speed
+                        vehicle.speed = constants.arena.vehicle_speed * arena.settings.speed_modifier
 
                         -- Add points if single player
                         if arena.round.single_player then
@@ -665,6 +671,11 @@ function Arena.create_default_starting_locations(arena)
         end
     end
     return arena.starting_locations
+end
+
+function Arena.build_settings_table(arena)
+    arena.settings = arena.settings or { }
+    arena.settings.speed_modifier = settings.global["wdd-speed-modifier"].value
 end
 
 function Arena.set_status(arena, status)

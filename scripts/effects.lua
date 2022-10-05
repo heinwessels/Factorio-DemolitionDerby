@@ -90,7 +90,10 @@ local apply_effects_handler = {
     ["trail"] = function (arena, player, effect, ctx)
         -- Default drawing of trail behind player
         local effect_constants = ctx.effect_constants
-        if ctx.tick % effect_constants.period >= effect_constants.gap then
+        -- Use speed modifier here otherwise gaps get oddly shaped at different speeds.
+        -- Now it simply scales with speed
+        local speed_modifier = arena.settings.speed_modifier
+        if ctx.tick % (effect_constants.period / speed_modifier) >= (effect_constants.gap / speed_modifier) then
             local vehicle = ctx.player_state.vehicle
             local orientation = vehicle.orientation * 2 * math.pi
             local position = {
@@ -112,7 +115,7 @@ local apply_effects_handler = {
         -- Increase vehicle speed and spurt flames
         local vehicle = ctx.player_state.vehicle
         local effect_constants = ctx.effect_constants
-        vehicle.speed = vehicle.speed * effect.speed_modifier
+        vehicle.speed = vehicle.speed * effect.speed_modifier * arena.settings.speed_modifier
         if ctx.tick % effect_constants.fire_freq == 0 then
             arena.surface.create_entity{
                 name = "fire-flame",
@@ -125,7 +128,7 @@ local apply_effects_handler = {
         -- Turn into tank and go slower
         local vehicle = ctx.player_state.vehicle
         if not ctx.timed_out then            
-            vehicle.speed = vehicle.speed * effect.speed_modifier
+            vehicle.speed = vehicle.speed * effect.speed_modifier * arena.settings.speed_modifier
             if not string.match(vehicle.name, "tank") then
                 -- Haven't swapped vehicles yet. Do it now.
                 Effects.deregister_vehicle_destroyed(arena, vehicle)
@@ -165,7 +168,7 @@ local apply_effects_handler = {
         -- Throw down a slow-down sticker right on the player and go slow
         local vehicle = ctx.player_state.vehicle
         if not ctx.timed_out then
-            vehicle.speed = vehicle.speed * effect.speed_modifier
+            vehicle.speed = vehicle.speed * effect.speed_modifier * arena.settings.speed_modifier
             if not Effects.vehicle_has_sticker(vehicle, "slowdown-sticker") then
                 arena.surface.create_entity{
                     name = "slowdown-sticker",
