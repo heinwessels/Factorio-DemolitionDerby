@@ -3,6 +3,7 @@ Version: 0.4.4
 Date: ??. 10. 2022
   Bugfixes:
     - Better support for running from scenarios.
+    - Add missing localization. (Thanks Xorimuth!)
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.3
 Date: 05. 10. 2022
