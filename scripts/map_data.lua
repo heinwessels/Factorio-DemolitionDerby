@@ -1,6 +1,6 @@
 local util = require("util")
 
-function create_arena(arena)
+local function create_arena(arena)
     return util.merge{
         {
             name = nil,

@@ -57,6 +57,6 @@ data:extend{{
     width = 256,
     height = 256,
     flags = {"gui-icon"},
-    mipmap_count = 2,
+    mipmap_count = 1,
     scale = 0.5
 }}
