@@ -11,7 +11,9 @@ local World = { }
 
 function World.create(world, map_data)
     World.log("Creating world...")
-    world = { }
+    global.world = { }
+    local world = global.world
+
     world.arenas = { }
     world.lobbies = { }
     world.enabled = false
@@ -34,7 +36,6 @@ function World.create(world, map_data)
     Splash.create(world)
 
     World.log("World created")
-    return world
 end
 
 function World.enable(world, enable)

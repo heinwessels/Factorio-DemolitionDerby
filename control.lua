@@ -71,7 +71,7 @@ remote.add_interface("wdd", {
 
     load = function(map_data_in)
         if map_data_in == nil then map_data_in = map_data end
-        global.world = World.create(global.world, map_data_in)
+        World.create(global.world, map_data_in)
     end,
 
     reset = function()
