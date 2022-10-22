@@ -71,6 +71,7 @@ function Builder.iterate(arena)
             },
         }) do
             if entity.name ~= "wdd-border" then
+                entity.create_build_effect_smoke()
                 entity.destroy{raise_destroy=false}
             end
         end

@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.4
 Date: ??. 10. 2022
+  Changes:
+    - Add smoke effect while cleaning arena.
   Bugfixes:
     - Better support for running from scenarios.
     - Add missing localization. (Thanks Xorimuth!)
